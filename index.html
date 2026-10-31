@@ -3,149 +3,271 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>متجر فرفيرو أونلاين - Farafero Online</title>
-    <!-- تضمين مكتبة فايربيس (Firebase SDK الإصدار القديم المستقر أو المحدث حسب مشروعك) -->
+    <title>فرفيرو - متجر الهدايا أونلاين</title>
+    
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    
+
     <style>
+        :root {
+            --primary: #d97706;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+        }
+
         body {
-            font-family: Tahoma, Arial, sans-serif;
-            background-color: #f9f9f9;
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
             margin: 0;
-            padding: 20px;
-            direction: rtl;
-            text-align: right;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: #ffffff;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-        }
-        h2 {
-            color: #333;
-            text-align: center;
-        }
-        .product-card {
-            border: 1px solid #eee;
             padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            direction: rtl;
         }
-        button.order-btn {
-            background-color: #28a745;
+
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        .header h1 { margin: 0; color: var(--primary); font-size: 24px; }
+        .header p { margin: 5px 0 0; color: #64748b; font-size: 14px; }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 15px;
+            max-width: 800px;
+            margin: 0 auto 30px;
+        }
+
+        .product-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border: 1px solid #e2e8f0;
+        }
+
+        .product-title { font-weight: bold; font-size: 15px; margin-bottom: 6px; }
+        .product-price { color: var(--primary); font-weight: bold; font-size: 16px; }
+        .product-stock { font-size: 12px; color: #16a34a; margin-top: 4px; }
+        .out-of-stock { color: #dc2626; }
+
+        .add-btn {
+            background: var(--primary);
             color: white;
             border: none;
-            padding: 12px 20px;
+            padding: 8px;
             border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
             font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
             width: 100%;
-            margin-top: 20px;
-            transition: background 0.3s;
         }
-        button.order-btn:hover {
-            background-color: #218838;
+
+        .add-btn:disabled { background: #cbd5e1; cursor: not-allowed; }
+
+        /* Checkout Modal / Form */
+        .cart-section {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
-        input {
+
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 4px; }
+        .form-group input, .form-group textarea {
             width: 100%;
             padding: 10px;
-            margin: 8px 0 15px 0;
-            border: 1px solid #ccc;
-            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
             box-sizing: border-box;
+            font-family: inherit;
         }
-        label {
+
+        .submit-btn {
+            background: #16a34a;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 16px;
             font-weight: bold;
-            color: #555;
+            width: 100%;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h2>🛍️ متجر فرفيرو أونلاين</h2>
-        
-        <div style="margin-bottom: 20px;">
-            <label for="customerName">اسم العميل الكريم:</label>
-            <input type="text" id="customerName" placeholder="اكتب اسمك الثلاثي هنا...">
-            
-            <label for="customerPhone">رقم الهاتف:</label>
-            <input type="text" id="customerPhone" placeholder="رقم الموبايل للتواصل...">
+    <div class="header">
+        <h1>🎁 متجر فرفيرو للهدايا</h1>
+        <p>اختر منتجاتك المفضل وسجل طلب الشراء مباشرة</p>
+    </div>
+
+    <!-- شبكة عرض المنتجات من المخزن -->
+    <div class="products-grid" id="productsContainer">
+        <p style="text-align:center; grid-column: 1/-1;">جاري تحميل المنتجات من المخزن...</p>
+    </div>
+
+    <!-- سلة الطلب وبيانات العميل -->
+    <div class="cart-section">
+        <h3>تفاصيل طلب الشراء</h3>
+        <div id="cartItemsList" style="margin-bottom: 15px; color: #64748b; font-size: 14px;">السلة فارغة حالياً</div>
+        <div style="font-size: 18px; font-weight: bold; margin-bottom: 15px;">
+            الإجمالي: <span id="cartTotal" style="color: var(--primary);">0</span> ج.م
         </div>
 
-        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-
-        <h3>المنتجات المتاحة:</h3>
-        <div class="product-card">
-            <div>
-                <strong>دبدوب أسمر مميز بتصميم حصري</strong>
-                <div style="color: #888; font-size: 14px; margin-top: 5px;">السعر: 450 جنيه</div>
-            </div>
-            <span style="background: #e2f0d9; color: #385723; padding: 5px 10px; border-radius: 4px; font-size: 14px;">متوفر</span>
+        <div class="form-group">
+            <label>اسمك الكريم:</label>
+            <input type="text" id="custName" placeholder="أدخل اسمك الثلاثي">
+        </div>
+        <div class="form-group">
+            <label>رقم الموبايل:</label>
+            <input type="tel" id="custPhone" placeholder="01xxxxxxxxx">
+        </div>
+        <div class="form-group">
+            <label>عنوان التوصيل أو ملاحظات:</label>
+            <textarea id="custAddress" rows="2" placeholder="العنوان أو أي ملاحظات للطلب"></textarea>
         </div>
 
-        <!-- زر إرسال طلب الشراء المباشر للسيستم الرئيسي -->
-        <button class="order-btn" onclick="submitPurchaseOrder()">إرسال طلب الشراء 🛒</button>
+        <button class="submit-btn" onclick="sendPurchaseOrder()">إرسال طلب الشراء 🛒</button>
     </div>
 
     <script>
-        // إعدادات اتصال الفايربيس (تأكد إنها متطابقة مع إعدادات مشروعك الأساسي)
+        // 1. إعدادات Firebase الخاصة ببيانات المحل الرئيسي
         const firebaseConfig = {
             apiKey: "AIzaSyDummyKeyForFarafero",
-            authDomain: "farafero-shop.firebaseapp.com",
-            projectId: "farafero-shop",
-            storageBucket: "farafero-shop.appspot.com",
+            authDomain: "farafero-gift-shop.firebaseapp.com",
+            projectId: "farafero-gift-shop",
+            storageBucket: "farafero-gift-shop.appspot.com",
             messagingSenderId: "123456789",
             appId: "1:123:web:abc"
         };
 
-        // تهيئة الفايربيس لو مش متتهيئة برة
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // دالة إرسال الطلب كـ "طلب شراء" مش فاتورة
-        function submitPurchaseOrder() {
-            const nameInput = document.getElementById('customerName').value.trim();
-            const phoneInput = document.getElementById('customerPhone').value.trim();
+        let cart = [];
+        let productsData = [];
 
-            if (!nameInput || !phoneInput) {
-                alert("من فضلك أدخل الاسم ورقم الهاتف أولاً!");
+        // 2. جلب المنتجات والمخزون مباشرة الحية من السيستم الرئيسي
+        db.collection('products').onSnapshot(snapshot => {
+            const container = document.getElementById('productsContainer');
+            container.innerHTML = '';
+            productsData = [];
+
+            snapshot.forEach(doc => {
+                const item = { id: doc.id, ...doc.data() };
+                productsData.push(item);
+
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                const stock = item.stock || 0;
+
+                card.innerHTML = `
+                    <div>
+                        <div class="product-title">${item.name || 'منتج'}</div>
+                        <div class="product-price">${item.price || 0} ج.م</div>
+                        <div class="product-stock ${stock <= 0 ? 'out-of-stock' : ''}">
+                            ${stock > 0 ? `المتاح بالمخزن: ${stock}` : 'غير متوفر حالياً'}
+                        </div>
+                    </div>
+                    <button class="add-btn" ${stock <= 0 ? 'disabled' : ''} onclick="addToCart('${item.id}')">
+                        ${stock > 0 ? '+ إضافة للطلب' : 'نفذت الكمية'}
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+        });
+
+        // 3. إدارة السلة
+        function addToCart(productId) {
+            const prod = productsData.find(p => p.id === productId);
+            if (!prod) return;
+
+            const existing = cart.find(c => c.id === productId);
+            if (existing) {
+                if (existing.qty < prod.stock) {
+                    existing.qty++;
+                } else {
+                    alert('وصلت للحد الأقصى المتاح في المخزن!');
+                }
+            } else {
+                cart.push({ id: prod.id, name: prod.name, price: prod.price, qty: 1 });
+            }
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const list = document.getElementById('cartItemsList');
+            const totalEl = document.getElementById('cartTotal');
+            if (cart.length === 0) {
+                list.innerHTML = 'السلة فارغة حالياً';
+                totalEl.innerText = '0';
                 return;
             }
 
-            // هيكل البيانات اللي هيسمع في السيستم الرئيسي كطلب شراء
-            const orderData = {
-                customerName: nameInput,
-                phone: phoneInput,
-                items: [
-                    { name: "دبدوب أسمر مميز بتصميم حصري", price: 450, quantity: 1 }
-                ],
-                totalAmount: 450,
-                orderDate: new Date().toISOString(),
-                type: 'purchase_order', // التعديل الجذري عشان يظهر كطلب شراء في لوحة التحكم
-                status: 'pending'       // حالة الطلب معلقة للمراجعة
+            let total = 0;
+            list.innerHTML = cart.map(item => {
+                total += item.price * item.qty;
+                return `<div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                    <span>${item.name} (${item.qty})</span>
+                    <span>${item.price * item.qty} ج.م</span>
+                </div>`;
+            }).join('');
+
+            totalEl.innerText = total;
+        }
+
+        // 4. إرسال الطلب ليظهر في السيستم الرئيسي كـ "طلب شراء" (Purchase Order)
+        function sendPurchaseOrder() {
+            const name = document.getElementById('custName').value.trim();
+            const phone = document.getElementById('custPhone').value.trim();
+            const address = document.getElementById('custAddress').value.trim();
+
+            if (cart.length === 0) return alert('سلة الطلبات فارغة!');
+            if (!name || !phone) return alert('برجاء كتابة الاسم ورقم الموبايل');
+
+            const orderTotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+
+            const orderPayload = {
+                customerName: name,
+                customerPhone: phone,
+                address: address,
+                items: cart,
+                totalAmount: orderTotal,
+                createdAt: new Date().toISOString(),
+                // النقطة الأهم: حفظ المستند كطلب شراء بانتظار الموافقة
+                type: 'purchase_order',
+                status: 'pending' 
             };
 
-            // رفع الطلب مباشرة لمجموعة orders في قاعدة البيانات
-            db.collection('orders').add(orderData)
+            // الرفع على مجموعة purchase_orders للويبسايت الرئيسي
+            db.collection('purchase_orders').add(orderPayload)
                 .then(() => {
-                    alert("تم إرسال طلب الشراء بنجاح يا باشمهندس، وهيوصل السيستم حالا!");
-                    document.getElementById('customerName').value = '';
-                    document.getElementById('customerPhone').value = '';
+                    alert('تم إرسال طلب الشراء بنجاح! سيتم التواصل معك لتأكيد الطلب.');
+                    cart = [];
+                    updateCartUI();
+                    document.getElementById('custName').value = '';
+                    document.getElementById('custPhone').value = '';
+                    document.getElementById('custAddress').value = '';
                 })
-                .catch((error) => {
-                    console.error("خطأ في إرسال الطلب: ", error);
-                    alert("حدث خطأ أثناء الإرسال، حاول مرة أخرى.");
+                .catch(err => {
+                    console.error('Error sending order:', err);
+                    alert('حدث خطأ أثناء إرسال الطلب، حاول ثانية.');
                 });
         }
     </script>
