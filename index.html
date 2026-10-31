@@ -354,24 +354,7 @@
             grandTotalEl.innerText = subtotal;
         }
 
-        // دالة موحدة وسحابية ذكية لتوليد رقم الطلب بالزيادة التلقائية الآمنة 100%
-        async function getNextGlobalOrderId() {
-            const counterRef = db.collection("settings").doc("global_order_counter");
-            return db.runTransaction(async (transaction) => {
-                const doc = await transaction.get(counterRef);
-                let nextNum = 1;
-                if (doc.exists && doc.data().lastSeq) {
-                    nextNum = doc.data().lastSeq + 1;
-                } else {
-                    // إذا لم يكن العداد موجوداً، نقوم بفحص قاعدة البيانات لجلب العدد الفعلي أو البدء من الصحيح
-                    const ordersSnap = await db.collection("orders").get();
-                    nextNum = ordersSnap.size + 1;
-                }
-                transaction.set(counterRef, { lastSeq: nextNum });
-                return 'PO-' + String(nextNum).padStart(4, '0');
-            });
-        }
-
+        // دالة تعتمد على جلب كافة الطلبات الفعليه لحظياً من قاعدة البيانات وقت الضغط واستخراج التسلسل الصحيح
         async function submitCustomerOrder() {
             if (storeState.cart.length === 0) return alert('برجاء إضافة هدايا للسلة أولاً!');
             
@@ -387,8 +370,19 @@
             let subtotal = storeState.cart.reduce((a, b) => a + (b.price * b.qty), 0);
             
             try {
-                // توليد الرقم المتسلسل بدقة تامة من الخادم
-                const orderId = await getNextGlobalOrderId();
+                // جلب الـ Orders الحالية من الكوليكشن مباشرة للتأكد من الرقم الحقيقي الدقيق
+                const querySnapshot = await db.collection("orders").get();
+                let maxNum = 0;
+                querySnapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.id) {
+                        const num = parseInt(data.id.replace(/[^0-9]/g, '')) || 0;
+                        if (num > maxNum) maxNum = num;
+                    }
+                });
+
+                const nextNum = maxNum + 1;
+                const orderId = 'PO-' + String(nextNum).padStart(4, '0');
                 const dateStr = new Date().toLocaleDateString('en-GB');
 
                 const newPurchaseOrder = {
