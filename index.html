@@ -194,7 +194,6 @@
                 renderStoreProducts();
             });
 
-            // جلب ومتابعة كل الطلبات الموجودة لحساب التسلسل الفعلي بدقة
             db.collection("orders").onSnapshot((snapshot) => {
                 storeState.allOrders = [];
                 snapshot.forEach((doc) => {
@@ -377,8 +376,15 @@
 
             let subtotal = storeState.cart.reduce((a, b) => a + (b.price * b.qty), 0);
             
-            // حساب رقم التسلسل المشترك بدقة استناداً إلى العدد الفعلي للمستندات
-            const nextSeqNum = storeState.allOrders.length + 1;
+            // فحص واستخراج أعلى رقم مسلسل موجود حالياً في قاعدة البيانات لضمان عدم حدوث أي قفزات
+            let maxSeq = 0;
+            storeState.allOrders.forEach(o => {
+                if (o.id) {
+                    const cleanNum = parseInt(o.id.replace(/[^0-9]/g, '')) || 0;
+                    if (cleanNum > maxSeq) maxSeq = cleanNum;
+                }
+            });
+            const nextSeqNum = maxSeq + 1;
             const orderId = 'PO-' + String(nextSeqNum).padStart(4, '0');
             const dateStr = new Date().toLocaleDateString('en-GB');
 
