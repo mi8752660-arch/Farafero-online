@@ -325,7 +325,34 @@
             grandTotalEl.innerText = subtotal;
         }
 
-        function submitCustomerOrder() {
+        // دالة توليد رقم PO متسلسل تلقائياً وثابت من PO-0001 إلى مالا نهاية ولا يمكن تعديله
+        async function getNextPoId() {
+            const counterRef = db.collection("settings").doc("po_counter");
+            
+            try {
+                return await db.runTransaction(async (transaction) => {
+                    const counterDoc = await transaction.get(counterRef);
+                    let nextSeq = 1;
+                    
+                    if (counterDoc.exists) {
+                        nextSeq = (counterDoc.data().lastSeq || 0) + 1;
+                    }
+                    
+                    // تحديث العداد في القاعدة فوراً
+                    transaction.set(counterRef, { lastSeq: nextSeq }, { merge: true });
+                    
+                    // تنسيق الرقم ليكون PO-0001, PO-0002 وهكذا
+                    return 'PO-' + String(nextSeq).padStart(4, '0');
+                });
+            } catch (error) {
+                console.error("Error generating PO sequence: ", error);
+                // كود احتياطي في حال حدوث أي خطأ في الاتصال
+                const fallbackNum = Math.floor(1000 + Math.random() * 9000);
+                return 'PO-' + fallbackNum;
+            }
+        }
+
+        async function submitCustomerOrder() {
             if (storeState.cart.length === 0) return alert('برجاء إضافة هدايا للسلة أولاً!');
             
             const name = document.getElementById('order-cust-name').value.trim();
@@ -339,12 +366,10 @@
 
             let subtotal = storeState.cart.reduce((a, b) => a + (b.price * b.qty), 0);
             
-            // توليد كود يبدأ بـ PO- مع أرقام عشوائية
-            const randomNum = Math.floor(1000 + Math.random() * 9000);
-            const orderId = 'PO-' + randomNum;
+            // سحب الرقم التسلسلي الدقيق من قاعدة البيانات
+            const orderId = await getNextPoId();
             const dateStr = new Date().toLocaleDateString('en-GB');
 
-            // إنشاء الطلب بنوع 'po' ليتم تصنيفه في خانة PO بالسيستم الرئيسي وبدون خصم المخزون
             const newPurchaseOrder = {
                 id: orderId,
                 date: dateStr,
@@ -355,8 +380,8 @@
                 shipping: 0,
                 customerName: name + ' (طلب شراء أونلاين)',
                 customerPhone: phone + ' - العنوان: ' + address,
-                status: 'pending',        // بانتظار المراجعة
-                type: 'po',               // معرّف صريح لخانه PO في السيستم الرئيسي
+                status: 'pending',        // بانتظار المراجعة والاعتماد
+                type: 'po',               // مخصص لخانة PO في السيستم الرئيسي
                 detailedItems: JSON.parse(JSON.stringify(storeState.cart))
             };
 
@@ -383,7 +408,7 @@
                     }
                 });
 
-                alert('تم إرسال طلب الشراء (PO) بنجاح! سيتم مراجعته والتواصل معك قريباً.');
+                alert(`تم إرسال طلب الشراء برقم (${orderId}) بنجاح! سيتم مراجعته والتواصل معك قريباً.`);
                 storeState.cart = [];
                 renderCart();
                 toggleCartDrawer(false);
