@@ -1,30 +1,153 @@
-<!-- زر إرسال طلب الشراء من متجر العملاء -->
-<button onclick="submitPurchaseOrder()" style="background: #28a745; color: #white; padding: 12px 20px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: bold;">
-    إرسال طلب الشراء 🛒
-</button>
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>متجر فرفيرو أونلاين - Farafero Online</title>
+    <!-- تضمين مكتبة فايربيس (Firebase SDK الإصدار القديم المستقر أو المحدث حسب مشروعك) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    
+    <style>
+        body {
+            font-family: Tahoma, Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 20px;
+            direction: rtl;
+            text-align: right;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        h2 {
+            color: #333;
+            text-align: center;
+        }
+        .product-card {
+            border: 1px solid #eee;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        button.order-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 20px;
+            transition: background 0.3s;
+        }
+        button.order-btn:hover {
+            background-color: #218838;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0 15px 0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+        label {
+            font-weight: bold;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
 
-<script>
-  // دالة إرسال الطلب للسيستم الرئيسي عندك
-  function submitPurchaseOrder() {
-    // 1. جمع بيانات المنتجات والعميل (حسب المتغيرات الموجودة عندك في الكود)
-    const orderData = {
-      customerName: "عميل المتجر الإلكتروني", // أو اربطها بحقل اسم العميل عندك
-      items: typeof cart !== 'undefined' ? cart : [], // السلة بتاعتك
-      totalAmount: typeof getTotal === 'function' ? getTotal() : 0, // الإجمالي
-      orderDate: new Date().toISOString(),
-      type: 'purchase_order', // التعديل الجذري هنا عشان تسمع كطلب شراء
-      status: 'pending'       // حالة الطلب طلب جديد بانتظار المراجعة
-    };
+    <div class="container">
+        <h2>🛍️ متجر فرفيرو أونلاين</h2>
+        
+        <div style="margin-bottom: 20px;">
+            <label for="customerName">اسم العميل الكريم:</label>
+            <input type="text" id="customerName" placeholder="اكتب اسمك الثلاثي هنا...">
+            
+            <label for="customerPhone">رقم الهاتف:</label>
+            <input type="text" id="customerPhone" placeholder="رقم الموبايل للتواصل...">
+        </div>
 
-    // 2. رفع الطلب لـ Firebase تحت جدول أو مجموعة orders
-    db.collection('orders').add(orderData)
-      .then(() => {
-        alert("تم إرسال طلب الشراء بنجاح وسيتم مراجعته فوراً!");
-        // لو حابب تفضي السلة أو توديه لصفحة النجاح
-      })
-      .catch((error) => {
-        console.error("خطأ في إرسال الطلب: ", error);
-        alert("حدث خطأ، حاول مرة أخرى.");
-      });
-  }
-</script>
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+
+        <h3>المنتجات المتاحة:</h3>
+        <div class="product-card">
+            <div>
+                <strong>دبدوب أسمر مميز بتصميم حصري</strong>
+                <div style="color: #888; font-size: 14px; margin-top: 5px;">السعر: 450 جنيه</div>
+            </div>
+            <span style="background: #e2f0d9; color: #385723; padding: 5px 10px; border-radius: 4px; font-size: 14px;">متوفر</span>
+        </div>
+
+        <!-- زر إرسال طلب الشراء المباشر للسيستم الرئيسي -->
+        <button class="order-btn" onclick="submitPurchaseOrder()">إرسال طلب الشراء 🛒</button>
+    </div>
+
+    <script>
+        // إعدادات اتصال الفايربيس (تأكد إنها متطابقة مع إعدادات مشروعك الأساسي)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDummyKeyForFarafero",
+            authDomain: "farafero-shop.firebaseapp.com",
+            projectId: "farafero-shop",
+            storageBucket: "farafero-shop.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123:web:abc"
+        };
+
+        // تهيئة الفايربيس لو مش متتهيئة برة
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.firestore();
+
+        // دالة إرسال الطلب كـ "طلب شراء" مش فاتورة
+        function submitPurchaseOrder() {
+            const nameInput = document.getElementById('customerName').value.trim();
+            const phoneInput = document.getElementById('customerPhone').value.trim();
+
+            if (!nameInput || !phoneInput) {
+                alert("من فضلك أدخل الاسم ورقم الهاتف أولاً!");
+                return;
+            }
+
+            // هيكل البيانات اللي هيسمع في السيستم الرئيسي كطلب شراء
+            const orderData = {
+                customerName: nameInput,
+                phone: phoneInput,
+                items: [
+                    { name: "دبدوب أسمر مميز بتصميم حصري", price: 450, quantity: 1 }
+                ],
+                totalAmount: 450,
+                orderDate: new Date().toISOString(),
+                type: 'purchase_order', // التعديل الجذري عشان يظهر كطلب شراء في لوحة التحكم
+                status: 'pending'       // حالة الطلب معلقة للمراجعة
+            };
+
+            // رفع الطلب مباشرة لمجموعة orders في قاعدة البيانات
+            db.collection('orders').add(orderData)
+                .then(() => {
+                    alert("تم إرسال طلب الشراء بنجاح يا باشمهندس، وهيوصل السيستم حالا!");
+                    document.getElementById('customerName').value = '';
+                    document.getElementById('customerPhone').value = '';
+                })
+                .catch((error) => {
+                    console.error("خطأ في إرسال الطلب: ", error);
+                    alert("حدث خطأ أثناء الإرسال، حاول مرة أخرى.");
+                });
+        }
+    </script>
+</body>
+</html>
