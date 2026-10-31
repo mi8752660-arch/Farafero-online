@@ -354,7 +354,7 @@
             grandTotalEl.innerText = subtotal;
         }
 
-        // دالة موحدة لربط الـ PO بالـ ORD تماماً: تفحص أكبر رقم موجود (سواء ORD أو PO) وتزيد عليه 1
+        // دالة موحدة لربط الـ PO بالـ ORD تماماً: تفحص أكبر رقم موجود في النظام وتزيد عليه 1 ببادئة PO-
         async function submitCustomerOrder() {
             if (storeState.cart.length === 0) return alert('برجاء إضافة هدايا للسلة أولاً!');
             
@@ -370,7 +370,6 @@
             let subtotal = storeState.cart.reduce((a, b) => a + (b.price * b.qty), 0);
             
             try {
-                // جلب جميع المستندات الحالية وفحص أرقامها لاستخراج أحدث رقم مسلسل بدقة تامة
                 const querySnapshot = await db.collection("orders").get();
                 let maxNum = 0;
                 querySnapshot.forEach(doc => {
@@ -382,7 +381,6 @@
                 });
 
                 const nextNum = maxNum + 1;
-                // استخدام بادئة PO- ولكن برقم يتبع أحدث رقم مسلسل في النظام تماماً
                 const orderId = 'PO-' + String(nextNum).padStart(4, '0');
                 const dateStr = new Date().toLocaleDateString('en-GB');
 
