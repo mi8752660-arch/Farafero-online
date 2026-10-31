@@ -73,7 +73,7 @@
             <!-- زر سلة الشراء العلوية -->
             <button onclick="toggleCartDrawer(true)" class="bg-amber-50 border border-amber-200 text-[#C5A059] px-4 py-2.5 rounded-2xl font-black text-xs flex items-center space-x-2 space-x-reverse shadow-sm hover:bg-[#C5A059] hover:text-white transition-all">
                 <i class="fa-solid fa-cart-shopping text-sm"></i>
-                <span>سلة الطلبات (<span id="cart-counter">0</span>)</span>
+                <span>سلة طلبات الشراء (<span id="cart-counter">0</span>)</span>
             </button>
         </div>
     </header>
@@ -110,7 +110,7 @@
             <div class="space-y-4">
                 <div class="flex justify-between items-center border-b pb-4">
                     <h3 class="font-black text-base text-slate-900 flex items-center">
-                        <i class="fa-solid fa-cart-shopping text-[#C5A059] ml-2"></i> سلة طلباتك
+                        <i class="fa-solid fa-cart-shopping text-[#C5A059] ml-2"></i> سلة طلبات الشراء
                     </h3>
                     <button onclick="toggleCartDrawer(false)" class="w-8 h-8 rounded-full bg-slate-100 text-slate-700 font-bold flex items-center justify-center hover:bg-rose-50 hover:text-rose-600">✕</button>
                 </div>
@@ -137,7 +137,7 @@
 
                 <button onclick="submitCustomerOrder()" class="w-full bg-[#C5A059] hover:bg-[#b08b49] text-white font-black py-3.5 rounded-2xl shadow-md text-sm transition-all flex items-center justify-center space-x-2 space-x-reverse">
                     <i class="fa-solid fa-check-circle"></i>
-                    <span>إرسال الطلب للمحل الآن</span>
+                    <span>إرسال طلب الشراء للمحل الآن</span>
                 </button>
             </div>
         </div>
@@ -301,7 +301,7 @@
             let subtotal = 0;
 
             if (storeState.cart.length === 0) {
-                list.innerHTML = '<p class="text-center text-slate-400 py-6 text-xs">سلة الطلبات فارغة حالياً</p>';
+                list.innerHTML = '<p class="text-center text-slate-400 py-6 text-xs">سلة طلبات الشراء فارغة حالياً</p>';
             } else {
                 storeState.cart.forEach((item, idx) => {
                     totalPieces += item.qty;
@@ -339,67 +339,60 @@
 
             let subtotal = storeState.cart.reduce((a, b) => a + (b.price * b.qty), 0);
             
-            db.collection("orders").get().then((snapshot) => {
-                const nextSeqNum = snapshot.size + 1;
-                const orderId = 'ORD-' + String(nextSeqNum).padStart(4, '0');
-                const dateStr = new Date().toLocaleDateString('en-GB');
+            // توليد كود يبدأ بـ PO- مع أرقام عشوائية
+            const randomNum = Math.floor(1000 + Math.random() * 9000);
+            const orderId = 'PO-' + randomNum;
+            const dateStr = new Date().toLocaleDateString('en-GB');
 
-                // خصم المخزون سحابياً لكل صنف
-                storeState.cart.forEach(item => {
-                    const prod = storeState.products.find(p => p.id === item.id);
-                    if (prod) {
-                        const newStock = Math.max(0, prod.stock - item.qty);
-                        db.collection("products").doc(prod.id).update({ stock: newStock });
+            // إنشاء الطلب بنوع 'po' ليتم تصنيفه في خانة PO بالسيستم الرئيسي وبدون خصم المخزون
+            const newPurchaseOrder = {
+                id: orderId,
+                date: dateStr,
+                timestamp: Date.now(),
+                total: subtotal,
+                discount: 0,
+                packaging: 0,
+                shipping: 0,
+                customerName: name + ' (طلب شراء أونلاين)',
+                customerPhone: phone + ' - العنوان: ' + address,
+                status: 'pending',        // بانتظار المراجعة
+                type: 'po',               // معرّف صريح لخانه PO في السيستم الرئيسي
+                detailedItems: JSON.parse(JSON.stringify(storeState.cart))
+            };
+
+            db.collection("orders").add(newPurchaseOrder).then(() => {
+                // حفظ العميل في سجل العملاء
+                const customerDocId = 'cust_' + phone.replace(/\s+/g, '_');
+                const customerRef = db.collection("customers").doc(customerDocId);
+                
+                customerRef.get().then((docSnap) => {
+                    if (docSnap.exists) {
+                        customerRef.update({
+                            name: name,
+                            ordersCount: (docSnap.data().ordersCount || 1) + 1,
+                            lastDate: dateStr
+                        });
+                    } else {
+                        customerRef.set({
+                            name: name,
+                            phone: phone + ' (' + address + ')',
+                            ordersCount: 1,
+                            lastDate: dateStr,
+                            timestamp: Date.now()
+                        });
                     }
                 });
 
-                const newOrder = {
-                    id: orderId,
-                    date: dateStr,
-                    timestamp: Date.now(),
-                    total: subtotal,
-                    discount: 0,
-                    packaging: 0,
-                    shipping: 0,
-                    customerName: name + ' (من المتجر الرقمي)',
-                    customerPhone: phone + ' - العنوان: ' + address,
-                    status: 'active',
-                    detailedItems: JSON.parse(JSON.stringify(storeState.cart))
-                };
-
-                db.collection("orders").add(newOrder).then(() => {
-                    // حفظ العميل في سجل العملاء الدائم
-                    const customerDocId = 'cust_' + phone.replace(/\s+/g, '_');
-                    const customerRef = db.collection("customers").doc(customerDocId);
-                    
-                    customerRef.get().then((docSnap) => {
-                        if (docSnap.exists) {
-                            customerRef.update({
-                                name: name,
-                                ordersCount: (docSnap.data().ordersCount || 1) + 1,
-                                lastDate: dateStr
-                            });
-                        } else {
-                            customerRef.set({
-                                name: name,
-                                phone: phone + ' (' + address + ')',
-                                ordersCount: 1,
-                                lastDate: dateStr,
-                                timestamp: Date.now()
-                            });
-                        }
-                    });
-
-                    alert('تم إرسال طلبك بنجاح! سيتم التواصل معك قريباً لتأكيد التوصيل.');
-                    storeState.cart = [];
-                    renderCart();
-                    toggleCartDrawer(false);
-                    document.getElementById('order-cust-name').value = '';
-                    document.getElementById('order-cust-phone').value = '';
-                    document.getElementById('order-cust-address').value = '';
-                }).catch(err => {
-                    alert('حدث خطأ أثناء إرسال الطلب، برجاء المحاولة مرة أخرى.');
-                });
+                alert('تم إرسال طلب الشراء (PO) بنجاح! سيتم مراجعته والتواصل معك قريباً.');
+                storeState.cart = [];
+                renderCart();
+                toggleCartDrawer(false);
+                document.getElementById('order-cust-name').value = '';
+                document.getElementById('order-cust-phone').value = '';
+                document.getElementById('order-cust-address').value = '';
+            }).catch(err => {
+                console.error(err);
+                alert('حدث خطأ أثناء إرسال الطلب، برجاء المحاولة مرة أخرى.');
             });
         }
 
