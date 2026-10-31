@@ -76,7 +76,6 @@
 
         .add-btn:disabled { background: #cbd5e1; cursor: not-allowed; }
 
-        /* Checkout Modal / Form */
         .cart-section {
             max-width: 800px;
             margin: 0 auto;
@@ -114,15 +113,15 @@
 
     <div class="header">
         <h1>🎁 متجر فرفيرو للهدايا</h1>
-        <p>اختر منتجاتك المفضل وسجل طلب الشراء مباشرة</p>
+        <p>اختر منتجاتك المفضلة وسجل طلب الشراء مباشرة</p>
     </div>
 
-    <!-- شبكة عرض المنتجات من المخزن -->
+    <!-- شبكة عرض المنتجات -->
     <div class="products-grid" id="productsContainer">
-        <p style="text-align:center; grid-column: 1/-1;">جاري تحميل المنتجات من المخزن...</p>
+        <p style="text-align:center; grid-column: 1/-1;">جاري جلب الهدايا والمخزون من السيستم...</p>
     </div>
 
-    <!-- سلة الطلب وبيانات العميل -->
+    <!-- سلة الطلب -->
     <div class="cart-section">
         <h3>تفاصيل طلب الشراء</h3>
         <div id="cartItemsList" style="margin-bottom: 15px; color: #64748b; font-size: 14px;">السلة فارغة حالياً</div>
@@ -140,14 +139,14 @@
         </div>
         <div class="form-group">
             <label>عنوان التوصيل أو ملاحظات:</label>
-            <textarea id="custAddress" rows="2" placeholder="العنوان أو أي ملاحظات للطلب"></textarea>
+            <textarea id="custAddress" rows="2" placeholder="العنوان بالتفصيل"></textarea>
         </div>
 
         <button class="submit-btn" onclick="sendPurchaseOrder()">إرسال طلب الشراء 🛒</button>
     </div>
 
     <script>
-        // 1. إعدادات Firebase الخاصة ببيانات المحل الرئيسي
+        // إعدادات الاتصال بقاعدة بيانات الفايربيس (تأكد من مطابقتها لمشروعك الرئيسي)
         const firebaseConfig = {
             apiKey: "AIzaSyDummyKeyForFarafero",
             authDomain: "farafero-gift-shop.firebaseapp.com",
@@ -163,37 +162,46 @@
         let cart = [];
         let productsData = [];
 
-        // 2. جلب المنتجات والمخزون مباشرة الحية من السيستم الرئيسي
+        // جلب المنتجات بالأسماء الصحيحة المطابقة لسيستم المخزن عندك
         db.collection('products').onSnapshot(snapshot => {
             const container = document.getElementById('productsContainer');
             container.innerHTML = '';
             productsData = [];
 
+            if (snapshot.empty) {
+                container.innerHTML = '<p style="text-align:center; grid-column: 1/-1; color:#64748b;">لا توجد منتجات مضافة حالياً في المخزن.</p>';
+                return;
+            }
+
             snapshot.forEach(doc => {
-                const item = { id: doc.id, ...doc.data() };
+                const data = doc.data();
+                const item = {
+                    id: doc.id,
+                    name: data.الهدية || data.name || 'هدية مميزة',
+                    price: Number(data.البيع || data.price || 0),
+                    stock: Number(data.المخزون || data.stock || 0)
+                };
                 productsData.push(item);
 
                 const card = document.createElement('div');
                 card.className = 'product-card';
-                const stock = item.stock || 0;
 
                 card.innerHTML = `
                     <div>
-                        <div class="product-title">${item.name || 'منتج'}</div>
-                        <div class="product-price">${item.price || 0} ج.م</div>
-                        <div class="product-stock ${stock <= 0 ? 'out-of-stock' : ''}">
-                            ${stock > 0 ? `المتاح بالمخزن: ${stock}` : 'غير متوفر حالياً'}
+                        <div class="product-title">${item.name}</div>
+                        <div class="product-price">${item.price} ج.م</div>
+                        <div class="product-stock ${item.stock <= 0 ? 'out-of-stock' : ''}">
+                            ${item.stock > 0 ? `المتاح: ${item.stock} قطعة` : 'نفذت الكمية'}
                         </div>
                     </div>
-                    <button class="add-btn" ${stock <= 0 ? 'disabled' : ''} onclick="addToCart('${item.id}')">
-                        ${stock > 0 ? '+ إضافة للطلب' : 'نفذت الكمية'}
+                    <button class="add-btn" ${item.stock <= 0 ? 'disabled' : ''} onclick="addToCart('${item.id}')">
+                        ${item.stock > 0 ? '+ إضافة للطلب' : 'غير متوفر'}
                     </button>
                 `;
                 container.appendChild(card);
             });
         });
 
-        // 3. إدارة السلة
         function addToCart(productId) {
             const prod = productsData.find(p => p.id === productId);
             if (!prod) return;
@@ -203,7 +211,7 @@
                 if (existing.qty < prod.stock) {
                     existing.qty++;
                 } else {
-                    alert('وصلت للحد الأقصى المتاح في المخزن!');
+                    alert('وصلت للحد الأقصى المتاح من هذه القطعة في المخزن!');
                 }
             } else {
                 cart.push({ id: prod.id, name: prod.name, price: prod.price, qty: 1 });
@@ -232,7 +240,7 @@
             totalEl.innerText = total;
         }
 
-        // 4. إرسال الطلب ليظهر في السيستم الرئيسي كـ "طلب شراء" (Purchase Order)
+        // إرسال الأوردر ليظهر في السيستم الرئيسي كـ "طلب شراء" (Purchase Order)
         function sendPurchaseOrder() {
             const name = document.getElementById('custName').value.trim();
             const phone = document.getElementById('custPhone').value.trim();
@@ -250,15 +258,13 @@
                 items: cart,
                 totalAmount: orderTotal,
                 createdAt: new Date().toISOString(),
-                // النقطة الأهم: حفظ المستند كطلب شراء بانتظار الموافقة
-                type: 'purchase_order',
-                status: 'pending' 
+                type: 'purchase_order', // تظهر عندك كطلب شراء في النظام الرئيسي
+                status: 'pending'       // حالة معلقة بانتظار المراجعة
             };
 
-            // الرفع على مجموعة purchase_orders للويبسايت الرئيسي
             db.collection('purchase_orders').add(orderPayload)
                 .then(() => {
-                    alert('تم إرسال طلب الشراء بنجاح! سيتم التواصل معك لتأكيد الطلب.');
+                    alert('تم إرسال طلب الشراء بنجاح! سيظهر في لوحة التحكم لديك كطلب جديد.');
                     cart = [];
                     updateCartUI();
                     document.getElementById('custName').value = '';
