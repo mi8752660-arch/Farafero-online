@@ -142,7 +142,7 @@
             </div>
         </section>
 
-        <!-- 2. عرض كل كاتيجري لوحده بالموديلات اللي فيها بشكل واسع ورايق -->
+        <!-- 2. عرض كل كاتيجري لوحده بالموديلات -->
         <section class="space-y-8">
             <div class="flex justify-between items-center border-b pb-3">
                 <h3 class="text-xl font-black text-slate-900 flex items-center">
@@ -182,8 +182,8 @@
                 </div>
 
                 <div class="bg-slate-50 p-4 rounded-2xl border flex justify-between items-center text-xs">
-                    <span class="font-bold text-slate-600">الكمية المتوفرة بالمخزن:</span>
-                    <span id="modal-prod-stock" class="font-black text-emerald-600 text-sm"></span>
+                    <span class="font-bold text-slate-600">حالة المخزون:</span>
+                    <span class="font-black text-emerald-600 text-sm font-montserrat uppercase tracking-wider">In Stock</span>
                 </div>
             </div>
 
@@ -269,7 +269,7 @@
                                     <p class="font-black text-slate-900 text-sm line-clamp-1">${p.name}</p>
                                     <div class="flex justify-between items-center pt-1">
                                         <span class="font-black text-gold text-base">${Math.round(p.price)} EGP</span>
-                                        <span class="text-[10px] bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-lg font-bold">متاح: ${p.stock}</span>
+                                        <span class="text-[10px] bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-lg font-bold font-montserrat uppercase tracking-wider">In Stock</span>
                                     </div>
                                 </div>
                                 <button onclick="addToOnlineCart('${p.id}')" class="w-full bg-slate-900 hover:bg-gold text-white font-bold py-2.5 rounded-xl text-xs transition-all shadow-sm flex items-center justify-center space-x-1.5 space-x-reverse">
@@ -305,7 +305,6 @@
             document.getElementById('modal-prod-cat').innerText = p.category || 'عامة';
             document.getElementById('modal-prod-name').innerText = p.name;
             document.getElementById('modal-prod-price').innerText = Math.round(p.price) + ' EGP';
-            document.getElementById('modal-prod-stock').innerText = p.stock + ' قطعة متوفرة';
             
             const addBtn = document.getElementById('modal-add-cart-btn');
             addBtn.setAttribute('onclick', `addToOnlineCart('${p.id}'); closeProductDetailModal();`);
@@ -344,9 +343,9 @@
         function updateOnlineShipping() {
             const city = document.getElementById('online-city').value;
             if (city === 'الإسكندرية') {
-                state.shippingFee = 60; //
+                state.shippingFee = 60;
             } else if (city === 'القاهرة') {
-                state.shippingFee = 120; //
+                state.shippingFee = 120;
             } else {
                 state.shippingFee = 0;
             }
@@ -438,7 +437,6 @@
             const orderId = 'PO-' + String(state.allOrdersCount + 1).padStart(4, '0');
             const dateStr = new Date().toLocaleDateString('en-GB');
 
-            // 1. تسجيل العميل أوتوماتيكياً في سجل VIP عند عمل الـ PO أونلاين
             if (customerSnap.exists) {
                 await customerRef.update({
                     name: name,
@@ -456,7 +454,6 @@
                 });
             }
 
-            // 2. حفظ طلب الـ PO في مجموعة الطلبات
             const newPoOrder = {
                 id: orderId,
                 type: 'po',
@@ -464,9 +461,9 @@
                 date: dateStr,
                 timestamp: Date.now(),
                 customerName: name,
-                customerPhone: `${phone} - ${city} - ${address}`, //
+                customerPhone: `${phone} - ${city} - ${address}`,
                 subtotal: subtotal,
-                shipping: state.shippingFee, //
+                shipping: state.shippingFee,
                 discount: 0,
                 packaging: 0,
                 total: total,
