@@ -354,7 +354,7 @@
             grandTotalEl.innerText = subtotal;
         }
 
-        // دالة تعتمد على ترقيم موحد حقيقي يقرأ إجمالي عدد الطلبات الفعلي من الكوليكشن ويطابق لوحة المحل تماماً
+        // دالة تعتمد على ترقيم موحد حقيقي يربط الـ PO بالـ ORD تماماً بناءً على إجمالي عدد المستندات الكلي
         async function submitCustomerOrder() {
             if (storeState.cart.length === 0) return alert('برجاء إضافة هدايا للسلة أولاً!');
             
@@ -370,11 +370,11 @@
             let subtotal = storeState.cart.reduce((a, b) => a + (b.price * b.qty), 0);
             
             try {
-                // جلب عدد المستندات الكلي في الكوليكشن لضمان التوافق التام مع طريقة لوحة المحل (querySnapshot.size + 1)
+                // جلب عدد المستندات الكلي تماماً مثل لوحة المحل ليكون الترتيب موحد ودقيق (ORD و PO في نفس السلسلة)
                 const querySnapshot = await db.collection("orders").get();
                 const nextSeqNum = querySnapshot.size + 1;
                 
-                // استخدام بادئة PO- مع الرقم المسلسل الموحد بالمللي
+                // استخدام بادئة PO- ولكن برقم مسلسل يتبع إجمالي الطلبات تماماً
                 const orderId = 'PO-' + String(nextSeqNum).padStart(4, '0');
                 const dateStr = new Date().toLocaleDateString('en-GB');
 
