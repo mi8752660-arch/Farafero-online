@@ -174,7 +174,8 @@
             products: [],
             categories: [],
             selectedCategory: 'الكل',
-            cart: []
+            cart: [],
+            totalOrdersCount: 0
         };
 
         function initStore() {
@@ -191,6 +192,11 @@
                     storeState.products.push({ id: doc.id, ...doc.data() });
                 });
                 renderStoreProducts();
+            });
+
+            // الاستماع المباشر للطلبات لمعرفة العدد الحقيقي للـ Orders دايماً وتحديث الترقيم المشترك
+            db.collection("orders").onSnapshot((snapshot) => {
+                storeState.totalOrdersCount = snapshot.size;
             });
         }
 
@@ -271,7 +277,6 @@
             else drawer.classList.add('hidden');
         }
 
-        // إضافة المنتج للسلة بدون فتحها أوتوماتيك
         function addToCart(prodId) {
             const p = storeState.products.find(x => x.id === prodId);
             if (!p || p.stock <= 0) return alert('عذراً، هذه الهدية نفذت من المخزون!');
@@ -284,10 +289,8 @@
                 storeState.cart.push({ ...p, qty: 1 });
             }
             renderCart();
-            // تم إزالة تفعيل فتح السلة تلقائياً هنا لتستمر في التصفح براحتك
         }
 
-        // التحكم بالكمية (+) داخل السلة
         function increaseQty(prodId) {
             const p = storeState.products.find(x => x.id === prodId);
             let item = storeState.cart.find(x => x.id === prodId);
@@ -301,7 +304,6 @@
             }
         }
 
-        // التحكم بالكمية (-) داخل السلة
         function decreaseQty(prodId) {
             let item = storeState.cart.find(x => x.id === prodId);
             if (item) {
@@ -342,7 +344,6 @@
                                 <p class="text-[#C5A059] font-black">${item.price * item.qty} EGP</p>
                             </div>
                             <div class="flex items-center space-x-2 space-x-reverse">
-                                <!-- أزرار التحكم بالكمية + و - -->
                                 <div class="flex items-center bg-white border rounded-xl overflow-hidden shadow-sm">
                                     <button onclick="decreaseQty('${item.id}')" class="w-7 h-7 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold flex items-center justify-center">-</button>
                                     <span class="w-8 text-center font-bold text-xs">${item.qty}</span>
@@ -359,26 +360,6 @@
             grandTotalEl.innerText = subtotal;
         }
 
-        // توليد رقم PO متسلسل تلقائياً وثابت من PO-0001 إلى مالا نهاية
-        async function getNextPoId() {
-            const counterRef = db.collection("settings").doc("po_counter");
-            try {
-                return await db.runTransaction(async (transaction) => {
-                    const counterDoc = await transaction.get(counterRef);
-                    let nextSeq = 1;
-                    if (counterDoc.exists) {
-                        nextSeq = (counterDoc.data().lastSeq || 0) + 1;
-                    }
-                    transaction.set(counterRef, { lastSeq: nextSeq }, { merge: true });
-                    return 'PO-' + String(nextSeq).padStart(4, '0');
-                });
-            } catch (error) {
-                console.error("Error generating PO sequence: ", error);
-                const fallbackNum = Math.floor(1000 + Math.random() * 9000);
-                return 'PO-' + fallbackNum;
-            }
-        }
-
         async function submitCustomerOrder() {
             if (storeState.cart.length === 0) return alert('برجاء إضافة هدايا للسلة أولاً!');
             
@@ -393,7 +374,9 @@
 
             let subtotal = storeState.cart.reduce((a, b) => a + (b.price * b.qty), 0);
             
-            const orderId = await getNextPoId();
+            // استخدام الترقيم الموحد بناءً على العدد الفعلي للطلبات تماماً مثل النظام الرئيسي
+            const nextSeqNum = storeState.totalOrdersCount + 1;
+            const orderId = 'PO-' + String(nextSeqNum).padStart(4, '0');
             const dateStr = new Date().toLocaleDateString('en-GB');
 
             const newPurchaseOrder = {
