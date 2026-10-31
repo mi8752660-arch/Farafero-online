@@ -354,7 +354,7 @@
             grandTotalEl.innerText = subtotal;
         }
 
-        // دالة تعتمد على ترقيم موحد حقيقي يربط الـ PO بالـ ORD تماماً بناءً على إجمالي عدد المستندات الكلي
+        // دالة موحدة لربط الـ PO بالـ ORD تماماً: تفحص أكبر رقم موجود (سواء ORD أو PO) وتزيد عليه 1
         async function submitCustomerOrder() {
             if (storeState.cart.length === 0) return alert('برجاء إضافة هدايا للسلة أولاً!');
             
@@ -370,12 +370,20 @@
             let subtotal = storeState.cart.reduce((a, b) => a + (b.price * b.qty), 0);
             
             try {
-                // جلب عدد المستندات الكلي تماماً مثل لوحة المحل ليكون الترتيب موحد ودقيق (ORD و PO في نفس السلسلة)
+                // جلب جميع المستندات الحالية وفحص أرقامها لاستخراج أحدث رقم مسلسل بدقة تامة
                 const querySnapshot = await db.collection("orders").get();
-                const nextSeqNum = querySnapshot.size + 1;
-                
-                // استخدام بادئة PO- ولكن برقم مسلسل يتبع إجمالي الطلبات تماماً
-                const orderId = 'PO-' + String(nextSeqNum).padStart(4, '0');
+                let maxNum = 0;
+                querySnapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.id) {
+                        const numericPart = parseInt(data.id.replace(/[^0-9]/g, '')) || 0;
+                        if (numericPart > maxNum) maxNum = numericPart;
+                    }
+                });
+
+                const nextNum = maxNum + 1;
+                // استخدام بادئة PO- ولكن برقم يتبع أحدث رقم مسلسل في النظام تماماً
+                const orderId = 'PO-' + String(nextNum).padStart(4, '0');
                 const dateStr = new Date().toLocaleDateString('en-GB');
 
                 const newPurchaseOrder = {
