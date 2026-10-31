@@ -96,7 +96,7 @@
                 <button onclick="toggleCartModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-700 font-bold flex items-center justify-center">✕</button>
             </div>
 
-            <!-- بيانات العميل والتوصيل (تم إضافة المحافظة ورقم التليفون بدقة) -->
+            <!-- بيانات العميل والتوصيل -->
             <div class="space-y-3 bg-slate-50 p-3.5 rounded-2xl border">
                 <h4 class="text-xs font-black text-slate-800">بيانات التوصيل والشحن:</h4>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -180,7 +180,7 @@
         }
         const db = firebase.firestore();
 
-        let state = { products: [], customerCart: [] };
+        let state = { products: [], orders: [], customerCart: [] };
 
         function initStore() {
             db.collection("products").onSnapshot((snapshot) => {
@@ -190,6 +190,24 @@
                 });
                 renderStoreProducts();
             });
+
+            db.collection("orders").onSnapshot((snapshot) => {
+                state.orders = [];
+                snapshot.forEach((doc) => {
+                    state.orders.push({ firebaseId: doc.id, ...doc.data() });
+                });
+            });
+        }
+
+        function getNextUnifiedPoId() {
+            let maxNum = 0;
+            state.orders.forEach(o => {
+                if (o.id) {
+                    const num = parseInt(o.id.replace(/[^0-9]/g, '')) || 0;
+                    if (num > maxNum) maxNum = num;
+                }
+            });
+            return 'PO-' + String(maxNum + 1).padStart(4, '0');
         }
 
         function renderStoreProducts() {
@@ -318,7 +336,7 @@
             let shipping = getShippingCost();
             let total = subtotal + shipping;
 
-            const poId = 'PO-' + Math.floor(1000 + Math.random() * 9000);
+            const poId = getNextUnifiedPoId();
             const dateStr = new Date().toLocaleDateString('en-GB');
 
             db.collection("orders").add({
@@ -333,7 +351,7 @@
                 status: 'pending',
                 detailedItems: JSON.parse(JSON.stringify(state.customerCart))
             }).then(() => {
-                alert('🎉 تم إرسال طلبك بنجاح للمحل وسيتم مراجعته وتأكيده فوراً!');
+                alert('🎉 تم إرسال طلبك برقم ' + poId + ' بنجاح للمحل وسيتم مراجعته وتأكيده فوراً!');
                 state.customerCart = [];
                 updateCartBadge();
                 toggleCartModal();
