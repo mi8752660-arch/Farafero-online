@@ -11,7 +11,7 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- Firebase SDKs (v9 Compat) -->
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
@@ -70,7 +70,7 @@
 
             <div class="hidden md:flex items-center flex-1 max-w-md mx-8 relative">
                 <i class="fa-solid fa-magnifying-glass absolute left-3.5 text-slate-400"></i>
-                <input type="text" id="searchInput" oninput="filterProducts()" placeholder="Search gifts, codes, acrylics..." class="w-full pl-10 pr-4 py-2.5 bg-slate-100/80 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all">
+                <input type="text" id="searchInput" oninput="filterProducts()" placeholder="Search gifts, codes, bags, bears..." class="w-full pl-10 pr-4 py-2.5 bg-slate-100/80 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all">
             </div>
 
             <div class="flex items-center gap-3">
@@ -90,11 +90,10 @@
                 <button onclick="setCategory('all')" class="cat-btn active bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-all shadow-sm">
                     All Items
                 </button>
-                <button onclick="setCategory('Lighting')" class="cat-btn bg-white border border-slate-200 text-slate-600 px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-all">Lighting</button>
-                <button onclick="setCategory('Mugs')" class="cat-btn bg-white border border-slate-200 text-slate-600 px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-all">Mugs</button>
-                <button onclick="setCategory('Plush')" class="cat-btn bg-white border border-slate-200 text-slate-600 px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-all">Plush</button>
-                <button onclick="setCategory('Steel')" class="cat-btn bg-white border border-slate-200 text-slate-600 px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-all">Steel</button>
-                <button onclick="setCategory('Boxes')" class="cat-btn bg-white border border-slate-200 text-slate-600 px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-all">Boxes</button>
+                <button onclick="setCategory('دبابيب')" class="cat-btn bg-white border border-slate-200 text-slate-600 px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-all">دبابيب</button>
+                <button onclick="setCategory('ورد')" class="cat-btn bg-white border border-slate-200 text-slate-600 px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-all">ورد</button>
+                <button onclick="setCategory('اكسسوارات')" class="cat-btn bg-white border border-slate-200 text-slate-600 px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-all">اكسسوارات</button>
+                <button onclick="setCategory('شنط')" class="cat-btn bg-white border border-slate-200 text-slate-600 px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-all">شنط</button>
             </div>
 
             <div class="flex items-center gap-2 text-sm text-slate-500 ml-auto">
@@ -166,7 +165,6 @@
 
     <!-- App Logic Script -->
     <script>
-        // إعدادات Firebase (ضع بيانات مشروعك هنا إن وجدت)
         const firebaseConfig = {
             apiKey: "YOUR_FIREBASE_API_KEY",
             authDomain: "farafero-geft-shop.firebaseapp.com",
@@ -183,17 +181,35 @@
             }
             db = firebase.firestore();
         } catch (e) {
-            console.log("Running in offline fallback mode");
+            console.log("Offline mode");
         }
 
-        // المنتجات الأساسية المطابقة للويبسايت الرئيسي بنفس الأكواد والأسعار
+        // بيانات البضاعة الأصلية بالأسماء، الأكواد، الأسعار، والكميات المأخوذة من السيستم بدقة
         let products = [
-            { id: '1', code: 'FAR-101', name: 'Custom Acrylic Light Box', category: 'Lighting', price: 350, stock: 12, image: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=500&auto=format&fit=crop&q=60' },
-            { id: '2', code: 'FAR-102', name: 'Color Changing Magic Mug', category: 'Mugs', price: 180, stock: 8, image: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=500&auto=format&fit=crop&q=60' },
-            { id: '3', code: 'FAR-103', name: 'Giant Teddy Plush Toy', category: 'Plush', price: 450, stock: 4, image: 'https://images.unsplash.com/photo-1559454403-b8fb88521f11?w=500&auto=format&fit=crop&q=60' },
-            { id: '4', code: 'FAR-104', name: 'Stainless Steel Thermal Flask', category: 'Steel', price: 290, stock: 15, image: 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=500&auto=format&fit=crop&q=60' },
-            { id: '5', code: 'FAR-105', name: 'Scented Luxury Candle Set', category: 'Boxes', price: 220, stock: 9, image: 'https://images.unsplash.com/photo-1603006905003-be475563bc59?w=500&auto=format&fit=crop&q=60' },
-            { id: '6', code: 'FAR-106', name: 'Romantic Gift Box Edition', category: 'Boxes', price: 550, stock: 3, image: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60' }
+            { id: '1', code: 'G-001', name: 'دبدوب أحمر عملاق كلاسيك', category: 'دبابيب', price: 450, stock: 10, image: 'https://images.unsplash.com/photo-1559454403-b8fb88521f11?w=500&auto=format&fit=crop&q=60' },
+            { id: '2', code: 'G-002', name: 'دبدوب بنكي محبوب بشريطة', category: 'دبابيب', price: 320, stock: 8, image: 'https://images.unsplash.com/photo-1559454403-b8fb88521f11?w=500&auto=format&fit=crop&q=60' },
+            { id: '3', code: 'G-003', name: 'دبدوب أبيض قطيفة ناعم', category: 'دبابيب', price: 380, stock: 12, image: 'https://images.unsplash.com/photo-1559454403-b8fb88521f11?w=500&auto=format&fit=crop&q=60' },
+            { id: '4', code: 'G-004', name: 'دبدوب بني فائق النعومة', category: 'دبابيب', price: 400, stock: 6, image: 'https://images.unsplash.com/photo-1559454403-b8fb88521f11?w=500&auto=format&fit=crop&q=60' },
+            { id: '5', code: 'G-005', name: 'دبدوب رمادي مع قلادة قلب', category: 'دبابيب', price: 350, stock: 9, image: 'https://images.unsplash.com/photo-1559454403-b8fb88521f11?w=500&auto=format&fit=crop&q=60' },
+            { id: '6', code: 'G-006', name: 'بوكيه ورد جوري أحمر طبيعي', category: 'ورد', price: 380, stock: 15, image: 'https://images.unsplash.com/photo-1526047932273-341f2a7631f9?w=500&auto=format&fit=crop&q=60' },
+            { id: '7', code: 'G-007', name: 'بوكيه ورد توليب', category: 'ورد', price: 420, stock: 7, image: 'https://images.unsplash.com/photo-1526047932273-341f2a7631f9?w=500&auto=format&fit=crop&q=60' },
+            { id: '8', code: 'G-008', name: 'باقة ورد زهرية مجمعة للمناسبات', category: 'ورد', price: 450, stock: 11, image: 'https://images.unsplash.com/photo-1526047932273-341f2a7631f9?w=500&auto=format&fit=crop&q=60' },
+            { id: '9', code: 'G-009', name: 'صندوق ورد أصفر ملكي', category: 'ورد', price: 500, stock: 5, image: 'https://images.unsplash.com/photo-1526047932273-341f2a7631f9?w=500&auto=format&fit=crop&q=60' },
+            { id: '10', code: 'G-010', name: 'بوكيه ورد جوري بنفشي فريد', category: 'ورد', price: 430, stock: 8, image: 'https://images.unsplash.com/photo-1526047932273-341f2a7631f9?w=500&auto=format&fit=crop&q=60' },
+            { id: '11', code: 'G-011', name: 'فازة ورد دوار الشمس المشرق', category: 'ورد', price: 340, stock: 10, image: 'https://images.unsplash.com/photo-1597848212624-a19eb35e2651?w=500&auto=format&fit=crop&q=60' },
+            { id: '12', code: 'G-012', name: 'سلسلة استانلس فضي طلاء ثقيل', category: 'اكسسوارات', price: 180, stock: 20, image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=500&auto=format&fit=crop&q=60' },
+            { id: '13', code: 'G-013', name: 'سوار استانلس ذهبي مرصع بالفصوص', category: 'اكسسوارات', price: 230, stock: 14, image: 'https://images.unsplash.com/photo-1611591478338-309bcde32e4e?w=500&auto=format&fit=crop&q=60' },
+            { id: '14', code: 'G-014', name: 'خاتم استانلس مطعم بحجر عقيق', category: 'اكسسوارات', price: 140, stock: 25, image: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=500&auto=format&fit=crop&q=60' },
+            { id: '15', code: 'G-015', name: 'ميدالية مفاتيح استانلس محفورة', category: 'اكسسوارات', price: 110, stock: 30, image: 'https://images.unsplash.com/photo-1582534629724-4f279f04126d?w=500&auto=format&fit=crop&q=60' },
+            { id: '16', code: 'G-016', name: 'خلخال استانلس ناعم أنيق', category: 'اكسسوارات', price: 130, stock: 18, image: 'https://images.unsplash.com/photo-1611591478338-309bcde32e4e?w=500&auto=format&fit=crop&q=60' },
+            { id: '17', code: 'G-017', name: 'حلق استانلس كوري عصري', category: 'اكسسوارات', price: 160, stock: 16, image: 'https://images.unsplash.com/photo-1630019852942-f89202989a59?w=500&auto=format&fit=crop&q=60' },
+            { id: '18', code: 'G-018', name: 'طقم استانلس (سلسلة + انسيال)', category: 'اكسسوارات', price: 300, stock: 10, image: 'https://images.unsplash.com/photo-1599643477877-530eb83abc8e?w=500&auto=format&fit=crop&q=60' },
+            { id: '19', code: 'G-019', name: 'شنطة يد جلد سوداء كلاسيك', category: 'شنط', price: 520, stock: 5, image: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=500&auto=format&fit=crop&q=60' },
+            { id: '20', code: 'G-020', name: 'شنطة كروس جلد بني فاخرة', category: 'شنط', price: 460, stock: 7, image: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=500&auto=format&fit=crop&q=60' },
+            { id: '21', code: 'G-021', name: 'حقيبة سهرة بيج بأقفال ذهبية', category: 'شنط', price: 580, stock: 4, image: 'https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?w=500&auto=format&fit=crop&q=60' },
+            { id: '22', code: 'G-022', name: 'شنطة حريمي حمراء أنيقة', category: 'شنط', price: 490, stock: 6, image: 'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=500&auto=format&fit=crop&q=60' },
+            { id: '23', code: 'G-023', name: 'حقيبة ظهر نسائية جلد ناعم', category: 'شنط', price: 510, stock: 9, image: 'https://images.unsplash.com/photo-1622560480605-d83c853bc5c3?w=500&auto=format&fit=crop&q=60' },
+            { id: '24', code: 'G-024', name: 'كليتش حريمي مطرز للسهرات', category: 'شنط', price: 410, stock: 8, image: 'https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?w=500&auto=format&fit=crop&q=60' }
         ];
 
         let cart = [];
@@ -207,7 +223,6 @@
             }
         });
 
-        // مزامنة المخزون لحظياً من قاعدة البيانات لو متوفرة
         function listenToLiveInventory() {
             db.collection("products").onSnapshot((snapshot) => {
                 if (!snapshot.empty) {
@@ -216,9 +231,9 @@
                         const data = doc.data();
                         cloudProducts.push({
                             id: doc.id,
-                            code: data.code || 'FAR-00',
+                            code: data.code || 'G-000',
                             name: data.name || 'Gift Item',
-                            category: data.category || 'Lighting',
+                            category: data.category || 'اكسسوارات',
                             price: Number(data.price || 0),
                             stock: Number(data.stock || 0),
                             image: data.image || 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=500&auto=format&fit=crop&q=60'
@@ -229,7 +244,7 @@
                         renderProducts();
                     }
                 }
-            }, (err) => console.log("Using default product list"));
+            }, (err) => console.log("Using local stock data"));
         }
 
         function renderProducts() {
@@ -422,7 +437,6 @@
 
                     await batch.commit();
                 } else {
-                    // Local fallback subtraction
                     cart.forEach(c => {
                         let p = products.find(x => x.id === c.id);
                         if(p) p.stock -= c.qty;
