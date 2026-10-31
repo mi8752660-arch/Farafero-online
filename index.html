@@ -5,99 +5,226 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>فرفيرو - متجر الهدايا أونلاين</title>
     
-    <!-- Firebase SDK -->
+    <!-- Firebase SDK (المستعمل في مشروعك الرئيسي) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
     <style>
         :root {
             --primary: #d97706;
+            --primary-hover: #b45309;
             --bg: #f8fafc;
             --card-bg: #ffffff;
-            --text: #1e293b;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --success: #16a34a;
+            --danger: #dc2626;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
         body {
-            font-family: system-ui, -apple-system, sans-serif;
             background-color: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 15px;
+            color: var(--text-main);
             direction: rtl;
+            padding-bottom: 60px;
         }
 
-        .header {
-            text-align: center;
-            padding: 20px 0;
+        /* الهيدر والعنوان */
+        .app-header {
             background: var(--card-bg);
-            border-radius: 16px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
+            text-align: center;
+            padding: 24px 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 24px;
         }
 
-        .header h1 { margin: 0; color: var(--primary); font-size: 24px; }
-        .header p { margin: 5px 0 0; color: #64748b; font-size: 14px; }
+        .app-header h1 {
+            font-size: 22px;
+            color: var(--primary);
+            margin-bottom: 6px;
+        }
+
+        .app-header p {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 16px;
+        }
+
+        /* شبكة المنتجات */
+        .section-title {
+            font-size: 18px;
+            margin-bottom: 16px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
 
         .products-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: 15px;
-            max-width: 800px;
-            margin: 0 auto 30px;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 36px;
         }
 
         .product-card {
             background: var(--card-bg);
+            border: 1px solid var(--border);
             border-radius: 12px;
-            padding: 12px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+            padding: 16px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            transition: transform 0.2s, box-shadow 0.2s;
         }
 
-        .product-title { font-weight: bold; font-size: 15px; margin-bottom: 6px; }
-        .product-price { color: var(--primary); font-weight: bold; font-size: 16px; }
-        .product-stock { font-size: 12px; color: #16a34a; margin-top: 4px; }
-        .out-of-stock { color: #dc2626; }
+        .product-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
 
-        .add-btn {
+        .product-category {
+            font-size: 11px;
+            background: #f1f5f9;
+            color: var(--text-muted);
+            padding: 2px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 8px;
+            width: fit-content;
+        }
+
+        .product-name {
+            font-size: 15px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .product-price {
+            font-size: 17px;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+
+        .product-stock {
+            font-size: 12px;
+            color: var(--success);
+            margin-bottom: 14px;
+        }
+
+        .product-stock.out-of-stock {
+            color: var(--danger);
+        }
+
+        .add-to-cart-btn {
             background: var(--primary);
             color: white;
             border: none;
-            padding: 8px;
+            padding: 10px;
             border-radius: 8px;
             font-weight: bold;
+            font-size: 14px;
             cursor: pointer;
-            margin-top: 10px;
             width: 100%;
+            transition: background 0.2s;
         }
 
-        .add-btn:disabled { background: #cbd5e1; cursor: not-allowed; }
+        .add-to-cart-btn:hover {
+            background: var(--primary-hover);
+        }
 
-        .cart-section {
-            max-width: 800px;
-            margin: 0 auto;
+        .add-to-cart-btn:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+        }
+
+        /* سلة الطلبات واستمارة العميل */
+        .checkout-card {
             background: var(--card-bg);
-            padding: 20px;
+            border: 1px solid var(--border);
             border-radius: 16px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
         }
 
-        .form-group { margin-bottom: 12px; }
-        .form-group label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 4px; }
+        .cart-items {
+            border-bottom: 1px dashed var(--border);
+            padding-bottom: 16px;
+            margin-bottom: 16px;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .cart-item-name {
+            font-weight: 500;
+        }
+
+        .cart-item-price {
+            font-weight: bold;
+            color: var(--text-main);
+        }
+
+        .cart-total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 24px;
+        }
+
+        .cart-total span:last-child {
+            color: var(--primary);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
         .form-group input, .form-group textarea {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #cbd5e1;
+            padding: 12px;
+            border: 1px solid var(--border);
             border-radius: 8px;
-            box-sizing: border-box;
-            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
         }
 
-        .submit-btn {
-            background: #16a34a;
+        .form-group input:focus, .form-group textarea:focus {
+            border-color: var(--primary);
+        }
+
+        .submit-order-btn {
+            background: var(--success);
             color: white;
             border: none;
             padding: 14px;
@@ -106,47 +233,72 @@
             font-weight: bold;
             width: 100%;
             cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .submit-order-btn:hover {
+            background: #15803d;
+        }
+
+        .loading-text {
+            text-align: center;
+            grid-column: 1 / -1;
+            padding: 40px;
+            color: var(--text-muted);
         }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>🎁 متجر فرفيرو للهدايا</h1>
-        <p>اختر منتجاتك المفضلة وسجل طلب الشراء مباشرة</p>
-    </div>
+    <header class="app-header">
+        <h1>🎁 متجر فرفيرو أونلاين</h1>
+        <p>تصفح الهدايا المتاحة واطلب مباشر ليصلك طلب الشراء فوراً</p>
+    </header>
 
-    <!-- شبكة عرض المنتجات -->
-    <div class="products-grid" id="productsContainer">
-        <p style="text-align:center; grid-column: 1/-1;">جاري جلب الهدايا والمخزون من السيستم...</p>
-    </div>
+    <main class="container">
+        <!-- قسم تصفح الهدايا والمخزون -->
+        <section class="section-title">
+            <span>الهدايا المتاحة في المحل</span>
+        </section>
 
-    <!-- سلة الطلب -->
-    <div class="cart-section">
-        <h3>تفاصيل طلب الشراء</h3>
-        <div id="cartItemsList" style="margin-bottom: 15px; color: #64748b; font-size: 14px;">السلة فارغة حالياً</div>
-        <div style="font-size: 18px; font-weight: bold; margin-bottom: 15px;">
-            الإجمالي: <span id="cartTotal" style="color: var(--primary);">0</span> ج.م
+        <div class="products-grid" id="productsGrid">
+            <div class="loading-text">جاري تحميل البضاعة والمخزون المتاح...</div>
         </div>
 
-        <div class="form-group">
-            <label>اسمك الكريم:</label>
-            <input type="text" id="custName" placeholder="أدخل اسمك الثلاثي">
-        </div>
-        <div class="form-group">
-            <label>رقم الموبايل:</label>
-            <input type="tel" id="custPhone" placeholder="01xxxxxxxxx">
-        </div>
-        <div class="form-group">
-            <label>عنوان التوصيل أو ملاحظات:</label>
-            <textarea id="custAddress" rows="2" placeholder="العنوان بالتفصيل"></textarea>
-        </div>
+        <!-- قسم سلة الشراء وبيانات التسليم -->
+        <section class="checkout-card">
+            <h2 style="font-size: 18px; margin-bottom: 16px;">تفاصيل طلب الشراء</h2>
+            
+            <div class="cart-items" id="cartItems">
+                <p style="color: var(--text-muted); font-size: 14px;">السلة فارغة حالياً، أضف هداياك المفضلة بالأعلى.</p>
+            </div>
 
-        <button class="submit-btn" onclick="sendPurchaseOrder()">إرسال طلب الشراء 🛒</button>
-    </div>
+            <div class="cart-total">
+                <span>الإجمالي:</span>
+                <span id="cartTotal">0 ج.م</span>
+            </div>
+
+            <div class="form-group">
+                <label for="clientName">الاسم بالكامل:</label>
+                <input type="text" id="clientName" placeholder="أدخل اسمك الكريم">
+            </div>
+
+            <div class="form-group">
+                <label for="clientPhone">رقم الموبايل للتواصل:</label>
+                <input type="tel" id="clientPhone" placeholder="01xxxxxxxxx">
+            </div>
+
+            <div class="form-group">
+                <label for="clientNotes">العنوان أو أي ملاحظات:</label>
+                <textarea id="clientNotes" rows="2" placeholder="أكتب العنوان للتوصيل أو أي ملاحظات أخرى"></textarea>
+            </div>
+
+            <button class="submit-order-btn" onclick="submitOrder()">إرسال طلب الشراء 🛒</button>
+        </section>
+    </main>
 
     <script>
-        // إعدادات الاتصال بقاعدة بيانات الفايربيس (تأكد من مطابقتها لمشروعك الرئيسي)
+        // 1. إعدادات قاعدة البيانات الخاصة بالمشروع الرئيسي
         const firebaseConfig = {
             apiKey: "AIzaSyDummyKeyForFarafero",
             authDomain: "farafero-gift-shop.firebaseapp.com",
@@ -156,124 +308,145 @@
             appId: "1:123:web:abc"
         };
 
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
         const db = firebase.firestore();
 
+        let productsList = [];
         let cart = [];
-        let productsData = [];
 
-        // جلب المنتجات بالأسماء الصحيحة المطابقة لسيستم المخزن عندك
+        // 2. قراءة كل البضاعة والمخزون الحية من النظام الرئيسي بنفس مسميات الجدول الخاصة بـ Farafero Gift Shop
         db.collection('products').onSnapshot(snapshot => {
-            const container = document.getElementById('productsContainer');
-            container.innerHTML = '';
-            productsData = [];
+            const grid = document.getElementById('productsGrid');
+            grid.innerHTML = '';
+            productsList = [];
 
             if (snapshot.empty) {
-                container.innerHTML = '<p style="text-align:center; grid-column: 1/-1; color:#64748b;">لا توجد منتجات مضافة حالياً في المخزن.</p>';
+                grid.innerHTML = '<div class="loading-text">لا توجد بضاعة مضافة حالياً في السيستم.</div>';
                 return;
             }
 
             snapshot.forEach(doc => {
                 const data = doc.data();
+                
+                // مطابقة الحقول المعروضة في جدول المخزون الرئيسي
                 const item = {
                     id: doc.id,
-                    name: data.الهدية || data.name || 'هدية مميزة',
+                    name: data.الهدية || data.name || 'هدية',
+                    category: data.القسم || data.category || 'هدايا',
                     price: Number(data.البيع || data.price || 0),
                     stock: Number(data.المخزون || data.stock || 0)
                 };
-                productsData.push(item);
+                productsList.push(item);
 
                 const card = document.createElement('div');
                 card.className = 'product-card';
 
                 card.innerHTML = `
                     <div>
-                        <div class="product-title">${item.name}</div>
-                        <div class="product-price">${item.price} ج.م</div>
+                        <span class="product-category">${item.category}</span>
+                        <div class="product-name">${item.name}</div>
+                        <div class="product-price">${item.price} EGP</div>
                         <div class="product-stock ${item.stock <= 0 ? 'out-of-stock' : ''}">
                             ${item.stock > 0 ? `المتاح: ${item.stock} قطعة` : 'نفذت الكمية'}
                         </div>
                     </div>
-                    <button class="add-btn" ${item.stock <= 0 ? 'disabled' : ''} onclick="addToCart('${item.id}')">
+                    <button class="add-to-cart-btn" ${item.stock <= 0 ? 'disabled' : ''} onclick="addToCart('${item.id}')">
                         ${item.stock > 0 ? '+ إضافة للطلب' : 'غير متوفر'}
                     </button>
                 `;
-                container.appendChild(card);
+                grid.appendChild(card);
             });
+        }, error => {
+            console.error("Firebase fetch error:", error);
+            document.getElementById('productsGrid').innerHTML = '<div class="loading-text">حدث خطأ في تحميل البيانات من السيستم الرئيسي.</div>';
         });
 
-        function addToCart(productId) {
-            const prod = productsData.find(p => p.id === productId);
-            if (!prod) return;
+        // 3. إدارة السلة وحساب الإجمالي
+        function addToCart(id) {
+            const product = productsList.find(p => p.id === id);
+            if (!product) return;
 
-            const existing = cart.find(c => c.id === productId);
-            if (existing) {
-                if (existing.qty < prod.stock) {
-                    existing.qty++;
+            const inCart = cart.find(item => item.id === id);
+            if (inCart) {
+                if (inCart.qty < product.stock) {
+                    inCart.qty++;
                 } else {
-                    alert('وصلت للحد الأقصى المتاح من هذه القطعة في المخزن!');
+                    alert('عذراً، هذه هي كل الكمية المتاحة في المخزن حالياً!');
                 }
             } else {
-                cart.push({ id: prod.id, name: prod.name, price: prod.price, qty: 1 });
+                cart.push({ id: product.id, name: product.name, price: product.price, qty: 1 });
             }
-            updateCartUI();
+            renderCart();
         }
 
-        function updateCartUI() {
-            const list = document.getElementById('cartItemsList');
+        function renderCart() {
+            const container = document.getElementById('cartItems');
             const totalEl = document.getElementById('cartTotal');
+
             if (cart.length === 0) {
-                list.innerHTML = 'السلة فارغة حالياً';
-                totalEl.innerText = '0';
+                container.innerHTML = '<p style="color: var(--text-muted); font-size: 14px;">السلة فارغة حالياً، أضف هداياك المفضلة بالأعلى.</p>';
+                totalEl.innerText = '0 ج.م';
                 return;
             }
 
             let total = 0;
-            list.innerHTML = cart.map(item => {
-                total += item.price * item.qty;
-                return `<div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                    <span>${item.name} (${item.qty})</span>
-                    <span>${item.price * item.qty} ج.م</span>
-                </div>`;
+            container.innerHTML = cart.map(item => {
+                const subtotal = item.price * item.qty;
+                total += subtotal;
+                return `
+                    <div class="cart-item">
+                        <span class="cart-item-name">${item.name} (×${item.qty})</span>
+                        <span class="cart-item-price">${subtotal} ج.م</span>
+                    </div>
+                `;
             }).join('');
 
-            totalEl.innerText = total;
+            totalEl.innerText = `${total} ج.م`;
         }
 
-        // إرسال الأوردر ليظهر في السيستم الرئيسي كـ "طلب شراء" (Purchase Order)
-        function sendPurchaseOrder() {
-            const name = document.getElementById('custName').value.trim();
-            const phone = document.getElementById('custPhone').value.trim();
-            const address = document.getElementById('custAddress').value.trim();
+        // 4. إرسال الطلب ليظهر في الويبسايت الرئيسي تحت مسمى "طلب شراء" (Purchase Order)
+        function submitOrder() {
+            const name = document.getElementById('clientName').value.trim();
+            const phone = document.getElementById('clientPhone').value.trim();
+            const notes = document.getElementById('clientNotes').value.trim();
 
-            if (cart.length === 0) return alert('سلة الطلبات فارغة!');
-            if (!name || !phone) return alert('برجاء كتابة الاسم ورقم الموبايل');
+            if (cart.length === 0) {
+                alert('من فضلك أضف بعض المنتجات للسلة أولاً!');
+                return;
+            }
+            if (!name || !phone) {
+                alert('يرجى إدخال الاسم ورقم الموبايل لإكمال الطلب!');
+                return;
+            }
 
-            const orderTotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            const total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
 
-            const orderPayload = {
+            // المستند المرسل لقاعدة البيانات كطلب شراء
+            const orderDoc = {
                 customerName: name,
                 customerPhone: phone,
-                address: address,
+                notes: notes,
                 items: cart,
-                totalAmount: orderTotal,
+                totalAmount: total,
                 createdAt: new Date().toISOString(),
-                type: 'purchase_order', // تظهر عندك كطلب شراء في النظام الرئيسي
-                status: 'pending'       // حالة معلقة بانتظار المراجعة
+                type: 'purchase_order', // تظهر في السيستم الرئيسي كطلب شراء وليس فاتورة نهائية
+                status: 'pending'       // حالة معلقة للمراجعة والقبول
             };
 
-            db.collection('purchase_orders').add(orderPayload)
+            db.collection('purchase_orders').add(orderDoc)
                 .then(() => {
-                    alert('تم إرسال طلب الشراء بنجاح! سيظهر في لوحة التحكم لديك كطلب جديد.');
+                    alert('تم إرسال طلب الشراء بنجاح! سيتم مراجعته والتواصل معك فوراً.');
                     cart = [];
-                    updateCartUI();
-                    document.getElementById('custName').value = '';
-                    document.getElementById('custPhone').value = '';
-                    document.getElementById('custAddress').value = '';
+                    renderCart();
+                    document.getElementById('clientName').value = '';
+                    document.getElementById('clientPhone').value = '';
+                    document.getElementById('clientNotes').value = '';
                 })
                 .catch(err => {
-                    console.error('Error sending order:', err);
-                    alert('حدث خطأ أثناء إرسال الطلب، حاول ثانية.');
+                    console.error('Submit error:', err);
+                    alert('حدث خطأ أثناء إرسال الطلب، يرجى المحاولة لاحقاً.');
                 });
         }
     </script>
