@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FARAFERO GIFT SHOP - طلب الشراء أونلاين (PO)</title>
+    <title>FARAFERO GIFT SHOP - متجر الهدايا أونلاين</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&family=Cinzel:wght@500;600;700&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
@@ -29,14 +29,27 @@
         .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #C5A059; border-radius: 4px; }
+        
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200"><g fill="none" stroke="%23C5A059" stroke-width="2"><path d="M50 32C42 22 30 22 33 32C35.5 38.5 48 35 50 32Z"/><path d="M50 32C58 22 70 22 67 32C64.5 38.5 52 35 50 32Z"/><rect x="25" y="32" width="50" height="12"/><rect x="28" y="44" width="44" height="34"/><line x1="50" y1="32" x2="50" y2="78"/></g><text x="150" y="130" font-family="Cinzel, serif" font-weight="700" font-size="26" fill="%23C5A059" letter-spacing="4" text-anchor="middle">FARAFERO</text><text x="150" y="155" font-family="Montserrat, sans-serif" font-weight="600" font-size="14" fill="%23333333" letter-spacing="5" text-anchor="middle">GIFT SHOP</text></svg>');
+            background-repeat: repeat;
+            background-position: center;
+            background-size: 350px 250px;
+            opacity: 0.035;
+            pointer-events: none;
+            z-index: -1;
+        }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col p-4 sm:p-6" dir="rtl">
+<body class="bg-slate-50/90 text-slate-800 font-sans antialiased min-h-screen flex flex-col p-4 sm:p-6" dir="rtl">
 
-    <div class="max-w-4xl mx-auto w-full space-y-6">
+    <div class="max-w-7xl mx-auto w-full space-y-6">
         
         <!-- HEADER -->
-        <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 flex items-center justify-between">
+        <header class="bg-white/90 backdrop-blur-md rounded-3xl p-6 border border-slate-200 shadow-sm flex items-center justify-between">
             <div class="flex items-center space-x-3 space-x-reverse">
                 <div class="w-12 h-12 flex items-center justify-center bg-white rounded-2xl border border-gold/40 shadow-sm p-1">
                     <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
@@ -49,84 +62,99 @@
                 </div>
                 <div>
                     <h1 class="text-base font-bold tracking-[3px] text-slate-900 leading-tight font-cinzel">FARAFERO</h1>
-                    <p class="text-[9px] text-gold font-semibold tracking-[4px] uppercase font-montserrat">ONLINE PO ORDER</p>
+                    <p class="text-[9px] text-gold font-semibold tracking-[4px] uppercase font-montserrat">ONLINE GIFT SHOP</p>
                 </div>
             </div>
-            <span class="bg-amber-50 text-gold text-xs font-bold px-3 py-1.5 rounded-xl border border-amber-200">طلب شراء أونلاين</span>
-        </div>
+            <div class="flex items-center space-x-2 space-x-reverse bg-amber-50 border border-amber-200 px-4 py-2 rounded-2xl text-xs font-bold text-gold">
+                <i class="fa-solid fa-store"></i>
+                <span>متجر الطلب أونلاين (PO)</span>
+            </div>
+        </header>
 
-        <!-- MAIN FORM AND CART GRID -->
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+        <!-- MAIN GRID -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
             
-            <!-- PRODUCTS CATALOG SECTION -->
-            <div class="md:col-span-7 bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-4">
-                <h3 class="font-black text-slate-900 border-b pb-3 flex items-center">
-                    <i class="fa-solid fa-gift text-gold ml-2"></i> اختر الهدايا للطلب
-                </h3>
-                <input type="text" id="store-search" oninput="renderStoreProducts()" placeholder="ابحث عن هدية..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs font-semibold focus:outline-none focus:border-gold">
-                <div id="store-products-grid" class="grid grid-cols-2 gap-3 max-h-[420px] overflow-y-auto custom-scrollbar p-1"></div>
+            <!-- PRODUCTS CATALOG -->
+            <div class="lg:col-span-7 bg-white/90 backdrop-blur-sm rounded-3xl p-6 border border-slate-200 shadow-sm space-y-4">
+                <div class="flex justify-between items-center border-b pb-3">
+                    <h3 class="font-black text-slate-900 text-lg flex items-center">
+                        <i class="fa-solid fa-gift text-gold ml-2"></i> تشكيلة الهدايا المتاحة
+                    </h3>
+                    <span class="text-xs text-slate-400 font-bold">اختر هداياك لإضافتها للسلة</span>
+                </div>
+                <input type="text" id="online-search" oninput="renderOnlineProducts()" placeholder="ابحث عن هدية أو كود..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-semibold focus:outline-none focus:border-gold">
+                <div id="online-products-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[500px] overflow-y-auto custom-scrollbar p-1"></div>
             </div>
 
-            <!-- CHECKOUT FORM & SUMMARY SECTION -->
-            <div class="md:col-span-5 space-y-4">
-                <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-4">
-                    <h3 class="font-black text-slate-900 border-b pb-3 flex items-center">
-                        <i class="fa-solid fa-file-invoice text-gold ml-2"></i> بيانات الشحن والأوردر
-                    </h3>
+            <!-- CART & SHIPPING FORM -->
+            <div class="lg:col-span-5 space-y-4">
+                <div class="bg-white/90 backdrop-blur-sm rounded-3xl p-6 border border-slate-200 shadow-lg space-y-4">
+                    <div class="flex justify-between items-center border-b pb-3">
+                        <h3 class="font-black text-slate-900 text-lg flex items-center">
+                            <i class="fa-solid fa-file-invoice text-gold ml-2"></i> بيانات الشحن والأوردر
+                        </h3>
+                        <button onclick="clearOnlineCart()" class="text-xs text-rose-500 font-bold hover:underline">إفراغ السلة</button>
+                    </div>
 
                     <div class="space-y-3 text-xs">
                         <div>
                             <label class="font-bold text-slate-700 block mb-1">اسم العميل بالكامل:</label>
-                            <input type="text" id="po-cust-name" placeholder="اكتب اسمك..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-semibold focus:outline-none focus:border-gold">
+                            <input type="text" id="online-name" placeholder="اكتب اسمك ثلاثي..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-semibold focus:outline-none focus:border-gold">
                         </div>
 
                         <div>
-                            <label class="font-bold text-slate-700 block mb-1">رقم الموبايل (11 رقم صحيح):</label>
-                            <input type="tel" id="po-cust-phone" placeholder="01xxxxxxxx" maxlength="11" oninput="validatePhone()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-semibold focus:outline-none focus:border-gold dir-ltr text-right">
-                            <p id="phone-error" class="text-rose-500 text-[10px] font-bold mt-1 hidden">⚠️ رقم الهاتف غير صحيح (يجب أن يبدأ بـ 01 ويتكون من 11 رقم)</p>
+                            <label class="font-bold text-slate-700 block mb-1">رقم الموبايل (11 رقم صحيح يبدأ بـ 01):</label>
+                            <input type="tel" id="online-phone" placeholder="01xxxxxxxx" maxlength="11" oninput="validateOnlinePhone()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-semibold focus:outline-none focus:border-gold dir-ltr text-right">
+                            <p id="online-phone-err" class="text-rose-500 text-[10px] font-bold mt-1 hidden">⚠️ رقم الهاتف غير صحيح (يجب أن يتكون من 11 رقماً ويبدأ بـ 01)</p>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="font-bold text-slate-700 block mb-1">المحافظة:</label>
+                                <select id="online-city" onchange="updateOnlineShipping()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-bold text-slate-800 focus:outline-none focus:border-gold">
+                                    <option value="">اختر المحافظة...</option>
+                                    <option value="الإسكندرية">الإسكندرية (60 ج.م)</option>
+                                    <option value="القاهرة">القاهرة (120 ج.م)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="font-bold text-slate-700 block mb-1">مصاريف الشحن:</label>
+                                <input type="text" id="online-shipping-disp" value="0 EGP" readonly class="w-full bg-amber-50/50 border border-amber-200 rounded-xl px-3 py-2.5 font-black text-gold cursor-not-allowed text-center">
+                            </div>
                         </div>
 
                         <div>
-                            <label class="font-bold text-slate-700 block mb-1">المحافظة:</label>
-                            <select id="po-cust-city" onchange="updateShippingByCity()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold text-slate-800 focus:outline-none focus:border-gold">
-                                <option value="">اختر المحافظة...</option>
-                                <option value="الإسكندرية">الإسكندرية (شحن 60 جنيه)</option>
-                                <option value="القاهرة">القاهرة (شحن 120 جنيه)</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label class="font-bold text-slate-700 block mb-1">العنوان بالتفصيل (الشارع، البناية، الشقة):</label>
-                            <textarea id="po-cust-address" rows="2" placeholder="اكتب العنوان بالتفصيل..." oninput="validateAddress()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-semibold focus:outline-none focus:border-gold"></textarea>
-                            <p id="address-error" class="text-rose-500 text-[10px] font-bold mt-1 hidden">⚠️ يجيب كتابة العنوان بالتفصيل</p>
+                            <label class="font-bold text-slate-700 block mb-1">العنوان بالتفصيل (الشارع، رقم البناية، الشقة):</label>
+                            <textarea id="online-address" rows="2" placeholder="اكتب عنوانك بالتفصيل لضمان وصول الطلب..." oninput="validateOnlineAddress()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-semibold focus:outline-none focus:border-gold"></textarea>
+                            <p id="online-address-err" class="text-rose-500 text-[10px] font-bold mt-1 hidden">⚠️ يجب كتابة العنوان بالتفصيل</p>
                         </div>
                     </div>
 
-                    <!-- CART ITEMS -->
+                    <!-- CART ITEMS LIST -->
                     <div class="space-y-1 pt-2 border-t">
-                        <span class="text-xs font-bold text-slate-700">الأصناف المختارة:</span>
-                        <div id="po-cart-items" class="divide-y max-h-[100px] overflow-y-auto my-1 text-xs bg-slate-50 p-2 rounded-xl border"></div>
+                        <span class="text-xs font-bold text-slate-700">الأصناف المختارة في السلة:</span>
+                        <div id="online-cart-items" class="divide-y max-h-[130px] overflow-y-auto my-1 text-xs bg-slate-50/60 p-2.5 rounded-xl border"></div>
                     </div>
 
-                    <!-- TOTALS -->
-                    <div class="space-y-1.5 pt-2 border-t text-xs">
+                    <!-- TOTALS SUMMARY -->
+                    <div class="space-y-2 pt-3 border-t text-xs font-bold">
                         <div class="flex justify-between text-slate-600">
-                            <span>إحمالي المنتجات:</span>
-                            <span id="po-subtotal" class="font-bold">0 EGP</span>
+                            <span>إجمالي المنتجات:</span>
+                            <span id="online-subtotal">0 EGP</span>
                         </div>
                         <div class="flex justify-between text-slate-600">
                             <span>مصاريف الشحن:</span>
-                            <span id="po-shipping-fee" class="font-bold text-gold">0 EGP</span>
+                            <span id="online-shipping-val" class="text-gold">0 EGP</span>
                         </div>
-                        <div class="flex justify-between text-sm font-black text-slate-900 border-t pt-2">
-                            <span>الإجمالي النهائي:</span>
-                            <span id="po-grand-total" class="text-gold text-base">0 EGP</span>
+                        <div class="flex justify-between items-center text-sm font-black text-slate-900 border-t pt-2.5">
+                            <span>الإجمالي النهائي للدفع:</span>
+                            <span id="online-grand-total" class="text-gold text-base">0 EGP</span>
                         </div>
                     </div>
 
-                    <button onclick="submitPoOrder()" class="w-full bg-gold hover:bg-[#b08b49] text-white font-black py-3 rounded-2xl shadow-md text-xs transition-all flex items-center justify-center space-x-1.5 space-x-reverse">
-                        <i class="fa-solid fa-check-circle"></i>
-                        <span>إرسال طلب الـ PO أونلاين</span>
+                    <button onclick="submitOnlinePoOrder()" class="w-full bg-gold hover:bg-[#b08b49] text-white font-black py-3.5 rounded-2xl shadow-lg text-xs transition-all flex items-center justify-center space-x-1.5 space-x-reverse">
+                        <i class="fa-solid fa-paper-plane"></i>
+                        <span>تأكيد وإرسال طلب الشراء أونلاين (PO)</span>
                     </button>
                 </div>
             </div>
@@ -155,48 +183,60 @@
         let state = {
             products: [],
             cart: [],
-            shippingFee: 0
+            shippingFee: 0,
+            allOrdersCount: 0
         };
 
-        function initOnlineStore() {
+        function initOnlineCustomerApp() {
             db.collection("products").onSnapshot((snapshot) => {
                 state.products = [];
                 snapshot.forEach((doc) => {
                     state.products.push({ id: doc.id, ...doc.data() });
                 });
-                renderStoreProducts();
+                renderOnlineProducts();
+            });
+
+            db.collection("orders").onSnapshot((snapshot) => {
+                state.allOrdersCount = snapshot.size;
             });
         }
 
-        function renderStoreProducts() {
-            const grid = document.getElementById('store-products-grid');
-            const search = document.getElementById('store-search').value.toLowerCase();
+        function renderOnlineProducts() {
+            const grid = document.getElementById('online-products-grid');
+            const search = document.getElementById('online-search').value.toLowerCase();
             if(!grid) return;
             grid.innerHTML = '';
 
-            state.products.filter(p => p.name.toLowerCase().includes(search) || (p.code && p.code.toLowerCase().includes(search))).forEach(p => {
+            const availableProds = state.products.filter(p => p.stock > 0 && (p.name.toLowerCase().includes(search) || (p.code && p.code.toLowerCase().includes(search))));
+
+            if (availableProds.length === 0) {
+                grid.innerHTML = '<p class="col-span-full text-center text-slate-400 py-6 text-xs">لا توجد هدايا مطابقة للبحث أو نفذت الكمية</p>';
+                return;
+            }
+
+            availableProds.forEach(p => {
                 grid.innerHTML += `
-                    <div class="bg-slate-50 hover:bg-amber-50/50 border p-2.5 rounded-2xl text-xs space-y-1 transition-all flex flex-col justify-between cursor-pointer" onclick="addToPoCart('${p.id}')">
-                        <div class="flex items-center space-x-2 space-x-reverse">
-                            <img src="${p.image}" class="w-8 h-8 rounded-xl object-cover">
-                            <div class="flex-grow">
-                                <p class="text-[9px] text-gold font-bold">${p.code || ''}</p>
-                                <p class="font-bold line-clamp-1">${p.name}</p>
-                            </div>
+                    <div class="bg-white hover:bg-amber-50/40 border border-slate-200 p-3 rounded-2xl text-xs space-y-2 transition-all flex flex-col justify-between cursor-pointer shadow-sm" onclick="addToOnlineCart('${p.id}')">
+                        <div class="h-28 rounded-xl overflow-hidden bg-slate-100 relative">
+                            <img src="${p.image}" class="w-full h-full object-cover">
+                            <span class="absolute bottom-1 right-1 bg-gold text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md">${p.code || ''}</span>
                         </div>
-                        <div class="flex justify-between items-center mt-1">
-                            <span class="font-black text-gold">${Math.round(p.price)} EGP</span>
-                            <span class="text-[9px] bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded-md font-bold">مخزون: ${p.stock}</span>
+                        <div class="space-y-1">
+                            <p class="font-bold line-clamp-1 text-slate-900">${p.name}</p>
+                            <div class="flex justify-between items-center">
+                                <span class="font-black text-gold">${Math.round(p.price)} EGP</span>
+                                <span class="text-[9px] bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded font-bold">متاح: ${p.stock}</span>
+                            </div>
                         </div>
                     </div>
                 `;
             });
         }
 
-        function addToPoCart(id) {
+        function addToOnlineCart(id) {
             const p = state.products.find(x => x.id === id);
-            if (!p || p.stock <= 0) return alert('عذراً، هذه الهدية غير متوفرة حالياً!');
-            
+            if (!p || p.stock <= 0) return alert('عذراً، هذه الهدية نفذت من المخزون!');
+
             const item = state.cart.find(x => x.id === id);
             if (item) {
                 if (item.qty + 1 > p.stock) return alert('الكمية المطلوبة أكبر من المتبقي بالمخزن!');
@@ -204,16 +244,21 @@
             } else {
                 state.cart.push({ ...p, qty: 1 });
             }
-            renderPoCart();
+            renderOnlineCart();
         }
 
-        function removeFromPoCart(idx) {
+        function removeFromOnlineCart(idx) {
             state.cart.splice(idx, 1);
-            renderPoCart();
+            renderOnlineCart();
         }
 
-        function updateShippingByCity() {
-            const city = document.getElementById('po-cust-city').value;
+        function clearOnlineCart() {
+            state.cart = [];
+            renderOnlineCart();
+        }
+
+        function updateOnlineShipping() {
+            const city = document.getElementById('online-city').value;
             if (city === 'الإسكندرية') {
                 state.shippingFee = 60;
             } else if (city === 'القاهرة') {
@@ -221,54 +266,55 @@
             } else {
                 state.shippingFee = 0;
             }
-            renderPoCart();
+            document.getElementById('online-shipping-disp').value = state.shippingFee + ' EGP';
+            renderOnlineCart();
         }
 
-        function validatePhone() {
-            const phone = document.getElementById('po-cust-phone').value.trim();
-            const errorEl = document.getElementById('phone-error');
+        function validateOnlinePhone() {
+            const phone = document.getElementById('online-phone').value.trim();
+            const errEl = document.getElementById('online-phone-err');
             const phoneRegex = /^01[0125][0-9]{8}$/;
             if (phone && !phoneRegex.test(phone)) {
-                errorEl.classList.remove('hidden');
+                errEl.classList.remove('hidden');
                 return false;
             } else {
-                errorEl.classList.add('hidden');
+                errEl.classList.add('hidden');
                 return true;
             }
         }
 
-        function validateAddress() {
-            const address = document.getElementById('po-cust-address').value.trim();
-            const errorEl = document.getElementById('address-error');
+        function validateOnlineAddress() {
+            const address = document.getElementById('online-address').value.trim();
+            const errEl = document.getElementById('online-address-err');
             if (address.length < 5) {
-                errorEl.classList.remove('hidden');
+                errEl.classList.remove('hidden');
                 return false;
             } else {
-                errorEl.classList.add('hidden');
+                errEl.classList.add('hidden');
                 return true;
             }
         }
 
-        function renderPoCart() {
-            const container = document.getElementById('po-cart-items');
+        function renderOnlineCart() {
+            const container = document.getElementById('online-cart-items');
             if(!container) return;
             container.innerHTML = '';
             let subtotal = 0;
 
             if (state.cart.length === 0) {
-                container.innerHTML = '<p class="text-center text-slate-400 py-2">لم تقم باختيار هدايا بعد</p>';
+                container.innerHTML = '<p class="text-center text-slate-400 py-3">لم تقم باختيار هدايا للسلة بعد</p>';
             } else {
                 state.cart.forEach((i, idx) => {
                     subtotal += i.price * i.qty;
                     container.innerHTML += `
-                        <div class="flex justify-between items-center py-1">
+                        <div class="flex justify-between items-center py-1.5">
                             <div>
                                 <span class="font-bold text-slate-800">${i.name}</span>
                                 <span class="text-slate-400 text-[10px] block">${Math.round(i.price)} EGP × ${i.qty}</span>
                             </div>
                             <div class="flex items-center space-x-2 space-x-reverse">
                                 <b>${Math.round(i.price * i.qty)} EGP</b>
-                                <button onclick="removeFromPoCart(${idx})" class="text-rose-500 font-bold">✕</button>
+                                <button onclick="removeFromOnlineCart(${idx})" class="text-rose-500 font-bold hover:text-rose-700">✕</button>
                             </div>
                         </div>`;
                 });
@@ -276,67 +322,57 @@
 
             const grandTotal = subtotal + state.shippingFee;
 
-            document.getElementById('po-subtotal').innerText = Math.round(subtotal) + ' EGP';
-            document.getElementById('po-shipping-fee').innerText = Math.round(state.shippingFee) + ' EGP';
-            document.getElementById('po-grand-total').innerText = Math.round(grandTotal) + ' EGP';
+            document.getElementById('online-subtotal').innerText = Math.round(subtotal) + ' EGP';
+            document.getElementById('online-shipping-val').innerText = Math.round(state.shippingFee) + ' EGP';
+            document.getElementById('online-grand-total').innerText = Math.round(grandTotal) + ' EGP';
         }
 
-        function getNextPoId() {
-            return db.collection("orders").get().then(snapshot => {
-                let maxNum = 0;
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    if (data.id) {
-                        const num = parseInt(data.id.replace(/[^0-9]/g, '')) || 0;
-                        if (num > maxNum) maxNum = num;
-                    }
-                });
-                return 'PO-' + String(maxNum + 1).padStart(4, '0');
-            });
-        }
+        async function submitOnlinePoOrder() {
+            if (state.cart.length === 0) return alert('برجاء اختيار هدية واحدة على الأقل في السلة!');
 
-        async function submitPoOrder() {
-            if (state.cart.length === 0) return alert('برجاء اختيار هدية واحدة على الأقل!');
+            const name = document.getElementById('online-name').value.trim();
+            const phone = document.getElementById('online-phone').value.trim();
+            const city = document.getElementById('online-city').value;
+            const address = document.getElementById('online-address').value.trim();
 
-            const name = document.getElementById('po-cust-name').value.trim();
-            const phone = document.getElementById('po-cust-phone').value.trim();
-            const city = document.getElementById('po-cust-city').value;
-            const address = document.getElementById('po-cust-address').value.trim();
-
-            if (!name) return alert('برجاء إدخال اسم العميل!');
-            if (!validatePhone() || !phone) return alert('برجاء إدخال رقم تليفون صحيح ومكون من 11 رقماً يبدأ بـ 01!');
+            if (!name) return alert('برجاء إدخال اسمك بالكامل!');
+            if (!validateOnlinePhone() || !phone) return alert('برجاء إدخال رقم تليفون صحيح ومكون من 11 رقماً يبدأ بـ 01!');
             if (!city) return alert('برجاء اختيار المحافظة لتحديد مصاريف الشحن!');
-            if (!validateAddress() || !address) return alert('برجاء كتابة العنوان بالتفصيل!');
+            if (!validateOnlineAddress() || !address) return alert('برجاء كتابة العنوان بالتفصيل!');
+
+            const customerDocId = 'cust_' + phone.replace(/\s+/g, '_');
+            const customerRef = db.collection("customers").doc(customerDocId);
+            const customerSnap = await customerRef.get();
+
+            if (customerSnap.exists && customerSnap.data().isBlocked) {
+                alert('⚠️ عذراً، هذا الرقم محظور (Blocked) ولا يمكنه إنشاء طلبات أونلاين!');
+                return;
+            }
 
             const subtotal = state.cart.reduce((a, b) => a + (b.price * b.qty), 0);
             const total = subtotal + state.shippingFee;
-            const orderId = await getNextPoId();
+            const orderId = 'PO-' + String(state.allOrdersCount + 1).padStart(4, '0');
             const dateStr = new Date().toLocaleDateString('en-GB');
 
-            // تسجيل العميل مباشرة في مجموعة العملاء (VIP) عند إنشاء الـ PO أونلاين
-            const customerDocId = 'cust_' + phone.replace(/\s+/g, '_');
-            const customerRef = db.collection("customers").doc(customerDocId);
-            
-            customerRef.get().then((docSnap) => {
-                if (docSnap.exists) {
-                    const existingData = docSnap.data();
-                    customerRef.update({
-                        name: name,
-                        ordersCount: (existingData.ordersCount || 1) + 1,
-                        lastDate: dateStr
-                    });
-                } else {
-                    customerRef.set({
-                        name: name,
-                        phone: phone,
-                        ordersCount: 1,
-                        lastDate: dateStr,
-                        timestamp: Date.now(),
-                        isBlocked: false
-                    });
-                }
-            });
+            // 1. تسجيل العميل أوتوماتيكياً في جدول الـ VIP عند عمل الـ PO أونلاين
+            if (customerSnap.exists) {
+                await customerRef.update({
+                    name: name,
+                    ordersCount: (customerSnap.data().ordersCount || 1) + 1,
+                    lastDate: dateStr
+                });
+            } else {
+                await customerRef.set({
+                    name: name,
+                    phone: phone,
+                    ordersCount: 1,
+                    lastDate: dateStr,
+                    timestamp: Date.now(),
+                    isBlocked: false
+                });
+            }
 
+            // 2. حفظ طلب الـ PO في مجموعة الطلبات
             const newPoOrder = {
                 id: orderId,
                 type: 'po',
@@ -354,20 +390,21 @@
             };
 
             db.collection("orders").add(newPoOrder).then(() => {
-                alert(`✅ تم إرسال طلب الشراء أونلاين برقم ${orderId} بنجاح وتم تسجيل بياناتك وسيتم مراجعته وتأكيده قريباً!`);
+                alert(`✅ تم إرسال طلب الشراء برقم (${orderId}) بنجاح وتم تسجيل بياناتك في النظام! سيتم مراجعة وتأكيد طلبك قريباً.`);
                 state.cart = [];
-                document.getElementById('po-cust-name').value = '';
-                document.getElementById('po-cust-phone').value = '';
-                document.getElementById('po-cust-city').value = '';
-                document.getElementById('po-cust-address').value = '';
+                document.getElementById('online-name').value = '';
+                document.getElementById('online-phone').value = '';
+                document.getElementById('online-city').value = '';
+                document.getElementById('online-address').value = '';
+                document.getElementById('online-shipping-disp').value = '0 EGP';
                 state.shippingFee = 0;
-                renderPoCart();
+                renderOnlineCart();
             }).catch(err => {
                 alert('حدث خطأ أثناء إرسال الطلب: ' + err.message);
             });
         }
 
-        document.addEventListener('DOMContentLoaded', initOnlineStore);
+        document.addEventListener('DOMContentLoaded', initOnlineCustomerApp);
     </script>
 </body>
 </html>
