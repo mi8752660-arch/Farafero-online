@@ -66,107 +66,96 @@
                 </div>
             </div>
             <div class="flex items-center space-x-2 space-x-reverse bg-amber-50 border border-amber-200 px-5 py-2.5 rounded-2xl text-xs font-bold text-gold">
-                <i class="fa-solid fa-bag-shopping"></i>
+                <i class="fa-solid fa-store"></i>
                 <span>متجر الهدايا الفاخر - اطلب أونلاين (PO)</span>
             </div>
         </header>
 
-        <!-- MAIN LAYOUT -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            
-            <!-- PRODUCTS CATALOG (أخذ راحته تماماً) -->
-            <div class="lg:col-span-7 bg-white/90 backdrop-blur-sm rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-sm space-y-6">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-4 gap-2">
+        <!-- 1. السلة منفصلة وبارزة في الأعلى (TOP CART BAR) -->
+        <section class="bg-white/95 backdrop-blur-md rounded-3xl p-6 sm:p-8 border-2 border-gold/40 shadow-xl space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-4 gap-3">
+                <div class="flex items-center space-x-3 space-x-reverse">
+                    <div class="w-10 h-10 rounded-2xl bg-amber-50 text-gold flex items-center justify-center text-lg shadow-inner">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                    </div>
                     <div>
-                        <h3 class="font-black text-slate-900 text-xl flex items-center">
-                            <i class="fa-solid fa-gift text-gold ml-2.5"></i> تشكيلة الهدايا المتاحة
-                        </h3>
-                        <p class="text-xs text-slate-400 mt-0.5">اضغط على صورة أي هدية لعرض تفاصيلها الكاملة، أو على الصنف لإضافته مباشرة للسلة</p>
+                        <h2 class="text-lg font-black text-slate-900">سلة المشتريات والطلب (PO)</h2>
+                        <p class="text-xs text-slate-400">راجع أصنافك المختارة وأدخل بيانات الشحن لتأكيد الأوردر</p>
                     </div>
                 </div>
-                
-                <div class="relative">
-                    <i class="fa-solid fa-search absolute top-3.5 right-4 text-slate-400 text-sm"></i>
-                    <input type="text" id="online-search" oninput="renderOnlineProducts()" placeholder="ابحث باسم الهدية أو الكود..." class="w-full bg-slate-50 border border-slate-200 rounded-2xl pr-11 pl-4 py-3 text-sm font-semibold focus:outline-none focus:border-gold transition-all">
-                </div>
-
-                <div id="online-products-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[620px] overflow-y-auto custom-scrollbar p-1"></div>
+                <button onclick="clearOnlineCart()" class="text-xs text-rose-500 font-bold hover:underline bg-rose-50 px-3 py-1.5 rounded-xl">إفراغ السلة</button>
             </div>
 
-            <!-- CART & CHECKOUT FORM -->
-            <div class="lg:col-span-5 space-y-6">
-                <div class="bg-white/90 backdrop-blur-sm rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xl space-y-5">
-                    <div class="flex justify-between items-center border-b pb-4">
-                        <h3 class="font-black text-slate-900 text-lg flex items-center">
-                            <i class="fa-solid fa-file-invoice text-gold ml-2"></i> سلة الطلبات وبيانات الشحن
-                        </h3>
-                        <button onclick="clearOnlineCart()" class="text-xs text-rose-500 font-bold hover:underline">إفراغ السلة</button>
-                    </div>
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- جدول أصناف السلة -->
+                <div class="lg:col-span-6 space-y-2">
+                    <span class="text-xs font-bold text-slate-700 block">الأصناف المضافة:</span>
+                    <div id="online-cart-items" class="divide-y max-h-[180px] overflow-y-auto bg-slate-50 p-3 rounded-2xl border text-xs custom-scrollbar"></div>
+                </div>
 
-                    <div class="space-y-3.5 text-xs">
+                <!-- نموذج الشحن والإجماليات -->
+                <div class="lg:col-span-6 space-y-4 bg-slate-50/80 p-4 rounded-2xl border text-xs">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <label class="font-bold text-slate-700 block mb-1">اسم العميل بالكامل:</label>
-                            <input type="text" id="online-name" placeholder="اكتب اسمك ثلاثي..." class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 font-semibold focus:outline-none focus:border-gold transition-all">
+                            <input type="text" id="online-name" placeholder="اسمك الثلاثي..." class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 font-semibold focus:outline-none focus:border-gold">
                         </div>
-
                         <div>
                             <label class="font-bold text-slate-700 block mb-1">رقم الموبايل (11 رقم يبدأ بـ 01):</label>
-                            <input type="tel" id="online-phone" placeholder="01xxxxxxxx" maxlength="11" oninput="validateOnlinePhone()" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 font-semibold focus:outline-none focus:border-gold transition-all dir-ltr text-right">
-                            <p id="online-phone-err" class="text-rose-500 text-[10px] font-bold mt-1 hidden">⚠️ رقم الهاتف غير صحيح (يجب أن يتكون من 11 رقماً ويبدأ بـ 01)</p>
+                            <input type="tel" id="online-phone" placeholder="01xxxxxxxx" maxlength="11" oninput="validateOnlinePhone()" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 font-semibold focus:outline-none focus:border-gold dir-ltr text-right">
+                            <p id="online-phone-err" class="text-rose-500 text-[10px] font-bold mt-0.5 hidden">⚠️ خطأ برقم الهاتف</p>
                         </div>
+                    </div>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div>
-                                <label class="font-bold text-slate-700 block mb-1">المحافظة:</label>
-                                <select id="online-city" onchange="updateOnlineShipping()" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3 py-3 font-bold text-slate-800 focus:outline-none focus:border-gold transition-all">
-                                    <option value="">اختر المحافظة...</option>
-                                    <option value="الإسكندرية">الإسكندرية (60 ج.م)</option>
-                                    <option value="القاهرة">القاهرة (120 ج.م)</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="font-bold text-slate-700 block mb-1">مصاريف الشحن:</label>
-                                <input type="text" id="online-shipping-disp" value="0 EGP" readonly class="w-full bg-amber-50/50 border border-amber-200 rounded-2xl px-3 py-3 font-black text-gold text-center cursor-not-allowed">
-                            </div>
-                        </div>
-
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                            <label class="font-bold text-slate-700 block mb-1">العنوان بالتفصيل (الشارع، رقم البناية، الشقة):</label>
-                            <textarea id="online-address" rows="2" placeholder="اكتب عنوانك بالتفصيل لضمان وصول الطلب..." oninput="validateOnlineAddress()" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 font-semibold focus:outline-none focus:border-gold transition-all"></textarea>
-                            <p id="online-address-err" class="text-rose-500 text-[10px] font-bold mt-1 hidden">⚠️ يجب كتابة العنوان بالتفصيل</p>
+                            <label class="font-bold text-slate-700 block mb-1">المحافظة:</label>
+                            <select id="online-city" onchange="updateOnlineShipping()" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 font-bold text-slate-800 focus:outline-none focus:border-gold">
+                                <option value="">اختر المحافظة...</option>
+                                <option value="الإسكندرية">الإسكندرية (شحن 60 ج.م)</option>
+                                <option value="القاهرة">القاهرة (شحن 120 ج.م)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="font-bold text-slate-700 block mb-1">مصاريف الشحن:</label>
+                            <input type="text" id="online-shipping-disp" value="0 EGP" readonly class="w-full bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5 font-black text-gold text-center cursor-not-allowed">
                         </div>
                     </div>
 
-                    <!-- CART ITEMS LIST -->
-                    <div class="space-y-2 pt-2 border-t">
-                        <span class="text-xs font-bold text-slate-700">الأصناف المختارة في السلة:</span>
-                        <div id="online-cart-items" class="divide-y max-h-[150px] overflow-y-auto my-1 text-xs bg-slate-50/60 p-3 rounded-2xl border"></div>
+                    <div>
+                        <label class="font-bold text-slate-700 block mb-1">العنوان بالتفصيل (الشارع، البناية، الشقة):</label>
+                        <textarea id="online-address" rows="1" placeholder="اكتب العنوان بالتفصيل..." oninput="validateOnlineAddress()" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 font-semibold focus:outline-none focus:border-gold"></textarea>
+                        <p id="online-address-err" class="text-rose-500 text-[10px] font-bold mt-0.5 hidden">⚠️ العنوان مطلوب بالتفصيل</p>
                     </div>
 
-                    <!-- TOTALS SUMMARY -->
-                    <div class="space-y-2 pt-3 border-t text-xs font-bold">
-                        <div class="flex justify-between text-slate-600">
-                            <span>إجمالي المنتجات:</span>
-                            <span id="online-subtotal">0 EGP</span>
+                    <div class="flex flex-col sm:flex-row justify-between items-center pt-2 border-t gap-3">
+                        <div class="space-y-1 text-right sm:text-right">
+                            <p class="text-slate-500">المنتجات: <span id="online-subtotal" class="font-bold text-slate-800">0 EGP</span> | الشحن: <span id="online-shipping-val" class="font-bold text-gold">0 EGP</span></p>
+                            <p class="text-sm font-black text-slate-900">الإجمالي النهائي: <span id="online-grand-total" class="text-gold text-base">0 EGP</span></p>
                         </div>
-                        <div class="flex justify-between text-slate-600">
-                            <span>مصاريف الشحن:</span>
-                            <span id="online-shipping-val" class="text-gold">0 EGP</span>
-                        </div>
-                        <div class="flex justify-between items-center text-sm font-black text-slate-900 border-t pt-3">
-                            <span>الإجمالي النهائي للدفع:</span>
-                            <span id="online-grand-total" class="text-gold text-lg">0 EGP</span>
-                        </div>
+                        <button onclick="submitOnlinePoOrder()" class="w-full sm:w-auto bg-gold hover:bg-[#b08b49] text-white font-black px-6 py-3 rounded-xl shadow-md text-xs transition-all flex items-center justify-center space-x-1.5 space-x-reverse">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <span>تأكيد وإرسال طلب الـ PO</span>
+                        </button>
                     </div>
+                </div>
+            </div>
+        </section>
 
-                    <button onclick="submitOnlinePoOrder()" class="w-full bg-gold hover:bg-[#b08b49] text-white font-black py-4 rounded-2xl shadow-lg text-xs sm:text-sm transition-all flex items-center justify-center space-x-2 space-x-reverse">
-                        <i class="fa-solid fa-paper-plane text-base"></i>
-                        <span>تأكيد وإرسال طلب الشراء أونلاين (PO)</span>
-                    </button>
+        <!-- 2. عرض كل كاتيجري لوحده بالموديلات اللي فيها بشكل واسع ورايق -->
+        <section class="space-y-8">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="text-xl font-black text-slate-900 flex items-center">
+                    <i class="fa-solid fa-folder-tree text-gold ml-2"></i> أقسام وبنود الهدايا المتاحة
+                </h3>
+                <div class="w-72">
+                    <input type="text" id="online-search" oninput="renderCategoriesAndProducts()" placeholder="ابحث في جميع الموديلات..." class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2 text-xs font-semibold focus:outline-none focus:border-gold">
                 </div>
             </div>
 
-        </div>
+            <!-- حاوية الأقسام الرئيسية -->
+            <div id="categories-display-container" class="space-y-10"></div>
+        </section>
 
     </div>
 
@@ -227,18 +216,26 @@
 
         let state = {
             products: [],
+            categories: ["دباديب", "ورد", "هدايا استانلس", "شنط حريمى"],
             cart: [],
             shippingFee: 0,
             allOrdersCount: 0
         };
 
         function initOnlineCustomerApp() {
+            db.collection("settings").doc("categories").onSnapshot((doc) => {
+                if (doc.exists && doc.data().list) {
+                    state.categories = doc.data().list;
+                }
+                renderCategoriesAndProducts();
+            });
+
             db.collection("products").onSnapshot((snapshot) => {
                 state.products = [];
                 snapshot.forEach((doc) => {
                     state.products.push({ id: doc.id, ...doc.data() });
                 });
-                renderOnlineProducts();
+                renderCategoriesAndProducts();
             });
 
             db.collection("orders").onSnapshot((snapshot) => {
@@ -246,42 +243,56 @@
             });
         }
 
-        function renderOnlineProducts() {
-            const grid = document.getElementById('online-products-grid');
-            const search = document.getElementById('online-search').value.toLowerCase();
-            if(!grid) return;
-            grid.innerHTML = '';
+        function renderCategoriesAndProducts() {
+            const container = document.getElementById('categories-display-container');
+            const searchInput = document.getElementById('online-search');
+            if(!container) return;
+            const search = searchInput ? searchInput.value.toLowerCase() : '';
+            container.innerHTML = '';
 
-            const availableProds = state.products.filter(p => p.stock > 0 && (p.name.toLowerCase().includes(search) || (p.code && p.code.toLowerCase().includes(search))));
+            state.categories.forEach(cat => {
+                const catProducts = state.products.filter(p => p.category === cat && p.stock > 0 && (p.name.toLowerCase().includes(search) || (p.code && p.code.toLowerCase().includes(search))));
 
-            if (availableProds.length === 0) {
-                grid.innerHTML = '<p class="col-span-full text-center text-slate-400 py-10 text-xs">لا توجد هدايا مطابقة للبحث أو نفذت الكمية</p>';
-                return;
-            }
+                if (catProducts.length > 0 || search === '') {
+                    let productsHtml = '';
+                    catProducts.forEach(p => {
+                        productsHtml += `
+                            <div class="bg-white hover:border-gold/60 border border-slate-200 p-4 rounded-3xl space-y-3 transition-all flex flex-col justify-between shadow-sm group">
+                                <div class="h-48 rounded-2xl overflow-hidden bg-slate-100 relative cursor-pointer" onclick="openProductDetail('${p.id}')" title="اضغط لعرض كافة التفاصيل">
+                                    <img src="${p.image}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                    <span class="absolute bottom-2.5 right-2.5 bg-gold text-white text-[10px] font-black px-2.5 py-1 rounded-xl shadow-md">${p.code || ''}</span>
+                                    <div class="absolute inset-0 bg-slate-900/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                        <span class="bg-white/90 text-slate-900 text-xs font-bold px-3 py-1.5 rounded-xl shadow-lg">التفاصيل 🔍</span>
+                                    </div>
+                                </div>
+                                <div class="space-y-1">
+                                    <p class="font-black text-slate-900 text-sm line-clamp-1">${p.name}</p>
+                                    <div class="flex justify-between items-center pt-1">
+                                        <span class="font-black text-gold text-base">${Math.round(p.price)} EGP</span>
+                                        <span class="text-[10px] bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-lg font-bold">متاح: ${p.stock}</span>
+                                    </div>
+                                </div>
+                                <button onclick="addToOnlineCart('${p.id}')" class="w-full bg-slate-900 hover:bg-gold text-white font-bold py-2.5 rounded-xl text-xs transition-all shadow-sm flex items-center justify-center space-x-1.5 space-x-reverse">
+                                    <i class="fa-solid fa-cart-plus"></i>
+                                    <span>إضافة للسلة</span>
+                                </button>
+                            </div>
+                        `;
+                    });
 
-            availableProds.forEach(p => {
-                grid.innerHTML += `
-                    <div class="bg-white hover:border-gold/60 border border-slate-200/80 p-4 rounded-3xl space-y-3 transition-all flex flex-col justify-between shadow-sm group">
-                        <div class="h-48 rounded-2xl overflow-hidden bg-slate-100 relative cursor-pointer" onclick="openProductDetail('${p.id}')" title="اضغط لعرض كافة التفاصيل">
-                            <img src="${p.image}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                            <span class="absolute bottom-2.5 right-2.5 bg-gold text-white text-[10px] font-black px-2.5 py-1 rounded-xl shadow-md">${p.code || ''}</span>
-                            <div class="absolute inset-0 bg-slate-900/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                <span class="bg-white/90 text-slate-900 text-xs font-bold px-3 py-1.5 rounded-xl shadow-lg">عرض التفاصيل 🔍</span>
+                    container.innerHTML += `
+                        <div class="bg-white/80 backdrop-blur-sm rounded-3xl p-6 border shadow-sm space-y-4">
+                            <div class="flex items-center space-x-2.5 space-x-reverse border-b pb-3">
+                                <div class="w-3 h-6 bg-gold rounded-full"></div>
+                                <h4 class="text-lg font-black text-slate-900">${cat}</h4>
+                                <span class="text-xs bg-amber-50 text-gold px-2.5 py-0.5 rounded-full font-bold">(${catProducts.length} موديل متاح)</span>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                ${productsHtml || '<p class="col-span-full text-center text-slate-400 py-6 text-xs">لا توجد هدايا متاحة في هذا القسم حالياً</p>'}
                             </div>
                         </div>
-                        <div class="space-y-1.5">
-                            <p class="font-black text-slate-900 text-sm line-clamp-1">${p.name}</p>
-                            <div class="flex justify-between items-center pt-1">
-                                <span class="font-black text-gold text-base">${Math.round(p.price)} EGP</span>
-                                <span class="text-[10px] bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-lg font-bold">متاح: ${p.stock} قطعة</span>
-                            </div>
-                        </div>
-                        <button onclick="addToOnlineCart('${p.id}')" class="w-full bg-slate-900 hover:bg-gold text-white font-bold py-2.5 rounded-xl text-xs transition-all shadow-sm flex items-center justify-center space-x-1.5 space-x-reverse">
-                            <i class="fa-solid fa-cart-plus"></i>
-                            <span>إضافة للسلة</span>
-                        </button>
-                    </div>
-                `;
+                    `;
+                }
             });
         }
 
@@ -375,12 +386,12 @@
             let subtotal = 0;
 
             if (state.cart.length === 0) {
-                container.innerHTML = '<p class="text-center text-slate-400 py-4">لم تقم باختيار هدايا للسلة بعد</p>';
+                container.innerHTML = '<p class="text-center text-slate-400 py-3">لم تقم باختيار هدايا للسلة بعد</p>';
             } else {
                 state.cart.forEach((i, idx) => {
                     subtotal += i.price * i.qty;
                     container.innerHTML += `
-                        <div class="flex justify-between items-center py-2">
+                        <div class="flex justify-between items-center py-1.5">
                             <div>
                                 <span class="font-bold text-slate-800">${i.name}</span>
                                 <span class="text-slate-400 text-[10px] block">${Math.round(i.price)} EGP × ${i.qty}</span>
