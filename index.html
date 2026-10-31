@@ -174,8 +174,7 @@
             products: [],
             categories: [],
             selectedCategory: 'الكل',
-            cart: [],
-            allOrders: []
+            cart: []
         };
 
         function initStore() {
@@ -192,13 +191,6 @@
                     storeState.products.push({ id: doc.id, ...doc.data() });
                 });
                 renderStoreProducts();
-            });
-
-            db.collection("orders").onSnapshot((snapshot) => {
-                storeState.allOrders = [];
-                snapshot.forEach((doc) => {
-                    storeState.allOrders.push(doc.data());
-                });
             });
         }
 
@@ -362,6 +354,24 @@
             grandTotalEl.innerText = subtotal;
         }
 
+        // دالة موحدة وسحابية ذكية لتوليد رقم الطلب بالزيادة التلقائية الآمنة 100%
+        async function getNextGlobalOrderId() {
+            const counterRef = db.collection("settings").doc("global_order_counter");
+            return db.runTransaction(async (transaction) => {
+                const doc = await transaction.get(counterRef);
+                let nextNum = 1;
+                if (doc.exists && doc.data().lastSeq) {
+                    nextNum = doc.data().lastSeq + 1;
+                } else {
+                    // إذا لم يكن العداد موجوداً، نقوم بفحص قاعدة البيانات لجلب العدد الفعلي أو البدء من الصحيح
+                    const ordersSnap = await db.collection("orders").get();
+                    nextNum = ordersSnap.size + 1;
+                }
+                transaction.set(counterRef, { lastSeq: nextNum });
+                return 'PO-' + String(nextNum).padStart(4, '0');
+            });
+        }
+
         async function submitCustomerOrder() {
             if (storeState.cart.length === 0) return alert('برجاء إضافة هدايا للسلة أولاً!');
             
@@ -376,54 +386,47 @@
 
             let subtotal = storeState.cart.reduce((a, b) => a + (b.price * b.qty), 0);
             
-            // فحص واستخراج أعلى رقم مسلسل موجود حالياً في قاعدة البيانات لضمان عدم حدوث أي قفزات
-            let maxSeq = 0;
-            storeState.allOrders.forEach(o => {
-                if (o.id) {
-                    const cleanNum = parseInt(o.id.replace(/[^0-9]/g, '')) || 0;
-                    if (cleanNum > maxSeq) maxSeq = cleanNum;
-                }
-            });
-            const nextSeqNum = maxSeq + 1;
-            const orderId = 'PO-' + String(nextSeqNum).padStart(4, '0');
-            const dateStr = new Date().toLocaleDateString('en-GB');
+            try {
+                // توليد الرقم المتسلسل بدقة تامة من الخادم
+                const orderId = await getNextGlobalOrderId();
+                const dateStr = new Date().toLocaleDateString('en-GB');
 
-            const newPurchaseOrder = {
-                id: orderId,
-                date: dateStr,
-                timestamp: Date.now(),
-                total: subtotal,
-                discount: 0,
-                packaging: 0,
-                shipping: 0,
-                customerName: name + ' (طلب شراء أونلاين)',
-                customerPhone: phone + ' - العنوان: ' + address,
-                status: 'pending',
-                type: 'po',
-                detailedItems: JSON.parse(JSON.stringify(storeState.cart))
-            };
+                const newPurchaseOrder = {
+                    id: orderId,
+                    date: dateStr,
+                    timestamp: Date.now(),
+                    total: subtotal,
+                    discount: 0,
+                    packaging: 0,
+                    shipping: 0,
+                    customerName: name + ' (طلب شراء أونلاين)',
+                    customerPhone: phone + ' - العنوان: ' + address,
+                    status: 'pending',
+                    type: 'po',
+                    detailedItems: JSON.parse(JSON.stringify(storeState.cart))
+                };
 
-            db.collection("orders").add(newPurchaseOrder).then(() => {
+                await db.collection("orders").add(newPurchaseOrder);
+
                 const customerDocId = 'cust_' + phone.replace(/\s+/g, '_');
                 const customerRef = db.collection("customers").doc(customerDocId);
+                const docSnap = await customerRef.get();
                 
-                customerRef.get().then((docSnap) => {
-                    if (docSnap.exists) {
-                        customerRef.update({
-                            name: name,
-                            ordersCount: (docSnap.data().ordersCount || 1) + 1,
-                            lastDate: dateStr
-                        });
-                    } else {
-                        customerRef.set({
-                            name: name,
-                            phone: phone + ' (' + address + ')',
-                            ordersCount: 1,
-                            lastDate: dateStr,
-                            timestamp: Date.now()
-                        });
-                    }
-                });
+                if (docSnap.exists) {
+                    await customerRef.update({
+                        name: name,
+                        ordersCount: (docSnap.data().ordersCount || 1) + 1,
+                        lastDate: dateStr
+                    });
+                } else {
+                    await customerRef.set({
+                        name: name,
+                        phone: phone + ' (' + address + ')',
+                        ordersCount: 1,
+                        lastDate: dateStr,
+                        timestamp: Date.now()
+                    });
+                }
 
                 alert(`تم إرسال طلب الشراء برقم (${orderId}) بنجاح! سيتم مراجعته والتواصل معك قريباً.`);
                 storeState.cart = [];
@@ -432,10 +435,11 @@
                 document.getElementById('order-cust-name').value = '';
                 document.getElementById('order-cust-phone').value = '';
                 document.getElementById('order-cust-address').value = '';
-            }).catch(err => {
+
+            } catch (err) {
                 console.error(err);
                 alert('حدث خطأ أثناء إرسال الطلب، برجاء المحاولة مرة أخرى.');
-            });
+            }
         }
 
         document.addEventListener('DOMContentLoaded', initStore);
