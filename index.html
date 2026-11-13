@@ -487,10 +487,6 @@
                     <!-- Category Filter Pills -->
                     <div class="flex flex-wrap gap-2" id="catalog-filters">
                         <button onclick="filterCatalog('all', this)" class="cat-btn px-4 py-2 rounded-xl text-xs font-bold bg-emerald-deep text-ivory shadow-sm">الكل</button>
-                        <button onclick="filterCatalog('scents', this)" class="cat-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-emerald-deep border border-gold-champagne/30 hover:bg-cream">شموع وفواحات</button>
-                        <button onclick="filterCatalog('mugs', this)" class="cat-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-emerald-deep border border-gold-champagne/30 hover:bg-cream">مجات حرارية</button>
-                        <button onclick="filterCatalog('accessories', this)" class="cat-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-emerald-deep border border-gold-champagne/30 hover:bg-cream">ساعات وإكسسوارات</button>
-                        <button onclick="filterCatalog('sweets', this)" class="cat-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-emerald-deep border border-gold-champagne/30 hover:bg-cream">شوكولاتة وديكور</button>
                     </div>
                 </div>
             </div>
@@ -523,13 +519,9 @@
                 </div>
                 <div>
                     <h4 class="font-bold text-gold-light mb-3">تواصل مع البوتيك</h4>
-                    <p class="text-sm text-ivory/80 leading-relaxed mb-4">
+                    <p class="text-sm text-ivory/80 leading-relaxed">
                         فريق خدمة عملاء فرافيرو جاهز لمساعدتك في تنسيق هديتك وتوصيلها في الموعد المناسب.
                     </p>
-                    <a href="https://farafero-geft-shop.vercel.app" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-gold-champagne/40 text-xs font-bold text-gold-light transition-all">
-                        <i data-lucide="external-link" class="w-4 h-4"></i>
-                        المتجر الرسمي لـ FARAFERO
-                    </a>
                 </div>
             </div>
             <div class="pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-ivory/60 gap-3">
@@ -674,33 +666,39 @@
 
     <script>
         // =========================================================================
-        // 0. MAIN SHOP BACKEND / FIREBASE & WHATSAPP NOTIFICATION CONFIGURATION
+        // 0. REAL-TIME LIVE SYNC ENGINE (MAIN SHOP <-> CUSTOMER STOREFRONT)
         // =========================================================================
         const SHOP_SYNC_CONFIG = {
             mainStoreOrigin: 'https://farafero-geft-shop.vercel.app',
-            // Optional: Set your Firebase Realtime Database URL
-            firebaseDatabaseUrl: '', // e.g. 'https://your-project-id-default-rtdb.firebaseio.com'
+            // ضع رابط Firebase Realtime Database الخاص بالسيستم الرئيسي هنا للمزامنة السحابية عبر الأجهزة
+            firebaseDatabaseUrl: '', // مثال: 'https://farafero-shop-default-rtdb.firebaseio.com'
             apiOrdersEndpoint: 'https://farafero-geft-shop.vercel.app/api/online-orders',
             apiProductsEndpoint: 'https://farafero-geft-shop.vercel.app/api/products',
-            shopWhatsAppNumber: '201005187411' // Official Shop Owner WhatsApp (+20 01005187411)
+            shopWhatsAppNumber: '201005187411',
+            livePollIntervalMs: 4000 // تحديث لحظي كل 4 ثوانٍ
         };
 
+        // قنوات البث اللحظي الفوري بين المتجر والسيستم الرئيسي
+        const liveChannel = ('BroadcastChannel' in window) ? new BroadcastChannel('FARAFERO_REALTIME_BUS') : null;
+        let lastInventoryHash = '';
+        let bridgeIframe = null;
+
         // =========================================================================
-        // 1. CATALOG & BOUTIQUE DATA (Synced live with fallback to core boutique SKUs)
+        // 1. CATALOG & BOUTIQUE DATA (Synced Real-Time from Main Shop)
         // =========================================================================
         let PRODUCTS = [
-            { sku: 'FR-101', name: 'شمعة صويا معطرة بالعود الملكي', category: 'scents', price: 320, tag: 'الأكثر مبيعاً', icon: 'flame', image: '', gradient: 'from-amber-900 to-stone-900', desc: 'شمع صويا طبيعي 100% بفتيل خشبي يصدر صوتاً هادئاً.' },
-            { sku: 'FR-102', name: 'مج حراري ستانلس ذهبي مطفي', category: 'mugs', price: 380, tag: 'عملي وأنيق', icon: 'coffee', image: '', gradient: 'from-emerald-950 to-teal-900', desc: 'يحفظ الحرارة 8 ساعات مع إمكانية حفر الاسم بالليزر.' },
-            { sku: 'FR-103', name: 'فواحة أعواد كريستال بالمسك الأبيض', category: 'scents', price: 450, tag: 'فخامة', icon: 'sparkles', image: '', gradient: 'from-yellow-800 to-amber-950', desc: 'زجاجة كريستال فاخرة تمنح المكان رائحة فندقية تدوم طويلاً.' },
-            { sku: 'FR-104', name: 'بوكس شوكولاتة بلجيكي فاخر (24 قطعة)', category: 'sweets', price: 490, tag: 'هدايا سريعة', icon: 'heart', image: '', gradient: 'from-rose-950 to-stone-900', desc: 'تشكيلة شوكولاتة محشوة بالبندق والكراميل في علبة مذهبة.' },
-            { sku: 'FR-105', name: 'ساعة يد كلاسيك بسوار جلد طبيعي', category: 'accessories', price: 890, tag: 'VIP', icon: 'watch', image: '', gradient: 'from-slate-900 to-zinc-800', desc: 'تصميم سويسري أنيق مقاوم للماء مع علبة قطيفة فاخرة.' },
-            { sku: 'FR-106', name: 'طقم إكسسوار هاند ميد مطلي ذهب عيار 18', category: 'accessories', price: 540, tag: 'نسائي', icon: 'gem', image: '', gradient: 'from-amber-800 to-yellow-950', desc: 'سلسلة وانسيال بتصميم رقيق لا يتغير لونه.' },
-            { sku: 'FR-107', name: 'أباجورة كريستال ثلاثية الأبعاد (القمر)', category: 'sweets', price: 420, tag: 'ديكور', icon: 'moon', image: '', gradient: 'from-indigo-950 to-slate-900', desc: 'إضاءة دافئة ساحرة بقاعدة خشب طبيعي تعمل بالشحن.' },
-            { sku: 'FR-108', name: 'منظم مكتب خشب زان مع حامل موبايل', category: 'sweets', price: 360, tag: 'هدايا رجالي', icon: 'briefcase', image: '', gradient: 'from-stone-800 to-neutral-900', desc: 'تصميم عصري أنيق لترتيب المكتب والساعة والمفاتيح.' },
-            { sku: 'FR-109', name: 'مج سيراميك رخامي مع ملعقة ذهبية', category: 'mugs', price: 240, tag: 'سعر مميز', icon: 'cup-soda', image: '', gradient: 'from-teal-900 to-emerald-950', desc: 'تأثير الرخام الطبيعي مع مقبض مذهب وغطاء.' },
-            { sku: 'FR-110', name: 'مبخرة إلكترونية محمولة للشعر والسيارة', category: 'scents', price: 520, tag: 'تريند', icon: 'wind', image: '', gradient: 'from-zinc-900 to-neutral-800', desc: 'تسخين آمن وسريع للبخور مع حقيبة مخملية أنيقة.' },
-            { sku: 'FR-111', name: 'أسورة رجالي ستانلس وجلد مضفر', category: 'accessories', price: 290, tag: 'شبابي', icon: 'shield', image: '', gradient: 'from-neutral-900 to-stone-800', desc: 'قفل مغناطيسي محكم بتصميم عصري جذاب.' },
-            { sku: 'FR-112', name: 'طقم قهوة اسبريسو مذهب (فنجانين)', category: 'mugs', price: 460, tag: 'للمتزوجين', icon: 'award', image: '', gradient: 'from-amber-950 to-emerald-950', desc: 'بورسلين فاخر بحواف ذهبية مثالي لهدايا الخطوبة.' }
+            { sku: 'FR-101', name: 'شمعة صويا معطرة بالعود الملكي', category: 'شموع وفواحات', price: 320, tag: 'الأكثر مبيعاً', icon: 'flame', image: '', gradient: 'from-amber-900 to-stone-900', desc: 'شمع صويا طبيعي 100% بفتيل خشبي يصدر صوتاً هادئاً.' },
+            { sku: 'FR-102', name: 'مج حراري ستانلس ذهبي مطفي', category: 'مجات حرارية', price: 380, tag: 'عملي وأنيق', icon: 'coffee', image: '', gradient: 'from-emerald-950 to-teal-900', desc: 'يحفظ الحرارة 8 ساعات مع إمكانية حفر الاسم بالليزر.' },
+            { sku: 'FR-103', name: 'فواحة أعواد كريستال بالمسك الأبيض', category: 'شموع وفواحات', price: 450, tag: 'فخامة', icon: 'sparkles', image: '', gradient: 'from-yellow-800 to-amber-950', desc: 'زجاجة كريستال فاخرة تمنح المكان رائحة فندقية تدوم طويلاً.' },
+            { sku: 'FR-104', name: 'بوكس شوكولاتة بلجيكي فاخر (24 قطعة)', category: 'شوكولاتة وديكور', price: 490, tag: 'هدايا سريعة', icon: 'heart', image: '', gradient: 'from-rose-950 to-stone-900', desc: 'تشكيلة شوكولاتة محشوة بالبندق والكراميل في علبة مذهبة.' },
+            { sku: 'FR-105', name: 'ساعة يد كلاسيك بسوار جلد طبيعي', category: 'ساعات وإكسسوارات', price: 890, tag: 'VIP', icon: 'watch', image: '', gradient: 'from-slate-900 to-zinc-800', desc: 'تصميم سويسري أنيق مقاوم للماء مع علبة قطيفة فاخرة.' },
+            { sku: 'FR-106', name: 'طقم إكسسوار هاند ميد مطلي ذهب عيار 18', category: 'ساعات وإكسسوارات', price: 540, tag: 'نسائي', icon: 'gem', image: '', gradient: 'from-amber-800 to-yellow-950', desc: 'سلسلة وانسيال بتصميم رقيق لا يتغير لونه.' },
+            { sku: 'FR-107', name: 'أباجورة كريستال ثلاثية الأبعاد (القمر)', category: 'شوكولاتة وديكور', price: 420, tag: 'ديكور', icon: 'moon', image: '', gradient: 'from-indigo-950 to-slate-900', desc: 'إضاءة دافئة ساحرة بقاعدة خشب طبيعي تعمل بالشحن.' },
+            { sku: 'FR-108', name: 'منظم مكتب خشب زان مع حامل موبايل', category: 'شوكولاتة وديكور', price: 360, tag: 'هدايا رجالي', icon: 'briefcase', image: '', gradient: 'from-stone-800 to-neutral-900', desc: 'تصميم عصري أنيق لترتيب المكتب والساعة والمفاتيح.' },
+            { sku: 'FR-109', name: 'مج سيراميك رخامي مع ملعقة ذهبية', category: 'مجات حرارية', price: 240, tag: 'سعر مميز', icon: 'cup-soda', image: '', gradient: 'from-teal-900 to-emerald-950', desc: 'تأثير الرخام الطبيعي مع مقبض مذهب وغطاء.' },
+            { sku: 'FR-110', name: 'مبخرة إلكترونية محمولة للشعر والسيارة', category: 'شموع وفواحات', price: 520, tag: 'تريند', icon: 'wind', image: '', gradient: 'from-zinc-900 to-neutral-800', desc: 'تسخين آمن وسريع للبخور مع حقيبة مخملية أنيقة.' },
+            { sku: 'FR-111', name: 'أسورة رجالي ستانلس وجلد مضفر', category: 'ساعات وإكسسوارات', price: 290, tag: 'شبابي', icon: 'shield', image: '', gradient: 'from-neutral-900 to-stone-800', desc: 'قفل مغناطيسي محكم بتصميم عصري جذاب.' },
+            { sku: 'FR-112', name: 'طقم قهوة اسبريسو مذهب (فنجانين)', category: 'مجات حرارية', price: 460, tag: 'للمتزوجين', icon: 'award', image: '', gradient: 'from-amber-950 to-emerald-950', desc: 'بورسلين فاخر بحواف ذهبية مثالي لهدايا الخطوبة.' }
         ];
 
         const BOX_STYLES = [
@@ -719,27 +717,7 @@
         ];
 
         // =========================================================================
-        // 2. STATE MANAGEMENT
-        // =========================================================================
-        let cart = [];
-        let activeCategory = 'all';
-        let searchQuery = '';
-        let builderState = {
-            box: BOX_STYLES[0],
-            items: [],
-            ribbon: RIBBON_COLORS[0],
-            recipient: '',
-            message: 'كل عام وأنت أجمل تفاصيل الحياة.. دمت لي فرحة لا تنتهي.'
-        };
-        let quizState = {
-            occasion: 'birthday',
-            budget: '400to800',
-            style: 'cozy'
-        };
-        let latestPO = null;
-
-        // =========================================================================
-        // 3. INITIALIZATION & BACKGROUND INVENTORY SYNC
+        // 3. INITIALIZATION & REAL-TIME LIVE SYNC ENGINE
         // =========================================================================
         document.addEventListener('DOMContentLoaded', async () => {
             renderBoxStyles();
@@ -747,105 +725,241 @@
             renderRibbons();
             updateBuilderPreview();
             updateQuizRecommendation();
+            renderDynamicCategoryPills();
             renderCatalog('all');
             lucide.createIcons();
 
-            // Silently sync live products from main shop backend / Firebase if available
+            // تفعيل الربط اللحظي الفوري مع السيستم الأصلي
+            initRealTimeShopBridge();
             await syncInventoryFromMainShop();
+
+            // تحديث تلقائي مستمر كل 4 ثوانٍ + فور عودة العميل للصفحة
+            setInterval(syncInventoryFromMainShop, SHOP_SYNC_CONFIG.livePollIntervalMs);
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') syncInventoryFromMainShop();
+            });
         });
+
+        function initRealTimeShopBridge() {
+            // 1. الاستماع اللحظي لتحديثات المخزون والأسعار عبر BroadcastChannel
+            if (liveChannel) {
+                liveChannel.onmessage = (event) => {
+                    const msg = event.data || {};
+                    if (msg.type === 'INVENTORY_UPDATED' && Array.isArray(msg.products)) {
+                        applyLiveProductsPayload(msg.products);
+                    }
+                };
+            }
+
+            // 2. الاستماع اللحظي لتعديلات localStorage المشتركة على نفس الدومين
+            window.addEventListener('storage', (e) => {
+                if (!e.key) return;
+                if (e.key.includes('inventory') || e.key.includes('products') || e.key.includes('farafero_items')) {
+                    try {
+                        const parsed = JSON.parse(e.newValue);
+                        const list = Array.isArray(parsed) ? parsed : (parsed && typeof parsed === 'object' ? Object.values(parsed) : null);
+                        if (list) applyLiveProductsPayload(list);
+                    } catch (err) {}
+                }
+            });
+
+            // 3. جسر ربط خلفي غير مرئي مع اللينك الأصلي لتبادل البيانات والـ PO لحظياً
+            try {
+                bridgeIframe = document.createElement('iframe');
+                bridgeIframe.src = SHOP_SYNC_CONFIG.mainStoreOrigin;
+                bridgeIframe.style.cssText = 'display:none;width:0;height:0;border:0;position:absolute;pointer-events:none;';
+                bridgeIframe.setAttribute('aria-hidden', 'true');
+                bridgeIframe.onload = () => {
+                    try {
+                        bridgeIframe.contentWindow.postMessage({ type: 'FARAFERO_REQUEST_LIVE_PRODUCTS' }, SHOP_SYNC_CONFIG.mainStoreOrigin);
+                    } catch (e) {}
+                };
+                document.body.appendChild(bridgeIframe);
+
+                window.addEventListener('message', (event) => {
+                    if (event.origin === SHOP_SYNC_CONFIG.mainStoreOrigin && event.data) {
+                        const payload = event.data.products || event.data.inventory || (Array.isArray(event.data) ? event.data : null);
+                        if (payload) applyLiveProductsPayload(payload);
+                    }
+                });
+            } catch (err) {}
+
+            // 4. اتصال سحابي لحظي (Server-Sent Events) لو رابط Firebase متاح
+            if (SHOP_SYNC_CONFIG.firebaseDatabaseUrl) {
+                try {
+                    const stream = new EventSource(`${SHOP_SYNC_CONFIG.firebaseDatabaseUrl}/inventory.json`);
+                    stream.addEventListener('put', (e) => {
+                        const packet = JSON.parse(e.data);
+                        if (packet && packet.data) {
+                            const list = Array.isArray(packet.data) ? packet.data : Object.values(packet.data);
+                            applyLiveProductsPayload(list);
+                        }
+                    });
+                    stream.addEventListener('patch', () => syncInventoryFromMainShop());
+                } catch (err) {}
+            }
+        }
+
+        function normalizeRemoteProduct(item, idx) {
+            // قراءة كافة الحقول المحتملة من قاعدة بيانات المحل (الكود، الاسم، القسم، سعر البيع، الصورة، الوصف، المخزون)
+            const rawStock = item.stock !== undefined ? item.stock : (item.qty !== undefined ? item.qty : item.quantity);
+            const isAvailable = (rawStock === undefined || Number(rawStock) > 0) && item.active !== false && item.hidden !== true;
+            if (!isAvailable) return null;
+
+            return {
+                sku: String(item.sku || item.code || item.id || `FR-${200 + idx}`).trim(),
+                name: String(item.name || item.title || item.giftName || 'هدية مميزة من فرافيرو').trim(),
+                category: String(item.category || item.section || item.department || 'هدايا متنوعة').trim(),
+                price: Number(item.sellPrice || item.salePrice || item.price || 350),
+                tag: String(item.tag || item.badge || item.category || 'متوفر الآن').trim(),
+                icon: item.icon || 'gift',
+                image: item.image || item.imageUrl || item.img || item.photo || '',
+                gradient: 'from-emerald-950 to-stone-900',
+                desc: String(item.description || item.desc || item.notes || 'قطعة مختارة بعناية من تشكيلة فرافيرو للهدايا الفاخرة.').trim()
+            };
+        }
+
+        function applyLiveProductsPayload(rawList) {
+            if (!Array.isArray(rawList) || rawList.length === 0) return;
+            const normalized = rawList
+                .map((item, idx) => normalizeRemoteProduct(item, idx))
+                .filter(Boolean);
+
+            if (normalized.length === 0) return;
+
+            const newHash = JSON.stringify(normalized.map(p => `${p.sku}:${p.name}:${p.price}:${p.category}:${p.image}`));
+            if (newHash === lastInventoryHash) return; // لا يوجد تغيير جديد
+
+            lastInventoryHash = newHash;
+            PRODUCTS = normalized;
+
+            // تحديث أسعار أي منتجات موجودة حالياً في سلة العميل أو البوكس المخصص لحظياً
+            cart.forEach(cItem => {
+                if (!cItem.isCustomBox) {
+                    const latestProd = PRODUCTS.find(p => p.sku === cItem.sku);
+                    if (latestProd) {
+                        cItem.price = latestProd.price;
+                        cItem.name = latestProd.name;
+                    }
+                }
+            });
+
+            renderDynamicCategoryPills();
+            renderBuilderItems();
+            updateBuilderPreview();
+            renderCatalog(activeCategory);
+            renderCart();
+        }
 
         async function syncInventoryFromMainShop() {
             try {
-                let remoteItems = null;
-
-                // 1. Check Firebase Realtime DB if configured
-                if (SHOP_SYNC_CONFIG.firebaseDatabaseUrl) {
-                    const res = await fetch(`${SHOP_SYNC_CONFIG.firebaseDatabaseUrl}/inventory.json`);
-                    if (res.ok) {
-                        const data = await res.json();
-                        if (data) remoteItems = Object.values(data);
-                    }
-                } else {
-                    // 2. Attempt silent fetch from main Vercel storefront API
-                    const res = await fetch(SHOP_SYNC_CONFIG.apiProductsEndpoint, { method: 'GET' });
-                    if (res.ok) {
-                        const data = await res.json();
-                        if (Array.isArray(data) && data.length > 0) remoteItems = data;
+                // أ) فحص المخزون المحفوظ محلياً من لوحة الإدارة على نفس المتصفح
+                const localKeys = ['farafero_inventory', 'farafero_products', 'products', 'inventory', 'gifts'];
+                for (const k of localKeys) {
+                    const raw = localStorage.getItem(k);
+                    if (raw) {
+                        const parsed = JSON.parse(raw);
+                        const list = Array.isArray(parsed) ? parsed : (parsed && typeof parsed === 'object' ? Object.values(parsed) : null);
+                        if (list && list.length > 0 && (list[0].name || list[0].title || list[0].sellPrice || list[0].price)) {
+                            applyLiveProductsPayload(list);
+                            break;
+                        }
                     }
                 }
 
-                // Filter strictly for available (in-stock) items without exposing raw counts
-                if (remoteItems && remoteItems.length > 0) {
-                    const inStockProducts = remoteItems
-                        .filter(item => (item.stock === undefined || Number(item.stock) > 0) && item.active !== false)
-                        .map((item, idx) => ({
-                            sku: item.sku || item.id || `FR-${200 + idx}`,
-                            name: item.name || item.title,
-                            category: item.category || 'scents',
-                            price: Number(item.sellPrice || item.price || 350),
-                            tag: item.tag || 'متوفر',
-                            icon: item.icon || 'gift',
-                            image: item.image || item.imageUrl || '',
-                            gradient: 'from-emerald-950 to-stone-900',
-                            desc: item.description || item.desc || 'منتج فاخر من تشكيلة فرافيرو للهدايا.'
-                        }));
-
-                    if (inStockProducts.length > 0) {
-                        PRODUCTS = inStockProducts;
-                        renderBuilderItems();
-                        renderCatalog(activeCategory);
+                // ب) السحب اللحظي من Firebase Realtime DB
+                if (SHOP_SYNC_CONFIG.firebaseDatabaseUrl) {
+                    const res = await fetch(`${SHOP_SYNC_CONFIG.firebaseDatabaseUrl}/inventory.json?_t=${Date.now()}`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data) {
+                            const list = Array.isArray(data) ? data : Object.values(data);
+                            applyLiveProductsPayload(list);
+                            return;
+                        }
                     }
+                }
+
+                // ج) السحب اللحظي من API اللينك الأصلي
+                const res = await fetch(`${SHOP_SYNC_CONFIG.apiProductsEndpoint}?_t=${Date.now()}`, { method: 'GET' });
+                if (res.ok) {
+                    const data = await res.json();
+                    const list = Array.isArray(data) ? data : (data?.products || data?.items || []);
+                    if (list.length > 0) applyLiveProductsPayload(list);
                 }
             } catch (err) {
-                // Keep seamless local boutique catalog if offline or standalone
+                // استمرار العمل بسلاسة بالكتالوج الحالي لحين عودة الاتصال
             }
         }
 
         async function transmitOrderToMainShop(poPayload) {
-            // Save locally in shared browser storage key for same-origin Vercel deployment
+            // 1. البث الفوري عبر BroadcastChannel + الجسر الخفي للينك الأصلي
+            try {
+                if (liveChannel) {
+                    liveChannel.postMessage({
+                        type: 'NEW_ONLINE_PO',
+                        origin: SHOP_SYNC_CONFIG.mainStoreOrigin,
+                        order: poPayload
+                    });
+                }
+                if (bridgeIframe && bridgeIframe.contentWindow) {
+                    bridgeIframe.contentWindow.postMessage({
+                        type: 'FARAFERO_NEW_ONLINE_PO',
+                        order: poPayload
+                    }, SHOP_SYNC_CONFIG.mainStoreOrigin);
+                }
+            } catch (e) {}
+
+            // 2. الحفظ الفوري في التخزين المشترك للـ PO وسجل العملاء VIP
             try {
                 const existingQueue = JSON.parse(localStorage.getItem('farafero_online_pos') || '[]');
                 existingQueue.unshift(poPayload);
                 localStorage.setItem('farafero_online_pos', JSON.stringify(existingQueue));
 
-                // Register customer record ONLY upon purchase order creation
                 const existingCustomers = JSON.parse(localStorage.getItem('farafero_customers') || '[]');
-                const alreadyExists = existingCustomers.some(c => c.phone === poPayload.phone);
-                if (!alreadyExists) {
+                const custIdx = existingCustomers.findIndex(c => c.phone === poPayload.phone);
+                if (custIdx > -1) {
+                    existingCustomers[custIdx].ordersCount = (existingCustomers[custIdx].ordersCount || 1) + 1;
+                    existingCustomers[custIdx].lastOrderPO = poPayload.poNumber;
+                    existingCustomers[custIdx].lastAddress = poPayload.address;
+                } else {
                     existingCustomers.unshift({
                         name: poPayload.customer,
                         phone: poPayload.phone,
                         address: poPayload.address,
+                        ordersCount: 1,
                         firstOrderPO: poPayload.poNumber,
                         createdAt: poPayload.timestamp
                     });
-                    localStorage.setItem('farafero_customers', JSON.stringify(existingCustomers));
                 }
+                localStorage.setItem('farafero_customers', JSON.stringify(existingCustomers));
             } catch (e) {}
 
-            // Transmit to Firebase Realtime Database if configured
+            // 3. الإرسال السحابي اللحظي لقاعدة بيانات Firebase
             if (SHOP_SYNC_CONFIG.firebaseDatabaseUrl) {
                 try {
-                    await fetch(`${SHOP_SYNC_CONFIG.firebaseDatabaseUrl}/online_orders/${poPayload.poNumber}.json`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(poPayload)
-                    });
-                    await fetch(`${SHOP_SYNC_CONFIG.firebaseDatabaseUrl}/customers/${poPayload.phone.replace(/\D/g, '')}.json`, {
-                        method: 'PATCH',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            name: poPayload.customer,
-                            phone: poPayload.phone,
-                            lastAddress: poPayload.address,
-                            lastOrderPO: poPayload.poNumber,
-                            updatedAt: poPayload.timestamp
+                    await Promise.all([
+                        fetch(`${SHOP_SYNC_CONFIG.firebaseDatabaseUrl}/online_orders/${poPayload.poNumber}.json`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(poPayload)
+                        }),
+                        fetch(`${SHOP_SYNC_CONFIG.firebaseDatabaseUrl}/customers/${poPayload.phone.replace(/\D/g, '')}.json`, {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                name: poPayload.customer,
+                                phone: poPayload.phone,
+                                lastAddress: poPayload.address,
+                                lastOrderPO: poPayload.poNumber,
+                                updatedAt: poPayload.timestamp
+                            })
                         })
-                    });
+                    ]);
                 } catch (err) {}
             }
 
-            // Transmit to Main Vercel Shop API endpoint
+            // 4. الإرسال الفوري لـ API المتجر الرئيسي
             try {
                 await fetch(SHOP_SYNC_CONFIG.apiOrdersEndpoint, {
                     method: 'POST',
@@ -862,264 +976,36 @@
         // =========================================================================
         // 4. CUSTOM GIFT BOX BUILDER LOGIC
         // =========================================================================
-        function renderBoxStyles() {
-            const container = document.getElementById('box-styles-grid');
-            container.innerHTML = BOX_STYLES.map(box => {
-                const isSelected = builderState.box.id === box.id;
-                return `
-                    <button type="button" onclick="selectBoxStyle('${box.id}')"
-                        class="p-3 rounded-2xl border-2 text-right transition-all flex flex-col justify-between h-full ${isSelected ? 'border-emerald-deep bg-cream shadow-md' : 'border-gold-champagne/30 bg-ivory hover:bg-cream/50'}">
-                        <div>
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="w-5 h-5 rounded-full border border-white shadow-xs" style="background-color: ${box.color}"></span>
-                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gold-champagne/25 text-emerald-deep">${box.badge}</span>
-                            </div>
-                            <div class="text-xs font-extrabold text-emerald-deep leading-snug">${box.name}</div>
-                        </div>
-                        <div class="text-xs font-extrabold text-gold-dark mt-2 pt-2 border-t border-gold-champagne/20">${box.price} ج.م</div>
-                    </button>
-                `;
-            }).join('');
-        }
-
-        function selectBoxStyle(boxId) {
-            builderState.box = BOX_STYLES.find(b => b.id === boxId);
-            renderBoxStyles();
-            updateBuilderPreview();
-        }
-
-        function renderBuilderItems() {
-            const container = document.getElementById('builder-items-grid');
-            container.innerHTML = PRODUCTS.map(prod => {
-                const countInBox = builderState.items.filter(i => i.sku === prod.sku).length;
-                return `
-                    <div class="p-3 rounded-2xl border ${countInBox > 0 ? 'border-emerald-deep bg-cream/70' : 'border-gold-champagne/30 bg-ivory'} flex items-center justify-between gap-2 transition-all">
-                        <div class="min-w-0">
-                            <div class="flex items-center gap-1.5">
-                                <span class="text-[10px] font-mono text-emerald-deep/60">${prod.sku}</span>
-                                <span class="w-2 h-2 rounded-full bg-emerald-500" title="متوفر"></span>
-                            </div>
-                            <div class="text-xs font-bold text-emerald-deep truncate">${prod.name}</div>
-                            <div class="text-xs font-extrabold text-gold-dark mt-0.5">${prod.price} ج.م</div>
-                        </div>
-                        <div class="flex items-center gap-1.5 shrink-0">
-                            ${countInBox > 0 ? `
-                                <button type="button" onclick="removeItemFromBuilder('${prod.sku}')" class="w-7 h-7 rounded-lg bg-white border border-gold-champagne/50 text-emerald-deep font-bold hover:bg-rose-50">-</button>
-                                <span class="text-xs font-extrabold w-4 text-center">${countInBox}</span>
-                            ` : ''}
-                            <button type="button" onclick="addItemToBuilder('${prod.sku}')" class="px-2.5 py-1.5 rounded-lg emerald-gradient text-gold-light text-xs font-bold hover:opacity-90">
-                                + أضف
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function addItemToBuilder(sku) {
-            if (builderState.items.length >= 5) {
-                showToast('الحد الأقصى للبوكس الواحد هو 5 قطع لضمان تناسق التغليف', 'warning');
-                return;
-            }
-            const prod = PRODUCTS.find(p => p.sku === sku);
-            builderState.items.push(prod);
-            renderBuilderItems();
-            updateBuilderPreview();
-        }
-
-        function removeItemFromBuilder(sku) {
-            const idx = builderState.items.findIndex(i => i.sku === sku);
-            if (idx > -1) {
-                builderState.items.splice(idx, 1);
-                renderBuilderItems();
-                updateBuilderPreview();
-            }
-        }
-
-        function renderRibbons() {
-            const container = document.getElementById('ribbon-colors-list');
-            container.innerHTML = RIBBON_COLORS.map(rib => {
-                const isSelected = builderState.ribbon.name === rib.name;
-                return `
-                    <button type="button" onclick="selectRibbon('${rib.name}')"
-                        class="px-3 py-1.5 rounded-full border text-xs font-bold flex items-center gap-2 transition-all ${isSelected ? 'border-emerald-deep bg-emerald-deep text-ivory shadow-xs' : 'border-gold-champagne/40 bg-ivory text-emerald-deep hover:bg-cream'}">
-                        <span class="w-3.5 h-3.5 rounded-full border border-white/60" style="background-color: ${rib.hex}"></span>
-                        ${rib.name}
-                    </button>
-                `;
-            }).join('');
-        }
-
-        function selectRibbon(name) {
-            builderState.ribbon = RIBBON_COLORS.find(r => r.name === name);
-            renderRibbons();
-            updateBuilderPreview();
-        }
-
-        function applyQuickQuote(quote) {
-            if (!quote) return;
-            document.getElementById('card-message').value = quote;
-            updateBuilderPreview();
-        }
-
-        function updateBuilderPreview() {
-            const recipientInput = document.getElementById('card-recipient').value.trim();
-            const messageInput = document.getElementById('card-message').value.trim();
-
-            builderState.recipient = recipientInput || 'من يسكن القلب';
-            builderState.message = messageInput || 'كل عام وأنت أجمل تفاصيل الحياة.. دمت لي فرحة لا تنتهي.';
-
-            document.getElementById('preview-box-title').textContent = builderState.box.name;
-            document.getElementById('preview-ribbon-badge').textContent = `شريطة ${builderState.ribbon.name}`;
-            document.getElementById('live-ribbon-stripe').style.backgroundColor = builderState.ribbon.hex;
-            document.getElementById('live-card-recipient').textContent = `إلى: ${builderState.recipient}`;
-            document.getElementById('live-card-text').textContent = builderState.message;
-
-            // Selected Items Pills
-            const itemsContainer = document.getElementById('live-selected-items');
-            document.getElementById('builder-items-counter').textContent = `${builderState.items.length} / 5 قطع`;
-
-            if (builderState.items.length === 0) {
-                itemsContainer.innerHTML = `<span class="text-xs text-ivory/50">اختر هدايا من القائمة لإضافتها داخل البوكس...</span>`;
-            } else {
-                itemsContainer.innerHTML = builderState.items.map((item, idx) => `
-                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold-champagne/20 border border-gold-champagne/50 text-gold-light text-xs font-bold">
-                        ${item.name}
-                        <button type="button" onclick="removeItemFromBuilder('${item.sku}')" class="hover:text-white">&times;</button>
-                    </span>
-                `).join('');
-            }
-
-            // Pricing
-            const itemsSum = builderState.items.reduce((sum, item) => sum + item.price, 0);
-            const total = builderState.box.price + itemsSum;
-
-            document.getElementById('builder-box-price').textContent = `${builderState.box.price} ج.م`;
-            document.getElementById('builder-items-price').textContent = `${itemsSum.toLocaleString()} ج.م`;
-            document.getElementById('builder-total-price').textContent = `${total.toLocaleString()} ج.م`;
-        }
-
-        function addCustomBoxToCart() {
-            if (builderState.items.length === 0) {
-                showToast('من فضلك اختر قطعة واحدة على الأقل داخل البوكس أولاً', 'warning');
-                return;
-            }
-            const itemsSum = builderState.items.reduce((sum, i) => sum + i.price, 0);
-            const totalBoxPrice = builderState.box.price + itemsSum;
-            const skusList = builderState.items.map(i => i.sku).join('+');
-            const summaryNames = builderState.items.map(i => i.name).join(' + ');
-
-            cart.push({
-                id: 'CUSTOM-' + Date.now(),
-                sku: `BOX-${builderState.box.id.toUpperCase()} (${skusList})`,
-                name: `بوكس مخصص: ${builderState.box.name}`,
-                details: `المحتوى: ${summaryNames} | شريطة: ${builderState.ribbon.name} | كارت إلى (${builderState.recipient}): "${builderState.message}"`,
-                price: totalBoxPrice,
-                qty: 1,
-                isCustomBox: true
-            });
-
-            updateCartBadge();
-            renderCart();
-            toggleCart(true);
-            showToast('تم إضافة البوكس المخصص إلى سلة الهدايا بنجاح!');
-        }
-
+        // 6. CATALOG RENDERING (DYNAMIC CATEGORIES + NO RAW STOCK NUMBERS)
         // =========================================================================
-        // 5. AI GIFT FINDER QUIZ LOGIC
-        // =========================================================================
-        function selectQuizOption(type, value, btnEl) {
-            quizState[type] = value;
-            document.querySelectorAll(`.quiz-opt-${type}`).forEach(btn => {
-                btn.classList.remove('bg-emerald-deep', 'text-ivory', 'border-emerald-deep');
-                btn.classList.add('bg-ivory', 'text-emerald-deep', 'border-gold-champagne/40');
-            });
-            btnEl.classList.remove('bg-ivory', 'text-emerald-deep', 'border-gold-champagne/40');
-            btnEl.classList.add('bg-emerald-deep', 'text-ivory', 'border-emerald-deep');
-            updateQuizRecommendation();
-        }
+        function renderDynamicCategoryPills() {
+            const filtersEl = document.getElementById('catalog-filters');
+            if (!filtersEl) return;
 
-        function resetQuiz() {
-            quizState = { occasion: 'birthday', budget: '400to800', style: 'cozy' };
-            updateQuizRecommendation();
-            showToast('تم إعادة ضبط مستشار الهدايا');
-        }
-
-        function updateQuizRecommendation() {
-            const container = document.getElementById('quiz-recommendation-box');
-            let bundleTitle = '';
-            let bundleDesc = '';
-            let bundleSkus = [];
-            let bundlePrice = 0;
-
-            if (quizState.budget === 'under400') {
-                bundleTitle = 'باقة اللمسة الدافئة السريعة';
-                bundleDesc = 'شمعة صويا معطرة بالعود الملكي (FR-101) + تغليف فرافيرو الفاخر مع كارت إهداء.';
-                bundleSkus = ['FR-101'];
-                bundlePrice = 350;
-            } else if (quizState.style === 'sweet') {
-                bundleTitle = 'باقة السعادة والشوكولاتة البلجيكية';
-                bundleDesc = 'بوكس شوكولاتة بلجيكي فاخر 24 قطعة (FR-104) + مج سيراميك رخامي بملعقة ذهبية (FR-109).';
-                bundleSkus = ['FR-104', 'FR-109'];
-                bundlePrice = 730;
-            } else if (quizState.style === 'luxury' || quizState.budget === 'vip') {
-                bundleTitle = 'الباقة الملكية لكبار الشخصيات (VIP)';
-                bundleDesc = 'ساعة يد كلاسيك بسوار جلد طبيعي (FR-105) + فواحة كريستال بالمسك الأبيض (FR-103) في بوكس مخمل.';
-                bundleSkus = ['FR-105', 'FR-103'];
-                bundlePrice = 1340;
-            } else if (quizState.style === 'practical') {
-                bundleTitle = 'باقة الأناقة العملية والعمل';
-                bundleDesc = 'مج حراري ستانلس ذهبي (FR-102) + منظم مكتب خشب زان (FR-108).';
-                bundleSkus = ['FR-102', 'FR-108'];
-                bundlePrice = 740;
-            } else {
-                bundleTitle = 'باقة الاسترخاء والأجواء الرومانسية';
-                bundleDesc = 'أباجورة القمر ثلاثية الأبعاد (FR-107) + شمعة صويا بالعود الملكي (FR-101).';
-                bundleSkus = ['FR-107', 'FR-101'];
-                bundlePrice = 740;
+            const uniqueCategories = [...new Set(PRODUCTS.map(p => p.category).filter(Boolean))];
+            if (activeCategory !== 'all' && !uniqueCategories.includes(activeCategory)) {
+                activeCategory = 'all';
             }
 
-            container.innerHTML = `
-                <div class="space-y-2 text-center md:text-right">
-                    <div class="inline-flex items-center gap-1.5 text-xs font-extrabold text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">
-                        <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
-                        الترشيح المثالي لاختياراتك
-                    </div>
-                    <h3 class="text-xl font-extrabold text-emerald-deep">${bundleTitle}</h3>
-                    <p class="text-sm text-emerald-deep/80 max-w-xl">${bundleDesc}</p>
-                    <div class="text-xs font-mono text-emerald-deep/60">الأكواد المشمولة: ${bundleSkus.join(' , ')}</div>
-                </div>
-                <div class="flex flex-col items-center md:items-end gap-2 shrink-0">
-                    <div class="text-2xl font-extrabold text-emerald-deep">${bundlePrice.toLocaleString()} <span class="text-sm text-gold-dark">ج.م</span></div>
-                    <button onclick="addPresetBundle('${bundleTitle}', ${JSON.stringify(bundleSkus).replace(/"/g, '&quot;')}, ${bundlePrice})"
-                        class="px-6 py-3 rounded-xl emerald-gradient text-gold-light font-extrabold text-sm shadow-md hover:opacity-95 transition-all flex items-center gap-2">
-                        <i data-lucide="shopping-bag" class="w-4 h-4"></i>
-                        أضف الباقة للسلة
-                    </button>
-                </div>
-            `;
-            lucide.createIcons();
+            const allBtnClass = activeCategory === 'all'
+                ? 'bg-emerald-deep text-ivory shadow-sm'
+                : 'bg-white text-emerald-deep border border-gold-champagne/30 hover:bg-cream';
+
+            const pillsHtml = [
+                `<button onclick="filterCatalog('all', this)" class="cat-btn px-4 py-2 rounded-xl text-xs font-bold transition-all ${allBtnClass}">الكل</button>`,
+                ...uniqueCategories.map(cat => {
+                    const isActive = activeCategory === cat;
+                    const cls = isActive
+                        ? 'bg-emerald-deep text-ivory shadow-sm'
+                        : 'bg-white text-emerald-deep border border-gold-champagne/30 hover:bg-cream';
+                    const safeCat = cat.replace(/'/g, "\\'");
+                    return `<button onclick="filterCatalog('${safeCat}', this)" class="cat-btn px-4 py-2 rounded-xl text-xs font-bold transition-all ${cls}">${cat}</button>`;
+                })
+            ];
+
+            filtersEl.innerHTML = pillsHtml.join('');
         }
 
-        function addPresetBundle(title, skus, price) {
-            cart.push({
-                id: 'BUNDLE-' + Date.now(),
-                sku: skus.join('+'),
-                name: title,
-                details: `باقة منسقة (${skus.join(', ')})`,
-                price: price,
-                qty: 1,
-                isCustomBox: false
-            });
-            updateCartBadge();
-            renderCart();
-            toggleCart(true);
-            showToast(`تمت إضافة "${title}" إلى سلة الهدايا`);
-        }
-
-        // =========================================================================
-        // 6. CATALOG RENDERING (NO RAW STOCK NUMBERS, CLEAN GREEN IN-STOCK BADGE)
-        // =========================================================================
         function handleCatalogSearch(val) {
             searchQuery = val.trim().toLowerCase();
             renderCatalog(activeCategory);
@@ -1127,12 +1013,7 @@
 
         function filterCatalog(category, btnEl) {
             activeCategory = category;
-            document.querySelectorAll('.cat-btn').forEach(btn => {
-                btn.classList.remove('bg-emerald-deep', 'text-ivory', 'shadow-sm');
-                btn.classList.add('bg-white', 'text-emerald-deep', 'border', 'border-gold-champagne/30');
-            });
-            btnEl.classList.remove('bg-white', 'text-emerald-deep', 'border', 'border-gold-champagne/30');
-            btnEl.classList.add('bg-emerald-deep', 'text-ivory', 'shadow-sm');
+            renderDynamicCategoryPills();
             renderCatalog(category);
         }
 
