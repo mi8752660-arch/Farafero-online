@@ -1397,3 +1397,181 @@
     </script>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FARAFERO GIFT SHOP | فرافيرو للهدايا الفاخرة</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background-color: #FAF7F2; color: #142823; font-family: 'Cairo', sans-serif; }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Header -->
+    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-amber-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-2xl bg-[#142823] flex items-center justify-center text-[#DFC389] font-bold text-xl shadow-md">F</div>
+                <div>
+                    <h1 class="text-xl font-bold text-[#142823] tracking-widest">FARAFERO</h1>
+                    <p class="text-xs text-amber-700 font-bold">GIFT SHOP & BOUTIQUE</p>
+                </div>
+            </div>
+
+            <button onclick="toggleCart()" class="relative px-4 py-2.5 rounded-2xl bg-[#142823] text-white font-bold flex items-center gap-2 shadow-md">
+                <i class="fa-solid fa-cart-shopping text-[#DFC389]"></i>
+                <span>السلة</span>
+                <span id="cart-count" class="bg-[#C5A059] text-[#142823] text-xs font-extrabold px-2 py-0.5 rounded-full">0</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-10">
+        <div class="text-center mb-10">
+            <span class="text-xs font-bold text-amber-700 bg-amber-100 px-3.5 py-1 rounded-full">تشكيلة البوتيك الحصرية</span>
+            <h2 class="text-3xl font-extrabold text-[#142823] mt-2">أرقى الهدايا الجاهزة للطلب</h2>
+        </div>
+
+        <!-- Products Grid -->
+        <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- المنتجات هتتحمل هنا أوتوماتيك بأمان تام -->
+        </div>
+    </main>
+
+    <!-- Cart Drawer Modal -->
+    <div id="cart-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex justify-end">
+        <div class="w-full max-w-md bg-[#FAF7F2] h-full shadow-2xl flex flex-col p-5 overflow-y-auto">
+            <div class="flex items-center justify-between pb-4 border-b border-amber-200">
+                <h3 class="font-extrabold text-lg text-[#142823]">سلة المشتريات (طلب PO)</h3>
+                <button onclick="toggleCart()" class="text-xl font-bold text-[#142823]">&times;</button>
+            </div>
+
+            <div id="cart-items-list" class="flex-1 py-4 space-y-3 overflow-y-auto">
+                <p class="text-center text-gray-500 text-sm">السلة فارغة حالياً</p>
+            </div>
+
+            <div class="border-t border-amber-200 pt-4 space-y-3">
+                <div class="flex justify-between font-extrabold text-base text-[#142823]">
+                    <span>الإجمالي النهائي:</span>
+                    <span id="cart-total" class="text-amber-700">0 ج.م</span>
+                </div>
+
+                <div class="space-y-2">
+                    <input type="text" id="cust-name" placeholder="اسم العميل الكريم" class="w-full p-2.5 rounded-xl bg-white border border-amber-300 text-xs">
+                    <input type="tel" id="cust-phone" placeholder="رقم الموبايل (واتساب)" class="w-full p-2.5 rounded-xl bg-white border border-amber-300 text-xs">
+                    <input type="text" id="cust-address" placeholder="العنوان بالتفصيل والمحافظة" class="w-full p-2.5 rounded-xl bg-white border border-amber-300 text-xs">
+                    <button onclick="submitOrder()" class="w-full py-3 rounded-xl bg-[#142823] text-[#DFC389] font-extrabold text-sm shadow-md">
+                        تأكيد وإرسال الطلب (PO)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const PRODUCTS = [
+            { sku: 'FR-101', name: 'شمعة صويا معطرة بالعود الملكي', price: 320, category: 'شموع وفواحات', desc: 'شمع صويا طبيعي بفتيل خشبي.' },
+            { sku: 'FR-102', name: 'مج حراري ستانلس ذهبي مطفي', price: 380, category: 'مجات حرارية', desc: 'يحفظ الحرارة لفترات طويلة.' },
+            { sku: 'FR-103', name: 'فواحة أعواد كريستال بالمسك الأبيض', price: 450, category: 'شموع وفواحات', desc: 'رائحة فندقية تدوم طويلاً.' },
+            { sku: 'FR-104', name: 'بوكس شوكولاتة بلجيكي فاخر', price: 490, category: 'شوكولاتة وديكور', desc: 'تشكيلة مميزة في علبة مذهبة.' }
+        ];
+
+        let cart = [];
+
+        function renderProducts() {
+            const grid = document.getElementById('products-grid');
+            grid.innerHTML = PRODUCTS.map(p => `
+                <div class="bg-white rounded-3xl p-5 border border-amber-200 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-[11px] font-mono text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md font-bold">${p.sku}</span>
+                            <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">in stock</span>
+                        </div>
+                        <h3 class="font-extrabold text-base text-[#142823]">${p.name}</h3>
+                        <p class="text-xs text-gray-600 mt-1">${p.desc}</p>
+                    </div>
+                    <div class="pt-4 mt-4 border-t border-amber-100 flex items-center justify-between">
+                        <span class="text-lg font-extrabold text-[#142823]">${p.price} <span class="text-xs text-amber-700">ج.م</span></span>
+                        <button onclick="addToCart('${p.sku}')" class="px-4 py-2 rounded-xl bg-[#142823] text-white font-bold text-xs hover:bg-amber-700 transition-all">
+                            أضف للسلة
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function toggleCart() {
+            const modal = document.getElementById('cart-modal');
+            modal.classList.toggle('hidden');
+        }
+
+        function addToCart(sku) {
+            const prod = PRODUCTS.find(p => p.sku === sku);
+            const exist = cart.find(c => c.sku === sku);
+            if (exist) {
+                exist.qty++;
+            } else {
+                cart.push({ ...prod, qty: 1 });
+            }
+            updateCartUI();
+            alert('تمت الإضافة للسلة بنجاح!');
+        }
+
+        function updateCartUI() {
+            const totalQty = cart.reduce((sum, i) => sum + i.qty, 0);
+            document.getElementById('cart-count').textContent = totalQty;
+
+            const list = document.getElementById('cart-items-list');
+            if (cart.length === 0) {
+                list.innerHTML = '<p class="text-center text-gray-500 text-sm">السلة فارغة حالياً</p>';
+                document.getElementById('cart-total').textContent = '0 ج.م';
+                return;
+            }
+
+            let total = 0;
+            list.innerHTML = cart.map(item => {
+                total += item.price * item.qty;
+                return `
+                    <div class="bg-white p-3 rounded-xl border border-amber-200 flex justify-between items-center text-xs">
+                        <div>
+                            <div class="font-bold text-[#142823]">${item.name}</div>
+                            <div class="text-amber-700">${item.price} ج.م × ${item.qty}</div>
+                        </div>
+                        <span class="font-extrabold">${item.price * item.qty} ج.م</span>
+                    </div>
+                `;
+            }).join('');
+            document.getElementById('cart-total').textContent = total + ' ج.م';
+        }
+
+        function submitOrder() {
+            const name = document.getElementById('cust-name').value.trim();
+            const phone = document.getElementById('cust-phone').value.trim();
+            const address = document.getElementById('cust-address').value.trim();
+
+            if (!name || !phone || !address) {
+                alert('من فضلك املأ جميع بيانات التوصيل');
+                return;
+            }
+
+            if (cart.length === 0) {
+                alert('السلة فارغة!');
+                return;
+            }
+
+            alert('تم تسجيل طلبك (PO) بنجاح وإرساله للمحل!');
+            cart = [];
+            updateCartUI();
+            toggleCart();
+        }
+
+        document.addEventListener('DOMContentLoaded', renderProducts);
+    </script>
+</body>
+</html>
