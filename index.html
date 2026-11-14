@@ -794,22 +794,7 @@
             updateBuilderPreview();
         }
 
-        function applyQuickQuote(val) {function toggleCart(open) {
-    const overlay = document.getElementById('cart-overlay');
-    const drawer = document.getElementById('cart-drawer');
-    if (!overlay || !drawer) return;
-    
-    if (open) {
-        renderCart();
-        overlay.classList.remove('hidden');
-        drawer.classList.remove('-translate-x-full');
-        drawer.style.transform = 'translateX(0)';
-    } else {
-        drawer.classList.add('-translate-x-full');
-        drawer.style.transform = 'translateX(-100%)';
-        setTimeout(() => overlay.classList.add('hidden'), 300);
-    }
-}
+        function applyQuickQuote(val) {
             if (!val) return;
             document.getElementById('card-message').value = val;
             updateBuilderPreview();
@@ -1150,19 +1135,4 @@
         function resetQuiz() { updateQuizRecommendation(); }
     </script>
 </body>
-</html>function toggleCart(open) {
-    const overlay = document.getElementById('cart-overlay');
-    const drawer = document.getElementById('cart-drawer');
-    if (!overlay || !drawer) return;
-    
-    if (open) {
-        renderCart();
-        overlay.classList.remove('hidden');
-        drawer.classList.remove('-translate-x-full');
-        drawer.style.transform = 'translateX(0)';
-    } else {
-        drawer.classList.add('-translate-x-full');
-        drawer.style.transform = 'translateX(-100%)';
-        setTimeout(() => overlay.classList.add('hidden'), 300);
-    }
-}
+</html>
