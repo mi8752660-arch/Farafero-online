@@ -1136,3 +1136,17 @@
     </script>
 </body>
 </html>
+function toggleCart(open) {
+    const overlay = document.getElementById('cart-overlay');
+    const drawer = document.getElementById('cart-drawer');
+    if (!overlay || !drawer) return;
+    
+    if (open) {
+        renderCart();
+        overlay.classList.remove('hidden');
+        setTimeout(() => drawer.classList.remove('-translate-x-full'), 10);
+    } else {
+        drawer.classList.add('-translate-x-full');
+        setTimeout(() => overlay.classList.add('hidden'), 300);
+    }
+}
