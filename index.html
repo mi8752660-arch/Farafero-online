@@ -931,7 +931,22 @@
             renderCart();
             showToast(`تمت إضافة "${prod.name}" للسلة`);
         }
-
+function toggleCart(open) {
+    const overlay = document.getElementById('cart-overlay');
+    const drawer = document.getElementById('cart-drawer');
+    if (!overlay || !drawer) return;
+    
+    if (open) {
+        renderCart();
+        overlay.classList.remove('hidden');
+        drawer.classList.remove('-translate-x-full');
+        drawer.style.transform = 'translateX(0)';
+    } else {
+        drawer.classList.add('-translate-x-full');
+        drawer.style.transform = 'translateX(-100%)';
+        setTimeout(() => overlay.classList.add('hidden'), 300);
+    }
+}
         function toggleCart(open) {
             const overlay = document.getElementById('cart-overlay');
             const drawer = document.getElementById('cart-drawer');
