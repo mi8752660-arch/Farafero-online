@@ -9,6 +9,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cairo:wght@300;400;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
     <script>
         tailwind.config = {
             theme: { extend: {
@@ -53,7 +58,7 @@
                 <a href="#catalog-section" class="hover:text-gold-dark transition-colors">تشكيلة الهدايا</a>
             </nav>
             <div class="flex items-center gap-2.5 sm:gap-3">
-                <div id="vip-badge" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-cream border border-gold-champagne/40 text-xs font-bold text-emerald-deep"><i data-lucide="crown" class="w-3.5 h-3.5 text-gold-dark"></i><span id="vip-status-text">عضو فرافيرو</span></div>
+                <div id="vip-badge" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-cream border border-gold-champagne/40 text-xs font-bold text-emerald-deep"><i data-lucide="crown" class="w-3.5 h-3.5 text-gold-dark"></i><span>عضو VIP</span></div>
                 <button onclick="toggleCart(true)" class="relative p-3 rounded-2xl emerald-gradient text-ivory hover:opacity-95 transition-all shadow-md flex items-center gap-2"><i data-lucide="shopping-bag" class="w-5 h-5 text-gold-light"></i><span class="hidden sm:inline text-sm font-bold">سلة الهدايا</span><span id="cart-count-badge" class="bg-gold-champagne text-emerald-deep text-xs font-extrabold px-2 py-0.5 rounded-full">0</span></button>
             </div>
         </div>
@@ -144,143 +149,183 @@
     <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
 <script>
-const SHOP_SYNC_CONFIG = {
-    mainStoreOrigin: 'https://farafero-geft-shop.vercel.app',
-    apiOrdersEndpoint: 'https://farafero-geft-shop.vercel.app/api/online-orders',
-    apiProductsEndpoint: 'https://farafero-geft-shop.vercel.app/api/products',
-    shopWhatsAppNumber: '201005187411',
-    livePollIntervalMs: 4000
-};
-const liveChannel = ('BroadcastChannel' in window) ? new BroadcastChannel('FARAFERO_REALTIME_BUS') : null;
-let lastInventoryHash = '';
-let bridgeIframe = null;
-let cart = [];
+    const firebaseConfig = {
+      apiKey: "AIzaSyAuP10QxT-N1gEo7nW6Zc9I1Nzg9ehdD6E",
+      authDomain: "farafero-store-99e0d.firebaseapp.com",
+      projectId: "farafero-store-99e0d",
+      storageBucket: "farafero-store-99e0d.firebasestorage.app",
+      messagingSenderId: "47711607235",
+      appId: "1:47711607235:web:6cc25baa82eebcf6460576",
+      measurementId: "G-Q736FT0ZH5"
+    };
 
-let PRODUCTS = [
- {sku:'FR-101',name:'شمعة صويا معطرة بالعود الملكي',category:'شموع وفواحات',price:320,tag:'الأكثر مبيعاً',icon:'flame',image:'',gradient:'from-amber-900 to-stone-900',desc:'شمع صويا طبيعي 100% بفتيل خشبي يصدر صوتاً هادئاً.'},
- {sku:'FR-102',name:'مج حراري ستانلس ذهبي مطفي',category:'مجات حرارية',price:380,tag:'عملي وأنيق',icon:'coffee',image:'',gradient:'from-emerald-950 to-teal-900',desc:'يحفظ الحرارة 8 ساعات مع إمكانية حفر الاسم بالليزر.'},
- {sku:'FR-103',name:'فواحة أعواد كريستال بالمسك الأبيض',category:'شموع وفواحات',price:450,tag:'فخامة',icon:'sparkles',image:'',gradient:'from-yellow-800 to-amber-950',desc:'زجاجة كريستال فاخرة تمنح المكان رائحة فندقية تدوم طويلاً.'},
- {sku:'FR-104',name:'بوكس شوكولاتة بلجيكي فاخر (24 قطعة)',category:'شوكولاتة وديكور',price:490,tag:'هدايا سريعة',icon:'heart',image:'',gradient:'from-rose-950 to-stone-900',desc:'تشكيلة شوكولاتة محشوة بالبندق والكراميل في علبة مذهبة.'},
- {sku:'FR-105',name:'ساعة يد كلاسيك بسوار جلد طبيعي',category:'ساعات وإكسسوارات',price:890,tag:'VIP',icon:'watch',image:'',gradient:'from-slate-900 to-zinc-800',desc:'تصميم سويسري أنيق مقاوم للماء مع علبة قطيفة فاخرة.'},
- {sku:'FR-106',name:'طقم إكسسوار هاند ميد مطلي ذهب عيار 18',category:'ساعات وإكسسوارات',price:540,tag:'نسائي',icon:'gem',image:'',gradient:'from-amber-800 to-yellow-950',desc:'سلسلة وانسيال بتصميم رقيق لا يتغير لونه.'},
- {sku:'FR-107',name:'أباجورة كريستال ثلاثية الأبعاد (القمر)',category:'شوكولاتة وديكور',price:420,tag:'ديكور',icon:'moon',image:'',gradient:'from-indigo-950 to-slate-900',desc:'إضاءة دافئة ساحرة بقاعدة خشب طبيعي تعمل بالشحن.'},
- {sku:'FR-108',name:'منظم مكتب خشب زان مع حامل موبايل',category:'شوكولاتة وديكور',price:360,tag:'هدايا رجالي',icon:'briefcase',image:'',gradient:'from-stone-800 to-neutral-900',desc:'تصميم عصري أنيق لترتيب المكتب والساعة والمفاتيح.'}
-];
-const BOX_STYLES = [
- {id:'velvet',name:'بوكس مخمل أسود ملكي',price:120,color:'#142823',badge:'الأفخم'},
- {id:'wood',name:'بوكس خشب محفور بالليزر',price:150,color:'#5C3A21',badge:'تذكار يدوم'},
- {id:'crystal',name:'بوكس كريستال شفاف',price:140,color:'#2C5248',badge:'مودرن'},
- {id:'goldbag',name:'شنطة فرافيرو الذهبية',price:60,color:'#9E7B36',badge:'اقتصادي'}
-];
-const RIBBON_COLORS = [
- {name:'ذهبي شامبين',hex:'#C5A059'},{name:'أخضر زمردي',hex:'#1F4E3D'},{name:'أحمر مخملي',hex:'#8B1E24'},{name:'أوف وايت لؤلؤي',hex:'#E8DFCE'},{name:'أسود ملكي',hex:'#1C1C1C'}
-];
-let selectedBoxStyle=BOX_STYLES[0], selectedRibbon=RIBBON_COLORS[0], selectedBuilderItems=[], activeCategory='all', searchQuery='', latestPO=null;
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.firestore();
 
-document.addEventListener('DOMContentLoaded', async()=>{
- renderBoxStyles();renderBuilderItems();renderRibbons();updateBuilderPreview();updateQuizRecommendation();renderDynamicCategoryPills();renderCatalog('all');lucide.createIcons();
- initRealTimeShopBridge();await syncInventoryFromMainShop();setInterval(syncInventoryFromMainShop,SHOP_SYNC_CONFIG.livePollIntervalMs);
-});
-function initRealTimeShopBridge(){if(liveChannel)liveChannel.onmessage=event=>{const msg=event.data||{};if(msg.type==='INVENTORY_UPDATED'&&Array.isArray(msg.products))applyLiveProductsPayload(msg.products);};}
-function applyLiveProductsPayload(rawList){
- if(!Array.isArray(rawList)||!rawList.length)return;
- PRODUCTS=rawList.map((item,idx)=>({sku:String(item.sku||`FR-${200+idx}`).trim(),name:String(item.name||'هدية مميزة').trim(),category:String(item.category||'هدايا متنوعة').trim(),price:Number(item.sellPrice||item.price||350),tag:String(item.tag||'متوفر الآن').trim(),icon:item.icon||'gift',image:item.image||'',gradient:'from-emerald-950 to-stone-900',desc:String(item.description||'قطعة مختارة بعناية من فرافيرو.').trim()}));
- renderDynamicCategoryPills();renderBuilderItems();renderCatalog(activeCategory);
-}
-async function syncInventoryFromMainShop(){try{const local=localStorage.getItem('farafero_inventory');if(local){const parsed=JSON.parse(local);if(Array.isArray(parsed))applyLiveProductsPayload(parsed);}}catch(e){console.warn('تعذر تحديث قائمة المنتجات محلياً',e);}}
-async function transmitOrderToMainShop(poPayload){
- try{if(liveChannel)liveChannel.postMessage({type:'NEW_ONLINE_PO',order:poPayload});const existing=JSON.parse(localStorage.getItem('farafero_online_pos')||'[]');existing.unshift(poPayload);localStorage.setItem('farafero_online_pos',JSON.stringify(existing));}
- catch(e){console.warn('تعذر حفظ نسخة الطلب محلياً',e);}
-}
-function renderBoxStyles(){const grid=document.getElementById('box-styles-grid');if(!grid)return;grid.innerHTML=BOX_STYLES.map(b=>`<button type="button" onclick="selectBoxStyle('${b.id}')" class="box-style-card p-3 rounded-2xl border text-right transition-all ${selectedBoxStyle.id===b.id?'border-emerald-deep bg-cream/80 ring-2 ring-gold-champagne':'border-gold-champagne/30 bg-white hover:bg-ivory'}"><div class="flex items-center justify-between mb-1.5"><span class="w-4 h-4 rounded-full border border-gold-champagne shadow-sm" style="background-color:${b.color}"></span><span class="text-[10px] font-bold text-gold-dark px-2 py-0.5 rounded-full bg-cream">${b.badge}</span></div><div class="font-extrabold text-xs text-emerald-deep">${b.name}</div><div class="text-[11px] font-bold text-emerald-deep/70 mt-1">${b.price} ج.م</div></button>`).join('');}
-function selectBoxStyle(id){selectedBoxStyle=BOX_STYLES.find(b=>b.id===id)||BOX_STYLES[0];renderBoxStyles();updateBuilderPreview();}
-function renderBuilderItems(){const grid=document.getElementById('builder-items-grid');if(!grid)return;grid.innerHTML=PRODUCTS.map(p=>{const selected=selectedBuilderItems.some(i=>i.sku===p.sku);return `<div onclick="toggleBuilderItem('${p.sku}')" class="p-3 rounded-2xl border cursor-pointer transition-all flex items-center justify-between gap-3 ${selected?'border-emerald-deep bg-emerald-deep/5 ring-1 ring-gold-champagne':'border-gold-champagne/30 bg-white hover:bg-ivory'}"><div class="flex items-center gap-2.5"><div class="w-10 h-10 rounded-xl emerald-gradient text-gold-light flex items-center justify-center shrink-0"><i data-lucide="${p.icon}" class="w-5 h-5"></i></div><div><div class="font-extrabold text-xs text-emerald-deep">${p.name}</div><div class="text-[11px] text-emerald-deep/70">${p.price} ج.م</div></div></div><span class="w-6 h-6 rounded-full border flex items-center justify-center text-xs font-bold ${selected?'bg-emerald-deep text-gold-light border-emerald-deep':'border-gold-champagne/50 text-transparent'}">✓</span></div>`;}).join('');lucide.createIcons();}
-function toggleBuilderItem(sku){const idx=selectedBuilderItems.findIndex(i=>i.sku===sku);if(idx>-1)selectedBuilderItems.splice(idx,1);else{if(selectedBuilderItems.length>=5){showToast('عذراً، أقصى عدد داخل البوكس هو 5 قطع','warning');return;}const product=PRODUCTS.find(p=>p.sku===sku);if(!product)return;selectedBuilderItems.push({...product});}renderBuilderItems();updateBuilderPreview();}
-function renderRibbons(){const list=document.getElementById('ribbon-colors-list');if(!list)return;list.innerHTML=RIBBON_COLORS.map(r=>`<button type="button" onclick="selectRibbonColor('${r.name}')" class="px-3.5 py-2 rounded-xl border text-xs font-bold transition-all flex items-center gap-2 ${selectedRibbon.name===r.name?'border-emerald-deep bg-emerald-deep text-ivory':'border-gold-champagne/40 bg-white text-emerald-deep hover:bg-cream'}"><span class="w-3.5 h-3.5 rounded-full border border-gold-champagne shadow-xs" style="background-color:${r.hex}"></span>${r.name}</button>`).join('');}
-function selectRibbonColor(name){selectedRibbon=RIBBON_COLORS.find(r=>r.name===name)||RIBBON_COLORS[0];renderRibbons();updateBuilderPreview();}
-function applyQuickQuote(val){if(!val)return;document.getElementById('card-message').value=val;updateBuilderPreview();}
-function updateBuilderPreview(){
- document.getElementById('preview-box-title').textContent=selectedBoxStyle.name;document.getElementById('preview-ribbon-badge').textContent=`شريطة ${selectedRibbon.name}`;document.getElementById('live-ribbon-stripe').style.backgroundColor=selectedRibbon.hex;
- document.getElementById('builder-items-counter').textContent=`${selectedBuilderItems.length} / 5 قطع`;
- const container=document.getElementById('live-selected-items');container.innerHTML=selectedBuilderItems.length?selectedBuilderItems.map(i=>`<span class="px-2.5 py-1 rounded-lg bg-white/10 border border-gold-champagne/30 text-xs font-bold text-ivory flex items-center gap-1.5">${i.name} (${i.price} ج)</span>`).join(''):'<span class="text-xs text-ivory/50">اختر هدايا من القائمة لإضافتها داخل البوكس...</span>';
- const recipient=document.getElementById('card-recipient').value.trim(),message=document.getElementById('card-message').value.trim();
- document.getElementById('live-card-recipient').textContent=recipient?`إلى: ${recipient}`:'إلى: من يسكن القلب';document.getElementById('live-card-text').textContent=message||'كل عام وأنت أجمل تفاصيل الحياة.. دمت لي فرحة لا تنتهي.';
- const itemPrice=selectedBuilderItems.reduce((s,i)=>s+i.price,0),boxPrice=selectedBoxStyle.price;
- document.getElementById('builder-box-price').textContent=`${boxPrice} ج.م`;document.getElementById('builder-items-price').textContent=`${itemPrice} ج.م`;document.getElementById('builder-total-price').textContent=`${boxPrice+itemPrice} ج.م`;
-}
-function addCustomBoxToCart(){
- const recipient=document.getElementById('card-recipient').value.trim(),message=document.getElementById('card-message').value.trim(),itemsPrice=selectedBuilderItems.reduce((s,i)=>s+i.price,0);
- cart.push({id:'CUSTOM-BOX-'+Date.now(),sku:'BOX-'+selectedBoxStyle.id.toUpperCase(),name:`بوكس مخصص: ${selectedBoxStyle.name}`,details:`المحتويات: ${selectedBuilderItems.map(i=>i.name).join('، ')||'بدون قطع إضافية'} | المستلم: ${recipient||'غير محدد'} | شريطة: ${selectedRibbon.name} | الكارت: "${message||'بدون رسالة'}"`,price:selectedBoxStyle.price+itemsPrice,qty:1,isCustomBox:true});
- updateCartBadge();renderCart();toggleCart(true);showToast('تم اعتماد بوكسك المخصص وإضافته للسلة بنجاح!');
-}
-function addPresetBundle(name,skus,bundlePrice){
- const products=skus.map(sku=>PRODUCTS.find(p=>p.sku===sku)).filter(Boolean);
- if(!products.length){showToast('تعذر إضافة الباقة، حاول مرة أخرى','warning');return;}
- cart.push({id:'BUNDLE-'+Date.now(),sku:'FARAFERO-BUNDLE',name,details:'محتويات الباقة: '+products.map(p=>p.name).join('، '),price:Number(bundlePrice),qty:1,isCustomBox:false});
- updateCartBadge();renderCart();toggleCart(true);showToast('تمت إضافة الباقة الملكية للسلة بنجاح!');
-}
-function renderDynamicCategoryPills(){const el=document.getElementById('catalog-filters');if(!el)return;const cats=[...new Set(PRODUCTS.map(p=>p.category).filter(Boolean))];el.innerHTML=[`<button onclick="filterCatalog('all')" class="cat-btn px-4 py-2 rounded-xl text-xs font-bold transition-all ${activeCategory==='all'?'bg-emerald-deep text-ivory':'bg-white text-emerald-deep border border-gold-champagne/30'}">الكل</button>`,...cats.map(c=>`<button onclick="filterCatalog('${c.replace(/'/g,"&#39;")}')" class="cat-btn px-4 py-2 rounded-xl text-xs font-bold transition-all ${activeCategory===c?'bg-emerald-deep text-ivory':'bg-white text-emerald-deep border border-gold-champagne/30'}">${c}</button>`)].join('');}
-function handleCatalogSearch(value){searchQuery=value.trim().toLowerCase();renderCatalog(activeCategory);}
-function filterCatalog(category){activeCategory=category;renderDynamicCategoryPills();renderCatalog(category);}
-function renderCatalog(category){
- const grid=document.getElementById('catalog-grid');if(!grid)return;let filtered=category==='all'?PRODUCTS:PRODUCTS.filter(p=>p.category===category);
- if(searchQuery)filtered=filtered.filter(p=>p.name.toLowerCase().includes(searchQuery)||p.desc.toLowerCase().includes(searchQuery));
- grid.innerHTML=filtered.length?filtered.map(p=>`<div class="group bg-white rounded-3xl border border-gold-champagne/30 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between"><div><div class="h-44 bg-gradient-to-br ${p.gradient} p-5 flex flex-col justify-between relative overflow-hidden"><div class="flex items-center justify-between z-10"><span class="px-2.5 py-1 rounded-full bg-white/15 text-gold-light text-[11px] font-bold border border-gold-champagne/30">${p.tag}</span><span class="text-[11px] font-mono text-white/75 bg-black/30 px-2 py-0.5 rounded-md">${p.sku}</span></div><div class="my-auto mx-auto w-16 h-16 rounded-2xl bg-white/10 border border-gold-champagne/40 flex items-center justify-center z-10"><i data-lucide="${p.icon}" class="w-8 h-8 text-gold-light"></i></div><div class="z-10 flex items-center gap-1.5 self-start px-2.5 py-0.5 rounded-full bg-emerald-950/85 border border-emerald-400/40 text-emerald-300 text-[11px] font-bold"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>in stock</div></div><div class="p-5"><h3 class="font-extrabold text-base text-emerald-deep">${p.name}</h3><p class="text-xs text-emerald-deep/70 mt-1.5 leading-relaxed">${p.desc}</p></div></div><div class="px-5 pb-5 pt-3 border-t border-gold-champagne/15 flex items-center justify-between"><div><span class="text-xl font-extrabold text-emerald-deep">${p.price}</span><span class="text-xs font-bold text-gold-dark">ج.م</span></div><button onclick="addProductToCart('${p.sku}')" class="px-4 py-2.5 rounded-xl bg-cream hover:bg-emerald-deep text-emerald-deep hover:text-gold-light font-extrabold text-xs border border-gold-champagne/40 transition-all flex items-center gap-1.5"><i data-lucide="plus" class="w-4 h-4"></i>أضف للسلة</button></div></div>`).join(''):'<div class="col-span-full text-center text-sm text-emerald-deep/60 py-10">لا توجد منتجات مطابقة لبحثك.</div>';
- lucide.createIcons();
-}
-function addProductToCart(sku){const product=PRODUCTS.find(p=>p.sku===sku);if(!product){showToast('المنتج غير متاح حالياً','warning');return;}const existing=cart.find(c=>c.sku===sku&&!c.isCustomBox);if(existing)existing.qty++;else cart.push({id:'ITEM-'+Date.now(),sku:product.sku,name:product.name,details:product.desc,price:product.price,qty:1,isCustomBox:false});updateCartBadge();renderCart();showToast(`تمت إضافة "${product.name}" للسلة`);}
-function toggleCart(open){
- const overlay=document.getElementById('cart-overlay'),drawer=document.getElementById('cart-drawer');if(!overlay||!drawer)return;
- if(open){renderCart();overlay.classList.remove('hidden');document.body.style.overflow='hidden';requestAnimationFrame(()=>{drawer.classList.remove('-translate-x-full');drawer.style.transform='translateX(0)';});}
- else{drawer.classList.add('-translate-x-full');drawer.style.transform='translateX(-100%)';document.body.style.overflow='';window.setTimeout(()=>overlay.classList.add('hidden'),300);}
-}
-function updateCartBadge(){document.getElementById('cart-count-badge').textContent=cart.reduce((s,i)=>s+i.qty,0);}
-function changeCartQty(id,delta){const idx=cart.findIndex(c=>c.id===id);if(idx<0)return;cart[idx].qty+=delta;if(cart[idx].qty<=0)cart.splice(idx,1);updateCartBadge();renderCart();}
-function renderCart(){
- const list=document.getElementById('cart-items-list'),form=document.getElementById('checkout-form-section'),footer=document.getElementById('cart-footer');if(!list||!form||!footer)return;
- if(!cart.length){list.innerHTML='<div class="text-center py-12 space-y-3"><div class="w-16 h-16 rounded-full bg-cream mx-auto flex items-center justify-center text-gold-dark"><i data-lucide="shopping-bag" class="w-8 h-8"></i></div><h4 class="font-extrabold text-emerald-deep">سلة الهدايا فارغة حالياً</h4></div>';form.classList.add('hidden');footer.classList.add('hidden');lucide.createIcons();return;}
- form.classList.remove('hidden');footer.classList.remove('hidden');
- list.innerHTML=cart.map(i=>`<div class="p-3.5 rounded-2xl bg-white border border-gold-champagne/35 flex items-start justify-between gap-3"><div class="space-y-1"><div class="text-[10px] font-mono text-gold-dark font-bold">${i.sku}</div><div class="text-xs font-extrabold text-emerald-deep">${i.name}</div><div class="text-[11px] text-emerald-deep/65">${i.details}</div><div class="text-xs font-extrabold text-emerald-deep pt-1">${(i.price*i.qty).toLocaleString()} ج.م</div></div><div class="flex items-center gap-1.5 bg-ivory px-2 py-1 rounded-xl border border-gold-champagne/30 shrink-0"><button onclick="changeCartQty('${i.id}',-1)" class="w-6 h-6 font-bold text-emerald-deep">-</button><span class="text-xs font-extrabold px-1">${i.qty}</span><button onclick="changeCartQty('${i.id}',1)" class="w-6 h-6 font-bold text-emerald-deep">+</button></div></div>`).join('');
- const subtotal=cart.reduce((s,i)=>s+i.price*i.qty,0),wrapping=document.getElementById('extra-wrapping').checked?45:0,shipping=parseInt(document.getElementById('delivery-zone').value,10)||0,total=subtotal+wrapping+shipping;
- document.getElementById('summary-subtotal').textContent=`${subtotal.toLocaleString()} ج.م`;document.getElementById('summary-wrapping').textContent=`${wrapping} ج.م`;document.getElementById('summary-shipping').textContent=`${shipping} ج.م`;document.getElementById('summary-total').textContent=`${total.toLocaleString()} ج.م`;lucide.createIcons();
-}
-async function generatePurchaseOrder(){
- if(!cart.length){showToast('السلة فارغة','warning');return;}
- const name=document.getElementById('cust-name').value.trim(),phone=document.getElementById('cust-phone').value.trim(),address=document.getElementById('cust-address').value.trim()||'لم يحدد',zone=document.getElementById('delivery-zone'),zoneLabel=zone.options[zone.selectedIndex].getAttribute('data-label'),shipping=parseInt(zone.value,10)||0,wrapping=document.getElementById('extra-wrapping').checked?45:0;
- if(!name||!phone){showToast('من فضلك أدخل الاسم ورقم الموبايل لإتمام الطلب','warning');return;}
- if(!/^[0-9+\s()-]{8,20}$/.test(phone)){showToast('من فضلك أدخل رقم موبايل صحيح','warning');return;}
- const subtotal=cart.reduce((s,i)=>s+i.price*i.qty,0),total=subtotal+wrapping+shipping,poNumber=`PO-${new Date().getFullYear()}-${Math.floor(1000+Math.random()*9000)}`,date=new Date().toLocaleString('ar-EG',{dateStyle:'medium',timeStyle:'short'});
- latestPO={poNumber,timestamp:new Date().toISOString(),date,customer:name,phone,governorate:zoneLabel,address:`${zoneLabel} - ${address}`,items:cart.map(i=>({sku:i.sku,name:i.name,details:i.details,qty:i.qty,price:i.price,isCustomBox:!!i.isCustomBox})),subtotal,wrapping,shipping,total};
- await transmitOrderToMainShop(latestPO);
- document.getElementById('po-receipt-card').innerHTML=`<div class="flex justify-between items-center border-b border-dashed border-gold-champagne pb-2.5"><div><div class="font-brand font-bold text-emerald-deep text-sm">FARAFERO GIFT SHOP</div><div class="text-[11px] text-emerald-deep/60">${date}</div></div><span class="px-2.5 py-1 rounded-lg bg-emerald-deep text-gold-light font-mono font-bold">${poNumber}</span></div><div class="space-y-1 text-emerald-deep"><div><b>العميل:</b> ${escapeHtml(name)} (${escapeHtml(phone)})</div><div><b>التوصيل:</b> ${escapeHtml(zoneLabel)} - ${escapeHtml(address)}</div></div><div class="border-t border-b border-gold-champagne/30 py-2.5 space-y-2">${latestPO.items.map(i=>`<div class="flex justify-between gap-2"><span>• ${escapeHtml(i.name)} [${escapeHtml(i.sku)}] ×${i.qty}</span><b>${(i.price*i.qty).toLocaleString()} ج.م</b></div>`).join('')}</div><div class="space-y-1 text-emerald-deep/80"><div class="flex justify-between"><span>الإجمالي النهائي:</span><b class="text-gold-dark">${total.toLocaleString()} ج.م</b></div></div>`;
- cart=[];updateCartBadge();toggleCart(false);document.getElementById('po-modal').classList.remove('hidden');lucide.createIcons();sendPoViaWhatsApp();
-}
-function escapeHtml(value){return String(value).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
-function closePoModal(){document.getElementById('po-modal').classList.add('hidden');}
-function formatPoPlainText(po){const lines=po.items.map(i=>`• ${i.name} [${i.sku}] ×${i.qty} = ${(i.price*i.qty).toLocaleString()} ج.م`);return [`✨ *طلب شراء جديد (PO) - FARAFERO GIFT SHOP* ✨`,`رقم المرجع: *${po.poNumber}*`,`👤 *العميل:* ${po.customer}`,`📱 *الموبايل:* ${po.phone}`,`📍 *العنوان:* ${po.address}`,'-------------------------',...lines,'-------------------------',`💰 *الإجمالي المستحق: ${po.total.toLocaleString()} ج.م*`].join('\n');}
-function sendPoViaWhatsApp(){if(!latestPO)return;const text=encodeURIComponent(formatPoPlainText(latestPO));window.open(`https://wa.me/${SHOP_SYNC_CONFIG.shopWhatsAppNumber}?text=${text}`,'_blank','noopener');}
-async function copyPoText(){if(!latestPO)return;try{await navigator.clipboard.writeText(formatPoPlainText(latestPO));showToast('تم نسخ تفاصيل الطلب بنجاح!');}catch(e){showToast('تعذر النسخ تلقائياً؛ استخدم زر واتساب لإرسال التفاصيل','warning');}}
-function showToast(message,type='success'){const container=document.getElementById('toast-container'),toast=document.createElement('div');const warning=type==='warning';toast.className=`pointer-events-auto px-4 py-3 rounded-2xl ${warning?'bg-amber-700':'emerald-gradient'} border-gold-champagne text-ivory text-xs font-bold shadow-xl border flex items-center gap-2.5`;const icon=document.createElement('i');icon.setAttribute('data-lucide',warning?'alert-circle':'check-circle-2');icon.className='w-4 h-4 text-gold-light shrink-0';const text=document.createElement('span');text.textContent=message;toast.append(icon,text);container.appendChild(toast);lucide.createIcons();setTimeout(()=>toast.remove(),3200);}
-let currentOccasion='birthday',currentBudget='400to800',currentStyle='cozy';
-function selectQuizOption(type,value,button){if(type==='occasion')currentOccasion=value;if(type==='budget')currentBudget=value;if(type==='style')currentStyle=value;document.querySelectorAll(`.quiz-opt-${type}`).forEach(b=>{b.classList.remove('bg-emerald-deep','text-ivory','border-emerald-deep');b.classList.add('bg-ivory','text-emerald-deep','border-gold-champagne/40');});button.classList.remove('bg-ivory','text-emerald-deep','border-gold-champagne/40');button.classList.add('bg-emerald-deep','text-ivory','border-emerald-deep');updateQuizRecommendation();}
-function updateQuizRecommendation(){
- const box=document.getElementById('quiz-recommendation-box');if(!box)return;
- const budgetRanges={under400:[0,399], '400to800':[400,800], '800to1500':[800,1500],vip:[0,Infinity]},range=budgetRanges[currentBudget];
- const styleWords={cozy:['شمعة','فواحة'],practical:['مج','منظم'],luxury:['ساعة','إكسسوار'],sweet:['شوكولاتة']};
- let picks=PRODUCTS.filter(p=>p.price>=range[0]&&p.price<=range[1]&&styleWords[currentStyle].some(word=>p.name.includes(word)));
- if(!picks.length)picks=PRODUCTS.filter(p=>p.price>=range[0]&&p.price<=range[1]);
- if(!picks.length)picks=PRODUCTS.slice().sort((a,b)=>Math.abs(a.price-(range[1]===Infinity?1000:(range[0]+range[1])/2))-Math.abs(b.price-(range[1]===Infinity?1000:(range[0]+range[1])/2)));
- const pick=picks[0]||PRODUCTS[0];
- const occasionNames={birthday:'عيد الميلاد',engagement:'الخطوبة والزواج',graduation:'التخرج والنجاح',thanks:'الشكر والتقدير'};
- box.innerHTML=`<div><span class="text-xs font-bold text-gold-dark">الترشيح الأنسب لذوقك وميزانيتك:</span><h4 class="text-xl font-extrabold text-emerald-deep mt-1">${pick.name}</h4><p class="text-xs text-emerald-deep/70 mt-1">اختيار مناسب لمناسبة ${occasionNames[currentOccasion]} وبسعر ${pick.price.toLocaleString()} ج.م.</p></div><button onclick="addProductToCart('${pick.sku}')" class="px-6 py-3.5 rounded-2xl emerald-gradient text-ivory font-extrabold text-xs shadow-md shrink-0 flex items-center gap-2"><i data-lucide="shopping-bag" class="w-4 h-4 text-gold-light"></i>أضف المرشح للسلة</button>`;
- lucide.createIcons();
-}
-function resetQuiz(){
- currentOccasion='birthday';currentBudget='400to800';currentStyle='cozy';
- const defaults={occasion:'birthday',budget:'400to800',style:'cozy'};
- Object.entries(defaults).forEach(([type,value])=>{document.querySelectorAll(`.quiz-opt-${type}`).forEach(button=>{const active=button.getAttribute('onclick').includes(`'${value}'`);button.classList.toggle('bg-emerald-deep',active);button.classList.toggle('text-ivory',active);button.classList.toggle('border-emerald-deep',active);button.classList.toggle('bg-ivory',!active);button.classList.toggle('text-emerald-deep',!active);button.classList.toggle('border-gold-champagne/40',!active);});});
- updateQuizRecommendation();
-}
+    const SHOP_SYNC_CONFIG = {
+        shopWhatsAppNumber: '201005187411'
+    };
+
+    let cart = [];
+    let PRODUCTS = [];
+    const BOX_STYLES = [
+     {id:'velvet',name:'بوكس مخمل أسود ملكي',price:120,color:'#142823',badge:'الأفخم'},
+     {id:'wood',name:'بوكس خشب محفور بالليزر',price:150,color:'#5C3A21',badge:'تذكار يدوم'},
+     {id:'crystal',name:'بوكس كريستال شفاف',price:140,color:'#2C5248',badge:'مودرن'},
+     {id:'goldbag',name:'شنطة فرافيرو الذهبية',price:60,color:'#9E7B36',badge:'اقتصادي'}
+    ];
+    const RIBBON_COLORS = [
+     {name:'ذهبي شامبين',hex:'#C5A059'},{name:'أخضر زمردي',hex:'#1F4E3D'},{name:'أحمر مخملي',hex:'#8B1E24'},{name:'أوف وايت لؤلؤي',hex:'#E8DFCE'},{name:'أسود ملكي',hex:'#1C1C1C'}
+    ];
+    let selectedBoxStyle=BOX_STYLES[0], selectedRibbon=RIBBON_COLORS[0], selectedBuilderItems=[], activeCategory='all', searchQuery='', latestPO=null;
+
+    document.addEventListener('DOMContentLoaded', async()=>{
+        renderBoxStyles();
+        renderRibbons();
+        initCloudListeners();
+    });
+
+    function initCloudListeners() {
+        db.collection("products").onSnapshot((snapshot) => {
+            PRODUCTS = [];
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                PRODUCTS.push({
+                    sku: data.code || 'FR-' + doc.id,
+                    name: data.name,
+                    category: data.category || 'هدايا متنوعة',
+                    price: data.price || 350,
+                    tag: data.stock > 0 ? 'متوفر الآن' : 'نفذ مؤقتاً',
+                    icon: 'gift',
+                    image: data.image || '',
+                    gradient: 'from-emerald-950 to-stone-900',
+                    desc: data.name + ' - قطعة مختارة بعناية من فرافيرو.'
+                });
+            });
+            renderDynamicCategoryPills();
+            renderBuilderItems();
+            renderCatalog(activeCategory);
+            updateQuizRecommendation();
+            lucide.createIcons();
+        });
+    }
+
+    async function transmitOrderToMainShop(poPayload) {
+        try {
+            await db.collection("orders").add({
+                id: poPayload.poNumber,
+                date: poPayload.date,
+                timestamp: Date.now(),
+                total: poPayload.total,
+                customerName: poPayload.customer,
+                customerPhone: poPayload.phone,
+                status: 'pending',
+                type: 'po',
+                detailedItems: poPayload.items.map(i => ({
+                    id: i.sku,
+                    name: i.name,
+                    code: i.sku,
+                    price: i.price,
+                    qty: i.qty
+                }))
+            });
+        } catch (e) {
+            console.warn('تعذر إرسال الطلب للسحابة', e);
+        }
+    }
+
+    function renderBoxStyles(){const grid=document.getElementById('box-styles-grid');if(!grid)return;grid.innerHTML=BOX_STYLES.map(b=>`<button type="button" onclick="selectBoxStyle('${b.id}')" class="box-style-card p-3 rounded-2xl border text-right transition-all ${selectedBoxStyle.id===b.id?'border-emerald-deep bg-cream/80 ring-2 ring-gold-champagne':'border-gold-champagne/30 bg-white hover:bg-ivory'}"><div class="flex items-center justify-between mb-1.5"><span class="w-4 h-4 rounded-full border border-gold-champagne shadow-sm" style="background-color:${b.color}"></span><span class="text-[10px] font-bold text-gold-dark px-2 py-0.5 rounded-full bg-cream">${b.badge}</span></div><div class="font-extrabold text-xs text-emerald-deep">${b.name}</div><div class="text-[11px] font-bold text-emerald-deep/70 mt-1">${b.price} ج.م</div></button>`).join('');}
+    function selectBoxStyle(id){selectedBoxStyle=BOX_STYLES.find(b=>b.id===id)||BOX_STYLES[0];renderBoxStyles();updateBuilderPreview();}
+    function renderBuilderItems(){const grid=document.getElementById('builder-items-grid');if(!grid)return;grid.innerHTML=PRODUCTS.map(p=>{const selected=selectedBuilderItems.some(i=>i.sku===p.sku);return `<div onclick="toggleBuilderItem('${p.sku}')" class="p-3 rounded-2xl border cursor-pointer transition-all flex items-center justify-between gap-3 ${selected?'border-emerald-deep bg-emerald-deep/5 ring-1 ring-gold-champagne':'border-gold-champagne/30 bg-white hover:bg-ivory'}"><div class="flex items-center gap-2.5"><div class="w-10 h-10 rounded-xl emerald-gradient text-gold-light flex items-center justify-center shrink-0"><i data-lucide="${p.icon}" class="w-5 h-5"></i></div><div><div class="font-extrabold text-xs text-emerald-deep">${p.name}</div><div class="text-[11px] text-emerald-deep/70">${p.price} ج.م</div></div></div><span class="w-6 h-6 rounded-full border flex items-center justify-center text-xs font-bold ${selected?'bg-emerald-deep text-gold-light border-emerald-deep':'border-gold-champagne/50 text-transparent'}">✓</span></div>`;}).join('');lucide.createIcons();}
+    function toggleBuilderItem(sku){const idx=selectedBuilderItems.findIndex(i=>i.sku===sku);if(idx>-1)selectedBuilderItems.splice(idx,1);else{if(selectedBuilderItems.length>=5){showToast('عذراً، أقصى عدد داخل البوكس هو 5 قطع','warning');return;}const product=PRODUCTS.find(p=>p.sku===sku);if(!product)return;selectedBuilderItems.push({...product});}renderBuilderItems();updateBuilderPreview();}
+    function renderRibbons(){const list=document.getElementById('ribbon-colors-list');if(!list)return;list.innerHTML=RIBBON_COLORS.map(r=>`<button type="button" onclick="selectRibbonColor('${r.name}')" class="px-3.5 py-2 rounded-xl border text-xs font-bold transition-all flex items-center gap-2 ${selectedRibbon.name===r.name?'border-emerald-deep bg-emerald-deep text-ivory':'border-gold-champagne/40 bg-white text-emerald-deep hover:bg-cream'}"><span class="w-3.5 h-3.5 rounded-full border border-gold-champagne shadow-xs" style="background-color:${r.hex}"></span>${r.name}</button>`).join('');}
+    function selectRibbonColor(name){selectedRibbon=RIBBON_COLORS.find(r=>r.name===name)||RIBBON_COLORS[0];renderRibbons();updateBuilderPreview();}
+    function applyQuickQuote(val){if(!val)return;document.getElementById('card-message').value=val;updateBuilderPreview();}
+    function updateBuilderPreview(){
+        document.getElementById('preview-box-title').textContent=selectedBoxStyle.name;document.getElementById('preview-ribbon-badge').textContent=`شريطة ${selectedRibbon.name}`;document.getElementById('live-ribbon-stripe').style.backgroundColor=selectedRibbon.hex;
+        document.getElementById('builder-items-counter').textContent=`${selectedBuilderItems.length} / 5 قطع`;
+        const container=document.getElementById('live-selected-items');container.innerHTML=selectedBuilderItems.length?selectedBuilderItems.map(i=>`<span class="px-2.5 py-1 rounded-lg bg-white/10 border border-gold-champagne/30 text-xs font-bold text-ivory flex items-center gap-1.5">${i.name} (${i.price} ج)</span>`).join(''):'<span class="text-xs text-ivory/50">اختر هدايا من القائمة لإضافتها داخل البوكس...</span>';
+        const recipient=document.getElementById('card-recipient').value.trim(),message=document.getElementById('card-message').value.trim();
+        document.getElementById('live-card-recipient').textContent=recipient?`إلى: ${recipient}`:'إلى: من يسكن القلب';document.getElementById('live-card-text').textContent=message||'كل عام وأنت أجمل تفاصيل الحياة.. دمت لي فرحة لا تنتهي.';
+        const itemPrice=selectedBuilderItems.reduce((s,i)=>s+i.price,0),boxPrice=selectedBoxStyle.price;
+        document.getElementById('builder-box-price').textContent=`${boxPrice} ج.م`;document.getElementById('builder-items-price').textContent=`${itemPrice} ج.م`;document.getElementById('builder-total-price').textContent=`${boxPrice+itemPrice} ج.م`;
+    }
+    function addCustomBoxToCart(){
+        const recipient=document.getElementById('card-recipient').value.trim(),message=document.getElementById('card-message').value.trim(),itemsPrice=selectedBuilderItems.reduce((s,i)=>s+i.price,0);
+        cart.push({id:'CUSTOM-BOX-'+Date.now(),sku:'BOX-'+selectedBoxStyle.id.toUpperCase(),name:`بوكس مخصص: ${selectedBoxStyle.name}`,details:`المحتويات: ${selectedBuilderItems.map(i=>i.name).join('، ')||'بدون قطع إضافية'} | المستلم: ${recipient||'غير محدد'} | شريطة: ${selectedRibbon.name} | الكارت: "${message||'بدون رسالة'}"`,price:selectedBoxStyle.price+itemsPrice,qty:1,isCustomBox:true});
+        updateCartBadge();renderCart();toggleCart(true);showToast('تم اعتماد بوكسك المخصص وإضافته للسلة بنجاح!');
+    }
+    function addPresetBundle(name,skus,bundlePrice){
+        const products=skus.map(sku=>PRODUCTS.find(p=>p.sku===sku)).filter(Boolean);
+        if(!products.length){showToast('تعذر إضافة الباقة، حاول مرة أخرى','warning');return;}
+        cart.push({id:'BUNDLE-'+Date.now(),sku:'FARAFERO-BUNDLE',name,details:'محتويات الباقة: '+products.map(p=>p.name).join('، '),price:Number(bundlePrice),qty:1,isCustomBox:false});
+        updateCartBadge();renderCart();toggleCart(true);showToast('تمت إضافة الباقة الملكية للسلة بنجاح!');
+    }
+    function renderDynamicCategoryPills(){const el=document.getElementById('catalog-filters');if(!el)return;const cats=[...new Set(PRODUCTS.map(p=>p.category).filter(Boolean))];el.innerHTML=[`<button onclick="filterCatalog('all')" class="cat-btn px-4 py-2 rounded-xl text-xs font-bold transition-all ${activeCategory==='all'?'bg-emerald-deep text-ivory':'bg-white text-emerald-deep border border-gold-champagne/30'}">الكل</button>`,...cats.map(c=>`<button onclick="filterCatalog('${c.replace(/'/g,"&#39;")}')" class="cat-btn px-4 py-2 rounded-xl text-xs font-bold transition-all ${activeCategory===c?'bg-emerald-deep text-ivory':'bg-white text-emerald-deep border border-gold-champagne/30'}">${c}</button>`)].join('');}
+    function handleCatalogSearch(value){searchQuery=value.trim().toLowerCase();renderCatalog(activeCategory);}
+    function filterCatalog(category){activeCategory=category;renderDynamicCategoryPills();renderCatalog(category);}
+    function renderCatalog(category){
+        const grid=document.getElementById('catalog-grid');if(!grid)return;let filtered=category==='all'?PRODUCTS:PRODUCTS.filter(p=>p.category===category);
+        if(searchQuery)filtered=filtered.filter(p=>p.name.toLowerCase().includes(searchQuery)||p.desc.toLowerCase().includes(searchQuery));
+        grid.innerHTML=filtered.length?filtered.map(p=>`<div class="group bg-white rounded-3xl border border-gold-champagne/30 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between"><div><div class="h-44 bg-gradient-to-br ${p.gradient} p-5 flex flex-col justify-between relative overflow-hidden"><div class="flex items-center justify-between z-10"><span class="px-2.5 py-1 rounded-full bg-white/15 text-gold-light text-[11px] font-bold border border-gold-champagne/30">${p.tag}</span><span class="text-[11px] font-mono text-white/75 bg-black/30 px-2 py-0.5 rounded-md">${p.sku}</span></div><div class="my-auto mx-auto w-16 h-16 rounded-2xl bg-white/10 border border-gold-champagne/40 flex items-center justify-center z-10"><i data-lucide="${p.icon}" class="w-8 h-8 text-gold-light"></i></div><div class="z-10 flex items-center gap-1.5 self-start px-2.5 py-0.5 rounded-full bg-emerald-950/85 border border-emerald-400/40 text-emerald-300 text-[11px] font-bold"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>in stock</div></div><div class="p-5"><h3 class="font-extrabold text-base text-emerald-deep">${p.name}</h3><p class="text-xs text-emerald-deep/70 mt-1.5 leading-relaxed">${p.desc}</p></div></div><div class="px-5 pb-5 pt-3 border-t border-gold-champagne/15 flex items-center justify-between"><div><span class="text-xl font-extrabold text-emerald-deep">${p.price}</span><span class="text-xs font-bold text-gold-dark">ج.م</span></div><button onclick="addProductToCart('${p.sku}')" class="px-4 py-2.5 rounded-xl bg-cream hover:bg-emerald-deep text-emerald-deep hover:text-gold-light font-extrabold text-xs border border-gold-champagne/40 transition-all flex items-center gap-1.5"><i data-lucide="plus" class="w-4 h-4"></i>أضف للسلة</button></div></div>`).join(''):'<div class="col-span-full text-center text-sm text-emerald-deep/60 py-10">لا توجد منتجات مطابقة لبحثك.</div>';
+        lucide.createIcons();
+    }
+    function addProductToCart(sku){const product=PRODUCTS.find(p=>p.sku===sku);if(!product){showToast('المنتج غير متاح حالياً','warning');return;}const existing=cart.find(c=>c.sku===sku&&!c.isCustomBox);if(existing)existing.qty++;else cart.push({id:'ITEM-'+Date.now(),sku:product.sku,name:product.name,details:product.desc,price:product.price,qty:1,isCustomBox:false});updateCartBadge();renderCart();showToast(`تمت إضافة "${product.name}" للسلة`);}
+    function toggleCart(open){
+        const overlay=document.getElementById('cart-overlay'),drawer=document.getElementById('cart-drawer');if(!overlay||!drawer)return;
+        if(open){renderCart();overlay.classList.remove('hidden');document.body.style.overflow='hidden';requestAnimationFrame(()=>{drawer.classList.remove('-translate-x-full');drawer.style.transform='translateX(0)';});}
+        else{drawer.classList.add('-translate-x-full');drawer.style.transform='translateX(-100%)';document.body.style.overflow='';window.setTimeout(()=>overlay.classList.add('hidden'),300);}
+    }
+    function updateCartBadge(){document.getElementById('cart-count-badge').textContent=cart.reduce((s,i)=>s+i.qty,0);}
+    function changeCartQty(id,delta){const idx=cart.findIndex(c=>c.id===id);if(idx<0)return;cart[idx].qty+=delta;if(cart[idx].qty<=0)cart.splice(idx,1);updateCartBadge();renderCart();}
+    function renderCart(){
+        const list=document.getElementById('cart-items-list'),form=document.getElementById('checkout-form-section'),footer=document.getElementById('cart-footer');if(!list||!form||!footer)return;
+        if(!cart.length){list.innerHTML='<div class="text-center py-12 space-y-3"><div class="w-16 h-16 rounded-full bg-cream mx-auto flex items-center justify-center text-gold-dark"><i data-lucide="shopping-bag" class="w-8 h-8"></i></div><h4 class="font-extrabold text-emerald-deep">سلة الهدايا فارغة حالياً</h4></div>';form.classList.add('hidden');footer.classList.add('hidden');lucide.createIcons();return;}
+        form.classList.remove('hidden');footer.classList.remove('hidden');
+        list.innerHTML=cart.map(i=>`<div class="p-3.5 rounded-2xl bg-white border border-gold-champagne/35 flex items-start justify-between gap-3"><div class="space-y-1"><div class="text-[10px] font-mono text-gold-dark font-bold">${i.sku}</div><div class="text-xs font-extrabold text-emerald-deep">${i.name}</div><div class="text-[11px] text-emerald-deep/65">${i.details}</div><div class="text-xs font-extrabold text-emerald-deep pt-1">${(i.price*i.qty).toLocaleString()} ج.م</div></div><div class="flex items-center gap-1.5 bg-ivory px-2 py-1 rounded-xl border border-gold-champagne/30 shrink-0"><button onclick="changeCartQty('${i.id}',-1)" class="w-6 h-6 font-bold text-emerald-deep">-</button><span class="text-xs font-extrabold px-1">${i.qty}</span><button onclick="changeCartQty('${i.id}',1)" class="w-6 h-6 font-bold text-emerald-deep">+</button></div></div>`).join('');
+        const subtotal=cart.reduce((s,i)=>s+i.price*i.qty,0),wrapping=document.getElementById('extra-wrapping').checked?45:0,shipping=parseInt(document.getElementById('delivery-zone').value,10)||0,total=subtotal+wrapping+shipping;
+        document.getElementById('summary-subtotal').textContent=`${subtotal.toLocaleString()} ج.م`;document.getElementById('summary-wrapping').textContent=`${wrapping} ج.م`;document.getElementById('summary-shipping').textContent=`${shipping} ج.م`;document.getElementById('summary-total').textContent=`${total.toLocaleString()} ج.م`;lucide.createIcons();
+    }
+    async function generatePurchaseOrder(){
+        if(!cart.length){showToast('السلة فارغة','warning');return;}
+        const name=document.getElementById('cust-name').value.trim(),phone=document.getElementById('cust-phone').value.trim(),address=document.getElementById('cust-address').value.trim()||'لم يحدد',zone=document.getElementById('delivery-zone'),zoneLabel=zone.options[zone.selectedIndex].getAttribute('data-label'),shipping=parseInt(zone.value,10)||0,wrapping=document.getElementById('extra-wrapping').checked?45:0;
+        if(!name||!phone){showToast('من فضلك أدخل الاسم ورقم الموبايل لإتمام الطلب','warning');return;}
+        if(!/^[0-9+\s()-]{8,20}$/.test(phone)){showToast('من فضلك أدخل رقم موبايل صحيح','warning');return;}
+        const subtotal=cart.reduce((s,i)=>s+i.price*i.qty,0),total=subtotal+wrapping+shipping,poNumber=`PO-${new Date().getFullYear()}-${Math.floor(1000+Math.random()*9000)}`,date=new Date().toLocaleString('ar-EG',{dateStyle:'medium',timeStyle:'short'});
+        latestPO={poNumber,timestamp:new Date().toISOString(),date,customer:name,phone,governorate:zoneLabel,address:`${zoneLabel} - ${address}`,items:cart.map(i=>({sku:i.sku,name:i.name,details:i.details,qty:i.qty,price:i.price,isCustomBox:!!i.isCustomBox})),subtotal,wrapping,shipping,total};
+        await transmitOrderToMainShop(latestPO);
+        document.getElementById('po-receipt-card').innerHTML=`<div class="flex justify-between items-center border-b border-dashed border-gold-champagne pb-2.5"><div><div class="font-brand font-bold text-emerald-deep text-sm">FARAFERO GIFT SHOP</div><div class="text-[11px] text-emerald-deep/60">${date}</div></div><span class="px-2.5 py-1 rounded-lg bg-emerald-deep text-gold-light font-mono font-bold">${poNumber}</span></div><div class="space-y-1 text-emerald-deep"><div><b>العميل:</b> ${escapeHtml(name)} (${escapeHtml(phone)})</div><div><b>التوصيل:</b> ${escapeHtml(zoneLabel)} - ${escapeHtml(address)}</div></div><div class="border-t border-b border-gold-champagne/30 py-2.5 space-y-2">${latestPO.items.map(i=>`<div class="flex justify-between gap-2"><span>• ${escapeHtml(i.name)} [${escapeHtml(i.sku)}] ×${i.qty}</span><b>${(i.price*i.qty).toLocaleString()} ج.م</b></div>`).join('')}</div><div class="space-y-1 text-emerald-deep/80"><div class="flex justify-between"><span>الإجمالي النهائي:</span><b class="text-gold-dark">${total.toLocaleString()} ج.م</b></div></div>`;
+        cart=[];updateCartBadge();toggleCart(false);document.getElementById('po-modal').classList.remove('hidden');lucide.createIcons();sendPoViaWhatsApp();
+    }
+    function escapeHtml(value){return String(value).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
+    function closePoModal(){document.getElementById('po-modal').classList.add('hidden');}
+    function formatPoPlainText(po){const lines=po.items.map(i=>`• ${i.name} [${i.sku}] ×${i.qty} = ${(i.price*i.qty).toLocaleString()} ج.م`);return [`✨ *طلب شراء جديد (PO) - FARAFERO GIFT SHOP* ✨`,`رقم المرجع: *${po.poNumber}*`,`👤 *العميل:* ${po.customer}`,`📱 *الموبايل:* ${po.phone}`,`📍 *العنوان:* ${po.address}`,'-------------------------',...lines,'-------------------------',`💰 *الإجمالي المستحق: ${po.total.toLocaleString()} ج.م*`].join('\n');}
+    function sendPoViaWhatsApp(){if(!latestPO)return;const text=encodeURIComponent(formatPoPlainText(latestPO));window.open(`https://wa.me/${SHOP_SYNC_CONFIG.shopWhatsAppNumber}?text=${text}`,'_blank','noopener');}
+    async function copyPoText(){if(!latestPO)return;try{await navigator.clipboard.writeText(formatPoPlainText(latestPO));showToast('تم نسخ تفاصيل الطلب بنجاح!');}catch(e){showToast('تعذر النسخ تلقائياً؛ استخدم زر واتساب لإرسال التفاصيل','warning');}}
+    function showToast(message,type='success'){const container=document.getElementById('toast-container'),toast=document.createElement('div');const warning=type==='warning';toast.className=`pointer-events-auto px-4 py-3 rounded-2xl ${warning?'bg-amber-700':'emerald-gradient'} border-gold-champagne text-ivory text-xs font-bold shadow-xl border flex items-center gap-2.5`;const icon=document.createElement('i');icon.setAttribute('data-lucide',warning?'alert-circle':'check-circle-2');icon.className='w-4 h-4 text-gold-light shrink-0';const text=document.createElement('span');text.textContent=message;toast.append(icon,text);container.appendChild(toast);lucide.createIcons();setTimeout(()=>toast.remove(),3200);}
+    let currentOccasion='birthday',currentBudget='400to800',currentStyle='cozy';
+    function selectQuizOption(type,value,button){if(type==='occasion')currentOccasion=value;if(type==='budget')currentBudget=value;if(type==='style')currentStyle=value;document.querySelectorAll(`.quiz-opt-${type}`).forEach(b=>{b.classList.remove('bg-emerald-deep','text-ivory','border-emerald-deep');b.classList.add('bg-ivory','text-emerald-deep','border-gold-champagne/40');});button.classList.remove('bg-ivory','text-emerald-deep','border-gold-champagne/40');button.classList.add('bg-emerald-deep','text-ivory','border-emerald-deep');updateQuizRecommendation();}
+    function updateQuizRecommendation(){
+        const box=document.getElementById('quiz-recommendation-box');if(!box)return;
+        const budgetRanges={under400:[0,399], '400to800':[400,800], '800to1500':[800,1500],vip:[0,Infinity]},range=budgetRanges[currentBudget];
+        const styleWords={cozy:['شمعة','فواحة'],practical:['مج','منظم'],luxury:['ساعة','إكسسوار'],sweet:['شوكولاتة']};
+        let picks=PRODUCTS.filter(p=>p.price>=range[0]&&p.price<=range[1]&&styleWords[currentStyle].some(word=>p.name.includes(word)));
+        if(!picks.length)picks=PRODUCTS.filter(p=>p.price>=range[0]&&p.price<=range[1]);
+        if(!picks.length)picks=PRODUCTS.slice().sort((a,b)=>Math.abs(a.price-(range[1]===Infinity?1000:(range[0]+range[1])/2))-Math.abs(b.price-(range[1]===Infinity?1000:(range[0]+range[1])/2)));
+        const pick=picks[0]||PRODUCTS[0];
+        if(!pick) return;
+        const occasionNames={birthday:'عيد الميلاد',engagement:'الخطوبة والزواج',graduation:'التخرج والنجاح',thanks:'الشكر والتقدير'};
+        box.innerHTML=`<div><span class="text-xs font-bold text-gold-dark">الترشيح الأنسب لذوقك وميزانيتك:</span><h4 class="text-xl font-extrabold text-emerald-deep mt-1">${pick.name}</h4><p class="text-xs text-emerald-deep/70 mt-1">اختيار مناسب لمناسبة ${occasionNames[currentOccasion]} وبسعر ${pick.price.toLocaleString()} ج.م.</p></div><button onclick="addProductToCart('${pick.sku}')" class="px-6 py-3.5 rounded-2xl emerald-gradient text-ivory font-extrabold text-xs shadow-md shrink-0 flex items-center gap-2"><i data-lucide="shopping-bag" class="w-4 h-4 text-gold-light"></i>أضف المرشح للسلة</button>`;
+        lucide.createIcons();
+    }
+    function resetQuiz(){
+        currentOccasion='birthday';currentBudget='400to800';currentStyle='cozy';
+        const defaults={occasion:'birthday',budget:'400to800',style:'cozy'};
+        Object.entries(defaults).forEach(([type,value])=>{document.querySelectorAll(`.quiz-opt-${type}`).forEach(button=>{const active=button.getAttribute('onclick').includes(`'${value}'`);button.classList.toggle('bg-emerald-deep',active);button.classList.toggle('text-ivory',active);button.classList.toggle('border-emerald-deep',active);button.classList.toggle('bg-ivory',!active);button.classList.toggle('text-emerald-deep',!active);button.classList.toggle('border-gold-champagne/40',!active);});});
+        updateQuizRecommendation();
+    }
 </script>
 </body>
 </html>
