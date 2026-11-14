@@ -170,6 +170,8 @@
 
     let cart = [];
     let PRODUCTS = [];
+    let cloudOrdersCount = 0; // لضبط تسلسل رقم الـ PO سحابياً
+
     const BOX_STYLES = [
      {id:'velvet',name:'بوكس مخمل أسود ملكي',price:120,color:'#142823',badge:'الأفخم'},
      {id:'wood',name:'بوكس خشب محفور بالليزر',price:150,color:'#5C3A21',badge:'تذكار يدوم'},
@@ -188,7 +190,7 @@
     });
 
     function initCloudListeners() {
-        // سحب المنتجات والأسعار لحظياً من سحابة Firebase التي يديرها اللينك الثاني
+        // 1. مزامنة المنتجات والأسعار لحظياً من قاعدة بيانات الإدارة
         db.collection("products").onSnapshot((snapshot) => {
             PRODUCTS = [];
             snapshot.forEach((doc) => {
@@ -213,11 +215,16 @@
             updateQuizRecommendation();
             lucide.createIcons();
         });
+
+        // 2. متابعة عدد الطلبات في قاعدة البيانات لضبط تسلسل الـ PO بدقة مطابقة للينك الثاني
+        db.collection("orders").onSnapshot((snapshot) => {
+            cloudOrdersCount = snapshot.size;
+        });
     }
 
     async function transmitOrderToMainShop(poPayload) {
         try {
-            // إرسال الطلب بشكل سحابي مباشر ليظهر في تبويب طلبات الـ PO باللينك الثاني
+            // إرسال الطلب سحابياً ليظهر مباشرة في قسم الـ PO باللينك الثاني
             await db.collection("orders").add({
                 id: poPayload.poNumber,
                 date: poPayload.date,
@@ -361,7 +368,7 @@
 
     function toggleCart(open){
         const overlay=document.getElementById('cart-overlay'),drawer=document.getElementById('cart-drawer');if(!overlay||!drawer)return;
-        if(open){renderCart();overlay.classList.remove('hidden');document.body.style.overflow='hidden';requestAnimationFrame(()=>{drawer.classList.remove('-translate-x-full');drawer.style.transform='translateX(0);'});}
+        if(open){renderCart();overlay.classList.remove('hidden');document.body.style.overflow='hidden';requestAnimationFrame(()=>{drawer.classList.remove('-translate-x-full');drawer.style.transform='translateX(0)';});}
         else{drawer.classList.add('-translate-x-full');drawer.style.transform='translateX(-100%)';document.body.style.overflow='';window.setTimeout(()=>overlay.classList.add('hidden'),300);}
     }
     
@@ -382,11 +389,16 @@
         const name=document.getElementById('cust-name').value.trim(),phone=document.getElementById('cust-phone').value.trim(),address=document.getElementById('cust-address').value.trim()||'لم يحدد',zone=document.getElementById('delivery-zone'),zoneLabel=zone.options[zone.selectedIndex].getAttribute('data-label'),shipping=parseInt(zone.value,10)||0,wrapping=document.getElementById('extra-wrapping').checked?45:0;
         if(!name||!phone){showToast('من فضلك أدخل الاسم ورقم الموبايل لإتمام الطلب','warning');return;}
         if(!/^[0-9+\s()-]{8,20}$/.test(phone)){showToast('من فضلك أدخل رقم موبايل صحيح','warning');return;}
-        const subtotal=cart.reduce((s,i)=>s+i.price*i.qty,0),total=subtotal+wrapping+shipping,poNumber=`PO-${new Date().getFullYear()}-${Math.floor(1000+Math.random()*9000)}`,date=new Date().toLocaleString('ar-EG',{dateStyle:'medium',timeStyle:'short'});
+        
+        // ترقيم PO متسلسل ومربوط بعدد الطلبات الحالي على السيستم سحابياً
+        const seqNumber = cloudOrdersCount + 1;
+        const poNumber = `PO-${new Date().getFullYear()}-${String(seqNumber).padStart(4, '0')}`;
+        
+        const subtotal=cart.reduce((s,i)=>s+i.price*i.qty,0),total=subtotal+wrapping+shipping,date=new Date().toLocaleString('ar-EG',{dateStyle:'medium',timeStyle:'short'});
         
         latestPO={poNumber,timestamp:new Date().toISOString(),date,customer:name,phone,governorate:zoneLabel,address:`${zoneLabel} - ${address}`,items:cart.map(i=>({sku:i.sku,name:i.name,details:i.details,qty:i.qty,price:i.price,isCustomBox:!!i.isCustomBox})),subtotal,wrapping,shipping,total};
         
-        // إرسال الطلب سحابياً لتراه فوراً في اللينك الثاني
+        // إرسال الطلب سحابياً لتراه فوراً في تبويب الـ PO باللينك الثاني
         await transmitOrderToMainShop(latestPO);
 
         document.getElementById('po-receipt-card').innerHTML=`<div class="flex justify-between items-center border-b border-dashed border-gold-champagne pb-2.5"><div><div class="font-brand font-bold text-emerald-deep text-sm">FARAFERO GIFT SHOP</div><div class="text-[11px] text-emerald-deep/60">${date}</div></div><span class="px-2.5 py-1 rounded-lg bg-emerald-deep text-gold-light font-mono font-bold">${poNumber}</span></div><div class="space-y-1 text-emerald-deep"><div><b>العميل:</b> ${escapeHtml(name)} (${escapeHtml(phone)})</div><div><b>التوصيل:</b> ${escapeHtml(zoneLabel)} - ${escapeHtml(address)}</div></div><div class="border-t border-b border-gold-champagne/30 py-2.5 space-y-2">${latestPO.items.map(i=>`<div class="flex justify-between gap-2"><span>• ${escapeHtml(i.name)} [${escapeHtml(i.sku)}] ×${i.qty}</span><b>${(i.price*i.qty).toLocaleString()} ج.م</b></div>`).join('')}</div><div class="space-y-1 text-emerald-deep/80"><div class="flex justify-between"><span>الإجمالي النهائي:</span><b class="text-gold-dark">${total.toLocaleString()} ج.م</b></div></div>`;
@@ -398,7 +410,7 @@
     function formatPoPlainText(po){const lines=po.items.map(i=>`• ${i.name} [${i.sku}] ×${i.qty} = ${(i.price*i.qty).toLocaleString()} ج.م`);return [`✨ *طلب شراء جديد (PO) - FARAFERO GIFT SHOP* ✨`,`رقم المرجع: *${po.poNumber}*`,`👤 *العميل:* ${po.customer}`,`📱 *الموبايل:* ${po.phone}`,`📍 *العنوان:* ${po.address}`,'-------------------------',...lines,'-------------------------',`💰 *الإجمالي المستحق: ${po.total.toLocaleString()} ج.م*`].join('\n');}
     function sendPoViaWhatsApp(){if(!latestPO)return;const text=encodeURIComponent(formatPoPlainText(latestPO));window.open(`https://wa.me/${SHOP_SYNC_CONFIG.shopWhatsAppNumber}?text=${text}`,'_blank','noopener');}
     async function copyPoText(){if(!latestPO)return;try{await navigator.clipboard.writeText(formatPoPlainText(latestPO));showToast('تم نسخ تفاصيل الطلب بنجاح!');}catch(e){showToast('تعذر النسخ تلقائياً؛ استخدم زر واتساب لإرسال التفاصيل','warning');}}
-    function showToast(message,type='success'){const container=document.getElementById('toast-container'),toast=document.createElement('div');const warning=type==='warning';toast.className=`pointer-events-auto px-4 py-3 rounded-2xl ${warning?'bg-amber-700':'emerald-gradient'} border-gold-champagne text-ivory text-xs font-bold shadow-xl border flex items-center gap-2.5`;const icon=document.createElement('i');icon.setAttribute('data-lucide',warning?'alert-circle':'check-circle-2');icon.className='w-4 h-4 text-gold-light shrink-0';const text=document.createElement('span');text.textContent=message;toast.append(icon,text);container.appendChild(toast);lucide.createIcons();setTimeout(()=>toast.remove(),3200);}
+    function showToast(message,type='success'){const container=document.getElementById('toast-container'),toast=document.createElement('div');const warning=type==='warning';toast.className=`pointer-events-auto px-4 py-3 rounded-2xl ${warning?'bg-amber-700':'emerald-gradient'} border-gold-champagne text-ivory text-xs font-bold shadow-xl border flex items-center gap-2.5`;const icon=document.createElement('i');icon.setAttribute('data-lucide',warning?'alert-circle':'check-circle-2');icon.className='v-4 h-4 text-gold-light shrink-0';const text=document.createElement('span');text.textContent=message;toast.append(icon,text);container.appendChild(toast);lucide.createIcons();setTimeout(()=>toast.remove(),3200);}
     
     let currentOccasion='birthday',currentBudget='400to800',currentStyle='cozy';
     function selectQuizOption(type,value,button){if(type==='occasion')currentOccasion=value;if(type==='budget')currentBudget=value;if(type==='style')currentStyle=value;document.querySelectorAll(`.quiz-opt-${type}`).forEach(b=>{b.classList.remove('bg-emerald-deep','text-ivory','border-emerald-deep');b.classList.add('bg-ivory','text-emerald-deep','border-gold-champagne/40');});button.classList.remove('bg-ivory','text-emerald-deep','border-gold-champagne/40');button.classList.add('bg-emerald-deep','text-ivory','border-emerald-deep');updateQuizRecommendation();}
