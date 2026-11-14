@@ -125,22 +125,25 @@
         <div id="cart-items-container" class="flex-grow overflow-y-auto p-6 space-y-4 custom-scrollbar"></div>
 
         <div class="p-6 border-t border-rose-100 bg-luxury-50/50 space-y-4">
-            <!-- تفاصيل الحسابات (شحن، باكينج، برومو كود) -->
+            <!-- الحسابات المالية (شحن حسب المحافظة + برومو كود) -->
             <div class="space-y-2 text-xs bg-white p-3.5 rounded-2xl border border-rose-100">
                 <div class="flex justify-between font-semibold">
                     <span>قيمة المنتجات:</span>
                     <span id="cart-subtotal">0 EGP</span>
                 </div>
                 <div class="flex justify-between items-center font-semibold">
-                    <span>مصاريف التغليف (Packaging):</span>
-                    <input type="number" id="packaging-fee" value="20" oninput="updateCartUI()" class="w-16 border rounded-lg p-1 text-center font-bold">
+                    <span>المحافظة (الشحن):</span>
+                    <select id="order-governorate" onchange="updateCartUI()" class="border rounded-xl px-2.5 py-1 text-xs font-bold bg-luxury-50">
+                        <option value="alex">الإسكندرية (100 EGP)</option>
+                        <option value="other">باقي المحافظات (150 EGP)</option>
+                    </select>
                 </div>
-                <div class="flex justify-between items-center font-semibold">
-                    <span>مصاريف الشحن (Shipping):</span>
-                    <input type="number" id="shipping-fee" value="50" oninput="updateCartUI()" class="w-16 border rounded-lg p-1 text-center font-bold">
+                <div class="flex justify-between font-semibold">
+                    <span>مصاريف الشحن:</span>
+                    <span id="shipping-display">100 EGP</span>
                 </div>
                 <div class="flex items-center gap-2 pt-1 border-t">
-                    <input type="text" id="promo-code-input" placeholder="ادخل البرومو كود (جرب FARAFERO)" class="flex-grow border rounded-xl px-2.5 py-1.5 text-xs">
+                    <input type="text" id="promo-code-input" placeholder="برومو كود (جرب FARAFERO)" class="flex-grow border rounded-xl px-2.5 py-1.5 text-xs">
                     <button onclick="applyPromoCode()" class="bg-slate-800 text-white px-3 py-1.5 rounded-xl text-xs font-bold">تطبيق</button>
                 </div>
                 <div id="promo-discount-row" class="hidden flex justify-between text-emerald-600 font-bold pt-1">
@@ -165,7 +168,7 @@
                 </div>
                 <div>
                     <label class="text-slate-700 block mb-1">العنوان بالتفصيل:</label>
-                    <textarea id="order-cust-address" rows="2" placeholder="المحافظة، المنطقة، الشارع..." class="w-full bg-white border border-rose-100 rounded-xl px-3.5 py-2 font-semibold focus:outline-none focus:border-luxury-600"></textarea>
+                    <textarea id="order-cust-address" rows="2" placeholder="المنطقة، الشارع، رقم العمارة..." class="w-full bg-white border border-rose-100 rounded-xl px-3.5 py-2 font-semibold focus:outline-none focus:border-luxury-600"></textarea>
                 </div>
             </div>
 
@@ -185,7 +188,7 @@
             <h3 class="text-xl font-black text-slate-900">تم تسجيل طلبك بنجاح!</h3>
             <p class="text-xs text-slate-600 leading-relaxed">
                 رقم طلبك هو <b id="success-order-id" class="text-luxury-600 text-sm"></b>.<br>
-                جاري تحويلك الآن لإرسال تفاصيل الطلب عبر الواتساب..
+                جاري تحويلك لإرسال الطلب عبر الواتساب..
             </p>
             <button onclick="closeSuccessModal()" class="w-full bg-luxury-dark text-white font-bold py-3 rounded-2xl text-xs">متابعة التصفح</button>
         </div>
@@ -310,7 +313,6 @@
             });
         }
 
-        // تم إلغاء فتح السلة التلقائي هنا بناءً على طلبك
         function addToCart(productId) {
             const product = storeState.products.find(p => p.id === productId);
             if (!product || product.stock <= 0) return;
@@ -352,7 +354,7 @@
             const code = document.getElementById('promo-code-input').value.trim().toUpperCase();
             if(code === 'FARAFERO' || code === 'GIFT') {
                 storeState.appliedPromo = code;
-                storeState.discountAmount = 50; // خصم 50 جنيه مثلاً
+                storeState.discountAmount = 50;
                 alert('تم تطبيق البرومو كود بنجاح!');
             } else {
                 storeState.appliedPromo = null;
@@ -367,19 +369,21 @@
             const container = document.getElementById('cart-items-container');
             const subtotalEl = document.getElementById('cart-subtotal');
             const totalEl = document.getElementById('cart-total-price');
+            const shippingDisplay = document.getElementById('shipping-display');
+            const govSelect = document.getElementById('order-governorate');
 
             const totalQty = storeState.cart.reduce((sum, i) => sum + i.qty, 0);
             const subtotal = storeState.cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
-            const packaging = parseFloat(document.getElementById('packaging-fee').value) || 0;
-            const shipping = parseFloat(document.getElementById('shipping-fee').value) || 0;
+            
+            const shippingFee = govSelect && govSelect.value === 'alex' ? 100 : 150;
+            if(shippingDisplay) shippingDisplay.innerText = shippingFee + ' EGP';
 
-            const finalTotal = subtotal + packaging + shipping - storeState.discountAmount;
+            const finalTotal = subtotal + shippingFee - storeState.discountAmount;
 
             badge.innerText = totalQty;
             subtotalEl.innerText = subtotal + ' EGP';
             totalEl.innerText = finalTotal >= 0 ? finalTotal : 0;
 
-            // تحديث عرض صف الخصم إن وجد
             const discountRow = document.getElementById('promo-discount-row');
             if(storeState.appliedPromo) {
                 discountRow.classList.remove('hidden');
@@ -430,6 +434,9 @@
             const name = document.getElementById('order-cust-name').value.trim();
             const phone = document.getElementById('order-cust-phone').value.trim();
             const address = document.getElementById('order-cust-address').value.trim();
+            const govSelect = document.getElementById('order-governorate');
+            const govName = govSelect.value === 'alex' ? 'الإسكندرية' : 'باقي المحافظات';
+            const shippingFee = govSelect.value === 'alex' ? 100 : 150;
 
             if (!name || !phone || !address) return alert('برجاء إكمال بيانات الاسم، رقم الهاتف، والعنوان!');
 
@@ -438,9 +445,7 @@
             btn.innerHTML = '<span>جاري إرسال الطلب وحفظه...</span>';
 
             const subtotal = storeState.cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
-            const packaging = parseFloat(document.getElementById('packaging-fee').value) || 0;
-            const shipping = parseFloat(document.getElementById('shipping-fee').value) || 0;
-            const total = subtotal + packaging + shipping - storeState.discountAmount;
+            const total = subtotal + shippingFee - storeState.discountAmount;
 
             const poId = 'PO-' + String(storeState.ordersCount + 1).padStart(4, '0');
             const dateStr = new Date().toLocaleDateString('en-GB');
@@ -453,39 +458,35 @@
                 timestamp: Date.now(),
                 total: total,
                 discount: storeState.discountAmount,
-                packaging: packaging,
-                shipping: shipping,
+                packaging: 0,
+                shipping: shippingFee,
                 customerName: name,
-                customerPhone: `${phone} - (${address})`,
+                customerPhone: `${phone} - (${govName} - ${address})`,
                 detailedItems: storeState.cart.map(i => ({ id: i.id, code: i.code, name: i.name, price: i.price, qty: i.qty }))
             };
 
-            // حفظ الطلب في Firebase ليظهر في لوحة الإدارة لديك
             db.collection("orders").add(orderPayload).then(() => {
-                // تجهيز رسالة الواتساب التلقائية لرقمك 01005187411
                 let waMessage = `🎁 *طلب هدية جديد (${poId})* 🎁%0a%0a`;
                 waMessage += `👤 *الاسم:* ${name}%0a`;
                 waMessage += `📞 *الهاتف:* ${phone}%0a`;
-                waMessage += `📍 *العنوان:* ${address}%0a%0a`;
+                waMessage += `📍 *المحافظة:* ${govName}%0a`;
+                waMessage += `🏠 *العنوان:* ${address}%0a%0a`;
                 waMessage += `🛍️ *المنتجات:*%0a`;
                 
                 storeState.cart.forEach(i => {
                     waMessage += `- ${i.name} (×${i.qty}) : ${i.price * i.qty} EGP%0a`;
                 });
 
-                waMessage += `%0a📦 *التغليف:* ${packaging} EGP`;
-                waMessage += `%0a🚚 *الشحن:* ${shipping} EGP`;
+                waMessage += `%0a🚚 *الشحن (${govName}):* ${shippingFee} EGP`;
                 if(storeState.discountAmount > 0) {
                     waMessage += `%0a🏷️ *الخصم:* -${storeState.discountAmount} EGP`;
                 }
                 waMessage += `%0a💰 *الإجمالي النهائي:* ${total} EGP`;
 
-                // تفريغ السلة
                 storeState.cart = [];
                 saveAndSyncCart();
                 toggleCartDrawer(false);
 
-                // فتح الواتساب تلقائياً برقمك
                 window.open(`https://wa.me/201005187411?text=${waMessage}`, '_blank');
 
                 document.getElementById('success-order-id').innerText = poId;
