@@ -37,7 +37,7 @@
 
     <!-- Top Announcement Bar -->
     <div class="bg-luxury-dark text-white text-[11px] py-2.5 text-center tracking-widest font-montserrat shadow-inner">
-        ✨ شحن فوري لجميع المحافظات • تغليف هدايا فاخر مجاناً 🎁
+        ✨ شحن فوري لجميع المحافظات • تغليف هدايا فاخر 🎁
     </div>
 
     <!-- HEADER -->
@@ -125,6 +125,30 @@
         <div id="cart-items-container" class="flex-grow overflow-y-auto p-6 space-y-4 custom-scrollbar"></div>
 
         <div class="p-6 border-t border-rose-100 bg-luxury-50/50 space-y-4">
+            <!-- تفاصيل الحسابات (شحن، باكينج، برومو كود) -->
+            <div class="space-y-2 text-xs bg-white p-3.5 rounded-2xl border border-rose-100">
+                <div class="flex justify-between font-semibold">
+                    <span>قيمة المنتجات:</span>
+                    <span id="cart-subtotal">0 EGP</span>
+                </div>
+                <div class="flex justify-between items-center font-semibold">
+                    <span>مصاريف التغليف (Packaging):</span>
+                    <input type="number" id="packaging-fee" value="20" oninput="updateCartUI()" class="w-16 border rounded-lg p-1 text-center font-bold">
+                </div>
+                <div class="flex justify-between items-center font-semibold">
+                    <span>مصاريف الشحن (Shipping):</span>
+                    <input type="number" id="shipping-fee" value="50" oninput="updateCartUI()" class="w-16 border rounded-lg p-1 text-center font-bold">
+                </div>
+                <div class="flex items-center gap-2 pt-1 border-t">
+                    <input type="text" id="promo-code-input" placeholder="ادخل البرومو كود (جرب FARAFERO)" class="flex-grow border rounded-xl px-2.5 py-1.5 text-xs">
+                    <button onclick="applyPromoCode()" class="bg-slate-800 text-white px-3 py-1.5 rounded-xl text-xs font-bold">تطبيق</button>
+                </div>
+                <div id="promo-discount-row" class="hidden flex justify-between text-emerald-600 font-bold pt-1">
+                    <span>الخصم (<span id="promo-name-display"></span>):</span>
+                    <span>-<span id="promo-discount-val">0</span> EGP</span>
+                </div>
+            </div>
+
             <div class="flex justify-between items-center text-base font-black border-b border-rose-100 pb-3">
                 <span>الإجمالي النهائي:</span>
                 <span class="text-luxury-600 text-lg"><span id="cart-total-price">0</span> EGP</span>
@@ -146,8 +170,8 @@
             </div>
 
             <button id="submit-order-btn" onclick="submitOnlineOrder()" class="w-full bg-luxury-600 hover:bg-luxury-700 text-white font-bold py-3.5 rounded-2xl shadow-md text-sm transition-all flex items-center justify-center space-x-2 space-x-reverse">
-                <i class="fa-solid fa-paper-plane text-base"></i>
-                <span>تأكيد وإرسال الطلب الآن</span>
+                <i class="fa-brands fa-whatsapp text-lg"></i>
+                <span>تأكيد وإرسال الطلب عبر الواتساب</span>
             </button>
         </div>
     </aside>
@@ -158,10 +182,10 @@
             <div class="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto text-3xl">
                 <i class="fa-solid fa-circle-check"></i>
             </div>
-            <h3 class="text-xl font-black text-slate-900">تم استلام طلبك بنجاح!</h3>
+            <h3 class="text-xl font-black text-slate-900">تم تسجيل طلبك بنجاح!</h3>
             <p class="text-xs text-slate-600 leading-relaxed">
                 رقم طلبك هو <b id="success-order-id" class="text-luxury-600 text-sm"></b>.<br>
-                تم تسجيل طلبك في النظام وسنتواصل معك قريباً لتأكيد التوصيل.
+                جاري تحويلك الآن لإرسال تفاصيل الطلب عبر الواتساب..
             </p>
             <button onclick="closeSuccessModal()" class="w-full bg-luxury-dark text-white font-bold py-3 rounded-2xl text-xs">متابعة التصفح</button>
         </div>
@@ -196,7 +220,9 @@
             categories: [],
             selectedCategory: 'الكل',
             cart: JSON.parse(localStorage.getItem('farafero_gift_cart') || '[]'),
-            ordersCount: 0
+            ordersCount: 0,
+            appliedPromo: null,
+            discountAmount: 0
         };
 
         function initStore() {
@@ -284,6 +310,7 @@
             });
         }
 
+        // تم إلغاء فتح السلة التلقائي هنا بناءً على طلبك
         function addToCart(productId) {
             const product = storeState.products.find(p => p.id === productId);
             if (!product || product.stock <= 0) return;
@@ -303,7 +330,6 @@
                 });
             }
             saveAndSyncCart();
-            toggleCartDrawer(true);
         }
 
         function updateCartQty(idx, delta) {
@@ -322,16 +348,46 @@
             updateCartUI();
         }
 
+        function applyPromoCode() {
+            const code = document.getElementById('promo-code-input').value.trim().toUpperCase();
+            if(code === 'FARAFERO' || code === 'GIFT') {
+                storeState.appliedPromo = code;
+                storeState.discountAmount = 50; // خصم 50 جنيه مثلاً
+                alert('تم تطبيق البرومو كود بنجاح!');
+            } else {
+                storeState.appliedPromo = null;
+                storeState.discountAmount = 0;
+                alert('البرومو كود غير صحيح!');
+            }
+            updateCartUI();
+        }
+
         function updateCartUI() {
             const badge = document.getElementById('cart-badge');
             const container = document.getElementById('cart-items-container');
+            const subtotalEl = document.getElementById('cart-subtotal');
             const totalEl = document.getElementById('cart-total-price');
 
             const totalQty = storeState.cart.reduce((sum, i) => sum + i.qty, 0);
-            const totalPrice = storeState.cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+            const subtotal = storeState.cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+            const packaging = parseFloat(document.getElementById('packaging-fee').value) || 0;
+            const shipping = parseFloat(document.getElementById('shipping-fee').value) || 0;
+
+            const finalTotal = subtotal + packaging + shipping - storeState.discountAmount;
 
             badge.innerText = totalQty;
-            totalEl.innerText = totalPrice;
+            subtotalEl.innerText = subtotal + ' EGP';
+            totalEl.innerText = finalTotal >= 0 ? finalTotal : 0;
+
+            // تحديث عرض صف الخصم إن وجد
+            const discountRow = document.getElementById('promo-discount-row');
+            if(storeState.appliedPromo) {
+                discountRow.classList.remove('hidden');
+                document.getElementById('promo-name-display').innerText = storeState.appliedPromo;
+                document.getElementById('promo-discount-val').innerText = storeState.discountAmount;
+            } else {
+                discountRow.classList.add('hidden');
+            }
 
             if (storeState.cart.length === 0) {
                 container.innerHTML = '<p class="text-center text-slate-400 py-12 text-xs">سلة الهدايا فارغة حالياً</p>';
@@ -379,9 +435,13 @@
 
             const btn = document.getElementById('submit-order-btn');
             btn.disabled = true;
-            btn.innerHTML = '<span>جاري الإرسال...</span>';
+            btn.innerHTML = '<span>جاري إرسال الطلب وحفظه...</span>';
 
-            const total = storeState.cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+            const subtotal = storeState.cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+            const packaging = parseFloat(document.getElementById('packaging-fee').value) || 0;
+            const shipping = parseFloat(document.getElementById('shipping-fee').value) || 0;
+            const total = subtotal + packaging + shipping - storeState.discountAmount;
+
             const poId = 'PO-' + String(storeState.ordersCount + 1).padStart(4, '0');
             const dateStr = new Date().toLocaleDateString('en-GB');
 
@@ -392,26 +452,50 @@
                 date: dateStr,
                 timestamp: Date.now(),
                 total: total,
-                discount: 0,
-                packaging: 0,
-                shipping: 0,
+                discount: storeState.discountAmount,
+                packaging: packaging,
+                shipping: shipping,
                 customerName: name,
                 customerPhone: `${phone} - (${address})`,
                 detailedItems: storeState.cart.map(i => ({ id: i.id, code: i.code, name: i.name, price: i.price, qty: i.qty }))
             };
 
+            // حفظ الطلب في Firebase ليظهر في لوحة الإدارة لديك
             db.collection("orders").add(orderPayload).then(() => {
+                // تجهيز رسالة الواتساب التلقائية لرقمك 01005187411
+                let waMessage = `🎁 *طلب هدية جديد (${poId})* 🎁%0a%0a`;
+                waMessage += `👤 *الاسم:* ${name}%0a`;
+                waMessage += `📞 *الهاتف:* ${phone}%0a`;
+                waMessage += `📍 *العنوان:* ${address}%0a%0a`;
+                waMessage += `🛍️ *المنتجات:*%0a`;
+                
+                storeState.cart.forEach(i => {
+                    waMessage += `- ${i.name} (×${i.qty}) : ${i.price * i.qty} EGP%0a`;
+                });
+
+                waMessage += `%0a📦 *التغليف:* ${packaging} EGP`;
+                waMessage += `%0a🚚 *الشحن:* ${shipping} EGP`;
+                if(storeState.discountAmount > 0) {
+                    waMessage += `%0a🏷️ *الخصم:* -${storeState.discountAmount} EGP`;
+                }
+                waMessage += `%0a💰 *الإجمالي النهائي:* ${total} EGP`;
+
+                // تفريغ السلة
                 storeState.cart = [];
                 saveAndSyncCart();
                 toggleCartDrawer(false);
+
+                // فتح الواتساب تلقائياً برقمك
+                window.open(`https://wa.me/201005187411?text=${waMessage}`, '_blank');
+
                 document.getElementById('success-order-id').innerText = poId;
                 document.getElementById('order-success-modal').classList.remove('hidden');
                 btn.disabled = false;
-                btn.innerHTML = '<span>تأكيد وإرسال الطلب الآن</span>';
+                btn.innerHTML = '<span>تأكيد وإرسال الطلب عبر الواتساب</span>';
             }).catch(() => {
                 alert('حدث خطأ، تأكد من الاتصال وحاول مجدداً.');
                 btn.disabled = false;
-                btn.innerHTML = '<span>تأكيد وإرسال الطلب الآن</span>';
+                btn.innerHTML = '<span>تأكيد وإرسال الطلب عبر الواتساب</span>';
             });
         }
 
