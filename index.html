@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Farafero Store | فرفيرو للهدايا والتحف العصرية</title>
+  <title>Farafero Store | فرفيرو للهدايا والتحف</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Google Fonts Cairo -->
@@ -12,19 +12,20 @@
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Cairo', sans-serif; }
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: #f5f5f4; }
-    ::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 3px; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-fadeIn { animation: fadeIn 0.3s ease-out forwards; }
   </style>
 </head>
 <body class="bg-stone-50 text-stone-900 antialiased min-h-screen flex flex-col selection:bg-rose-800 selection:text-white">
 
   <div id="root"></div>
 
-  <!-- React, ReactDOM, Babel & Lucide Icons -->
+  <!-- React & ReactDOM -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <!-- Babel -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Lucide Icons UMD -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <script type="text/babel">
@@ -42,69 +43,69 @@
     const INITIAL_PRODUCTS = [
       {
         id: 'p1',
-        name: 'مج حراري بتصميم رخامي فاخر وغطاء ذهبي',
+        name: 'مج حراري بتصميم رخامي وغطاء ذهبي',
         category: 'مجات وأكواب',
         price: 220,
         oldPrice: 280,
         isOffer: true,
         inStock: true,
         image: 'https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?auto=format&fit=crop&w=800&q=80',
-        description: 'مج سيراميك فاخر يحافظ على حرارة المشروبات لأطول فترة مع ملعقة ذهبية أنيقة.'
+        description: 'مج سيراميك فاخر يحافظ على حرارة المشروبات مع ملعقة ذهبية أنيقة.'
       },
       {
         id: 'p2',
-        name: 'أباجورة أكريليك مضيئة ثلاثية الأبعاد بتصميم رومانسى',
+        name: 'أباجورة أكريليك مضيئة ثلاثية الأبعاد',
         category: 'إضاءات وديكور',
         price: 350,
         oldPrice: null,
         isOffer: false,
         inStock: true,
         image: 'https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?auto=format&fit=crop&w=800&q=80',
-        description: 'إضاءة ليلية دافئة بقاعدة خشبية طبيعية تضيف لمسة ساحرة ومميزة لغرفتك.'
+        description: 'إضاءة ليلية دافئة بقاعدة خشبية أنيقة تضيف لمسة ساحرة لغرفتك.'
       },
       {
         id: 'p3',
-        name: 'بوكس السعادة المتكامل للهدايا الملكية',
+        name: 'بوكس السعادة المتكامل للهدايا',
         category: 'بوكسات هدايا',
         price: 650,
         oldPrice: 800,
         isOffer: true,
         inStock: true,
         image: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=800&q=80',
-        description: 'بوكس هدايا فخم يضم شمعة معطرة، مج، إكسسوارات، وكرت إهداء بتغليف ملكي.'
+        description: 'بوكس هدايا فاخر يضم شمعة معطرة، مج، وإكسسوارات بتغليف ملكي.'
       },
       {
         id: 'p4',
-        name: 'طقم إكسسوارات ستانلس ستيل مطلي الذهب الأصلي',
+        name: 'طقم إكسسوارات ستانلس ستيل مطلي ذهب',
         category: 'إكسسوارات وساعات',
         price: 290,
         oldPrice: null,
         isOffer: false,
         inStock: true,
         image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80',
-        description: 'سلسلة وأسورة مضادة للماء ومقاومة لتغير اللون مع علبة قطيفة فاخرة.'
+        description: 'سلسلة وأسورة مقاومة للصدأ وتغير اللون مع علبة قطيفة فاخرة.'
       },
       {
         id: 'p5',
-        name: 'شمعة صويا طبيعية معطرة برائحة العود والفانيليا',
+        name: 'شمعة صويا معطرة برائحة الفانيليا والعود',
         category: 'شموع وروائح',
         price: 185,
         oldPrice: 230,
         isOffer: true,
         inStock: true,
         image: 'https://images.unsplash.com/photo-1602874801007-bd458bb1b8b6?auto=format&fit=crop&w=800&q=80',
-        description: 'شمعة طبيعية صديقة للبيئة تدوم لأكثر من 35 ساعة في برطمان زجاجي أنيق.'
+        description: 'شمعة طبيعية تدوم لأكثر من 35 ساعة في برطمان زجاجي أنيق.'
       },
       {
         id: 'p6',
-        name: 'ساعة يد كلاسيكية نسائية بسوار جلدي راقي',
+        name: 'ساعة يد كلاسيكية بسوار جلدي',
         category: 'إكسسوارات وساعات',
         price: 490,
         oldPrice: null,
         isOffer: false,
         inStock: true,
         image: 'https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=800&q=80',
-        description: 'تصميم عصري وجذاب يناسب جميع المناسبات الرسمية والكاجوال مع ضمان سنة.'
+        description: 'تصميم عصري يناسب جميع المناسبات مع ضمان لمدة عام.'
       }
     ];
 
@@ -126,7 +127,7 @@
       const [searchQuery, setSearchQuery] = useState('');
       const [toast, setToast] = useState(null);
 
-      // Persistent Storage
+      // Data States
       const [products, setProducts] = useState(() => {
         const saved = localStorage.getItem('farafero_products');
         return saved ? JSON.parse(saved) : INITIAL_PRODUCTS;
@@ -174,7 +175,7 @@
 
       const showToast = (msg) => {
         setToast(msg);
-        setTimeout(() => setToast(null), 3500);
+        setTimeout(() => setToast(null), 3000);
       };
 
       const addToCart = (product) => {
@@ -186,7 +187,7 @@
           }
           return [...prev, { ...product, qty: 1 }];
         });
-        showToast(`✨ تمت إضافة "${product.name}" إلى سلة المشتريات`);
+        showToast(`تمت إضافة "${product.name}" إلى السلة 🛍️`);
       };
 
       const updateCartQty = (id, delta) => {
@@ -220,7 +221,7 @@
 
         setOrders(prev => [newOrder, ...prev]);
 
-        // Auto save customer record upon order creation
+        // Auto save customer strictly upon order creation
         setCustomers(prev => {
           const exists = prev.find(c => c.phone === checkoutForm.phone);
           if (exists) {
@@ -231,11 +232,11 @@
 
         const govNames = { alexandria: 'الإسكندرية', cairo: 'القاهرة والجيزة', other: 'باقي المحافظات' };
         const itemsText = cart.map(i => `- ${i.name} (×${i.qty}) = ${i.price * i.qty} ج.م`).join('%0A');
-        const waText = `مرحباً ${STORE_INFO.name}، أود تأكيد طلبي رقم ${newOrder.id}:%0A%0A*بيانات العميل:*%0Aالاسم: ${checkoutForm.name}%0Aالموبايل: ${checkoutForm.phone}%0Aالمحافظة: ${govNames[checkoutForm.governorate]}%0Aالعنوان: ${checkoutForm.address}%0A%0A*المنتجات المطلوبة:*%0A${itemsText}%0A%0Aمصاريف الشحن: ${currentShippingCost} ج.م%0A*الإجمالي الكلي: ${orderTotal} ج.م*`;
+        const waText = `مرحباً ${STORE_INFO.name}، أود تأكيد طلبي رقم ${newOrder.id}:%0A%0A*بيانات العميل:*%0Aالاسم: ${checkoutForm.name}%0Aالموبايل: ${checkoutForm.phone}%0Aالمحافظة: ${govNames[checkoutForm.governorate]}%0Aالعنوان: ${checkoutForm.address}%0A%0A*المنتجات:*%0A${itemsText}%0A%0Aالشحن: ${currentShippingCost} ج.م%0A*الإجمالي: ${orderTotal} ج.م*`;
 
         setCart([]);
         setCurrentPage('home');
-        showToast('🎉 تم تسجيل طلبك بنجاح! جاري تحويلك للواتساب...');
+        showToast('تم تسجيل الطلب بنجاح! جاري تحويلك للواتساب...');
         window.open(`https://wa.me/${STORE_INFO.whatsapp}?text=${waText}`, '_blank');
       };
 
@@ -245,9 +246,9 @@
           setIsAdmin(true);
           setCurrentPage('admin');
           setAdminPasswordInput('');
-          showToast('🔐 تم تسجيل الدخول للوحة التحكم بنجاح');
+          showToast('تم تسجيل الدخول إلى لوحة التحكم بنجاح');
         } else {
-          showToast('❌ كلمة المرور غير صحيحة');
+          showToast('كلمة المرور غير صحيحة');
         }
       };
 
@@ -266,7 +267,7 @@
           showToast('تم تحديث المنتج بنجاح');
         } else {
           setProducts(prev => [{ ...productData, id: `p-${Date.now()}` }, ...prev]);
-          showToast('تمت إضافة المنتج الجديد للمتجر');
+          showToast('تمت إضافة المنتج الجديد');
         }
 
         setNewProductForm({ name: '', category: 'مجات وأكواب', price: '', oldPrice: '', isOffer: false, inStock: true, image: '', description: '' });
@@ -279,7 +280,7 @@
 
       const deleteProduct = (id) => {
         setProducts(prev => prev.filter(p => p.id !== id));
-        showToast('تم حذف المنتج من المتجر');
+        showToast('تم حذف المنتج');
       };
 
       const updateOrderStatus = (orderId, newStatus) => {
@@ -300,8 +301,8 @@
           <div className="relative aspect-square overflow-hidden bg-stone-100">
             <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
             {product.isOffer && (
-              <span className="absolute top-3 right-3 bg-rose-700 text-white text-xs font-extrabold px-3.5 py-1.5 rounded-full shadow-md">
-                ✨ عرض خاص
+              <span className="absolute top-3 right-3 bg-rose-700 text-white text-xs font-black px-3.5 py-1.5 rounded-full shadow">
+                عرض خاص
               </span>
             )}
             <span className={`absolute top-3 left-3 text-xs font-bold px-3 py-1 rounded-full ${product.inStock ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-stone-200 text-stone-600'}`}>
@@ -311,15 +312,15 @@
 
           <div className="p-5 flex-1 flex flex-col justify-between">
             <div>
-              <span className="text-xs text-amber-700 font-bold tracking-wide">{product.category}</span>
-              <h3 className="font-extrabold text-stone-900 text-base mt-1.5 line-clamp-1">{product.name}</h3>
+              <span className="text-xs text-amber-700 font-bold">{product.category}</span>
+              <h3 className="font-extrabold text-stone-900 text-base mt-1 line-clamp-1">{product.name}</h3>
               <p className="text-xs text-stone-500 mt-1 line-clamp-2 leading-relaxed">{product.description}</p>
             </div>
 
             <div className="mt-5 pt-4 border-t border-stone-100 flex items-center justify-between">
               <div>
                 <span className="text-lg font-black text-rose-800">{product.price} ج.م</span>
-                {product.oldPrice && <span className="text-xs text-stone-400 line-through mr-2 font-medium">{product.oldPrice} ج.م</span>}
+                {product.oldPrice && <span className="text-xs text-stone-400 line-through mr-2 font-bold">{product.oldPrice} ج.م</span>}
               </div>
 
               <button 
@@ -338,13 +339,13 @@
         <div className="min-h-screen flex flex-col bg-stone-50 text-stone-900">
           {/* Toast Notification */}
           {toast && (
-            <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-stone-900 text-white px-6 py-3.5 rounded-2xl shadow-2xl text-sm font-bold flex items-center gap-2 border border-stone-700 animate-bounce">
+            <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-stone-900 text-white px-6 py-3.5 rounded-2xl shadow-2xl text-sm font-bold border border-stone-700 animate-bounce">
               {toast}
             </div>
           )}
 
           {/* Header */}
-          <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-200/80 shadow-xs">
+          <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-200 shadow-xs">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
               <button onClick={() => setCurrentPage('home')} className="flex items-center gap-3 text-right group">
                 <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-rose-800 to-amber-600 flex items-center justify-center text-white shadow-md text-xl group-hover:scale-105 transition-transform">
@@ -432,7 +433,7 @@
                 <section className="bg-gradient-to-bl from-rose-950 via-stone-900 to-stone-900 text-white relative overflow-hidden">
                   <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28 grid md:grid-cols-2 gap-12 items-center">
                     <div className="space-y-6">
-                      <div className="inline-flex items-center gap-2 bg-white/10 border border-white/15 px-4 py-2 rounded-full text-amber-300 text-xs font-extrabold shadow">
+                      <div className="inline-flex items-center gap-2 bg-white/10 border border-white/15 px-4 py-2 rounded-full text-amber-300 text-xs font-black shadow">
                         ✨ تشكيلة هدايا 2026 الأصلية وصلت الآن
                       </div>
                       <h1 className="text-4xl sm:text-6xl font-black leading-tight">
@@ -450,7 +451,7 @@
                         </button>
                         <button 
                           onClick={() => setCurrentPage('offers')} 
-                          className="bg-white/10 hover:bg-white/20 border border-white/20 text-white px-8 py-4 rounded-2xl font-black text-sm transition-all backdrop-blur-xs"
+                          className="bg-white/10 hover:bg-white/20 border border-white/20 text-white px-8 py-4 rounded-2xl font-black text-sm transition-all"
                         >
                           اكتشف العروض والخصومات 🔥
                         </button>
@@ -701,9 +702,6 @@
                   <h1 className="text-3xl font-black text-stone-900">من نحن - {STORE_INFO.name}</h1>
                   <p className="text-stone-600 leading-relaxed text-base">
                     <strong>{STORE_INFO.name} ({STORE_INFO.arabicName})</strong> هو وجهتك الأولى لاختيار الهدايا المميزة والتحف العصرية والإكسسوارات في مصر. بدأنا بشغف حقيقي لتقديم منتجات تجمع بين الذوق الرفيع، الجودة العالية، والسعر المناسب.
-                  </p>
-                  <p className="text-stone-600 leading-relaxed text-base">
-                    نهتم بكل تفصيلة صغيرة من لحظة اختيارك للهدية وحتى وصولها مغلفة بأجمل شكل لمن تحب، لتترك أثراً جميلاً لا يُنسى.
                   </p>
                 </div>
               </div>
@@ -1020,7 +1018,7 @@
                       />
                     </div>
                     <button 
-                      onClick={() => showToast('✅ تم حفظ أسعار الشحن بنجاح')} 
+                      onClick={() => showToast('تم حفظ أسعار الشحن بنجاح')} 
                       className="w-full bg-rose-800 text-white py-3.5 rounded-2xl font-black text-sm shadow-md"
                     >
                       حفظ إعدادات الشحن
