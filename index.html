@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FARAFERO GIFT SHOP - المتجر الإلكتروني</title>
+    <title>FARAFERO GIFT SHOP & BOUTIQUE</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&family=Cinzel:wght@500;600;700&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
@@ -25,145 +25,156 @@
         }
     </script>
     <style>
-        body { font-family: 'Cairo', sans-serif; }
+        body { font-family: 'Cairo', sans-serif; background-color: #0B1614; color: #f1f5f9; }
         .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #0B1614; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #C5A059; border-radius: 4px; }
+        .glass-card {
+            background: rgba(15, 32, 28, 0.85);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(197, 160, 89, 0.25);
+            box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.3);
+        }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col pb-16" dir="rtl">
+<body class="bg-[#0B1614] text-slate-100 font-sans antialiased min-h-screen flex flex-col pb-20 selection:bg-gold selection:text-slate-950" dir="rtl">
 
     <!-- TOP HEADER -->
-    <header class="bg-white/90 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200 shadow-sm">
+    <header class="bg-[#0F201C]/95 backdrop-blur-md sticky top-0 z-40 border-b border-gold/20 shadow-xl">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-            <div class="flex items-center space-x-3 space-x-reverse">
-                <div class="w-12 h-12 flex items-center justify-center bg-white rounded-2xl border border-gold/40 shadow-sm p-1">
-                    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
-                        <path d="M50 32C42 22 30 22 33 32C35.5 38.5 48 35 50 32Z" stroke="#C5A059" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M50 32C58 22 70 22 67 32C64.5 38.5 52 35 50 32Z" stroke="#C5A059" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                        <rect x="25" y="32" width="50" height="12" fill="white" stroke="#C5A059" stroke-width="3" stroke-linejoin="round"/>
-                        <rect x="28" y="44" width="44" height="34" fill="white" stroke="#C5A059" stroke-width="3" stroke-linejoin="round"/>
-                        <line x1="50" y1="32" x2="50" y2="78" stroke="#C5A059" stroke-width="3"/>
-                    </svg>
-                </div>
-                <div>
-                    <h1 class="text-base font-bold tracking-[3px] text-slate-900 leading-tight font-cinzel">FARAFERO</h1>
-                    <p class="text-[9px] text-gold font-semibold tracking-[4px] uppercase font-montserrat">GIFT SHOP</p>
-                </div>
+            
+            <!-- زر السلة العلوي الفخم -->
+            <button onclick="toggleCartModal()" class="relative flex items-center space-x-2 space-x-reverse bg-gold/10 border border-gold/40 hover:bg-gold/20 px-4 py-2.5 rounded-2xl transition-all shadow-sm">
+                <i class="fa-solid fa-bag-shopping text-gold text-lg"></i>
+                <span class="text-xs font-black text-white hidden sm:inline">حقيبة الهدايا</span>
+                <span id="cart-badge" class="absolute -top-2 -left-2 bg-gold text-slate-950 text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow-md">0</span>
+            </button>
+
+            <!-- اسم اللوجو المنتصف -->
+            <div class="text-center cursor-pointer" onclick="filterCategory('الكل')">
+                <h1 class="text-lg font-bold tracking-[4px] text-white font-cinzel leading-tight">FARAFERO</h1>
+                <p class="text-[8px] text-gold font-semibold tracking-[5px] uppercase font-montserrat">GIFT SHOP & BOUTIQUE</p>
             </div>
 
-            <!-- زر السلة العلوي -->
-            <button onclick="toggleCartModal()" class="relative flex items-center space-x-2 space-x-reverse bg-amber-50 border border-gold/40 hover:bg-amber-100 px-4 py-2.5 rounded-2xl transition-all shadow-sm">
-                <i class="fa-solid fa-bag-shopping text-gold text-lg"></i>
-                <span class="text-xs font-black text-slate-800">السلة</span>
-                <span id="cart-badge" class="absolute -top-2 -left-2 bg-gold text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow-md">0</span>
-            </button>
+            <!-- شعار F الفخم -->
+            <div class="w-10 h-10 rounded-xl bg-gold/15 border border-gold/40 flex items-center justify-center text-gold font-bold font-cinzel text-lg shadow-sm">
+                F
+            </div>
         </div>
     </header>
 
+    <!-- HERO BANNER -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 w-full">
+        <div class="relative rounded-3xl overflow-hidden glass-card p-6 sm:p-10 border border-gold/30 text-center space-y-3 shadow-2xl">
+            <div class="absolute -top-24 -right-24 w-48 h-48 bg-gold/10 rounded-full blur-3xl pointer-events-none"></div>
+            <span class="bg-gold/10 text-gold text-[11px] font-bold px-4 py-1.5 rounded-full border border-gold/30 tracking-wider">مجموعة الهدايا الفاخرة 2026</span>
+            <h2 class="text-2xl sm:text-4xl font-black font-cinzel text-white tracking-wide">اصنع لحظات لا تُنسى لمن تحب</h2>
+            <p class="text-xs sm:text-sm text-slate-300 max-w-xl mx-auto font-medium">اكتشف تشكيلة راقية من أرقى الهدايا، الدباديب، الورود، والمجوهرات المصممة خصيصاً لتناسب أذواقكم الرفيعة.</p>
+        </div>
+    </div>
+
     <!-- MAIN CONTAINER -->
     <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full space-y-6">
-        
-        <!-- قسم البحث والتصفية -->
-        <div class="bg-white rounded-3xl p-6 border shadow-sm space-y-4">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-3 gap-3">
-                <div>
-                    <h3 class="text-xl font-black text-slate-900 flex items-center">
-                        <i class="fa-solid fa-gift text-gold ml-2"></i> تصفح هدايا فرفيرو المميزة
-                    </h3>
-                    <p class="text-xs text-slate-500 mt-1">اختر الهدية التي تعجبك وأضفها للسلة لإتمام الطلب أونلاين</p>
-                </div>
-            </div>
-            
-            <div class="bg-slate-50 p-3 rounded-2xl border flex items-center space-x-3 space-x-reverse">
-                <i class="fa-solid fa-magnifying-glass text-gold"></i>
-                <input type="text" id="store-search" oninput="renderStoreProducts()" placeholder="ابحث عن هدية أو كود..." class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-bold focus:outline-none focus:border-gold">
-            </div>
 
-            <!-- شبكة المنتجات -->
-            <div id="store-products-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 p-1"></div>
+        <!-- تصفية الفئات (Categories Bar) -->
+        <div class="flex items-center space-x-2 space-x-reverse overflow-x-auto custom-scrollbar pb-2" id="categories-filter-bar">
+            <button onclick="filterCategory('الكل')" class="cat-filter-btn px-5 py-2.5 rounded-2xl text-xs font-black tracking-wide whitespace-nowrap transition-all bg-gold text-slate-950 shadow-md">
+                ✨ جميع الهدايا
+            </button>
+        </div>
+
+        <!-- شريط البحث -->
+        <div class="relative">
+            <input type="text" id="store-search" oninput="renderStoreProducts()" placeholder="ابحث عن هدية، دبدوب، بوكيه ورد، أو كود..." class="w-full glass-card border border-gold/30 rounded-2xl px-5 py-3.5 pr-12 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-gold transition-all shadow-inner">
+            <i class="fa-solid fa-magnifying-glass absolute right-4 top-4 text-gold/60 text-base"></i>
+        </div>
+
+        <!-- شبكة عرض المنتجات -->
+        <div id="store-products-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            <!-- سيتم تعبئتها ديناميكياً من سحابة Firebase -->
         </div>
 
     </main>
 
-    <!-- SLIDING / POPUP CART MODAL -->
-    <div id="cart-modal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl w-full max-w-lg p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar" dir="rtl">
-            <div class="flex justify-between items-center border-b pb-3">
-                <h3 class="font-black text-lg text-slate-900 flex items-center">
-                    <i class="fa-solid fa-bag-shopping text-gold ml-2"></i> سلة المشتريات
+    <!-- FOOTER -->
+    <footer class="bg-[#0F201C] border-t border-gold/20 py-8 text-center text-xs text-slate-400 space-y-2 mt-12">
+        <p class="font-cinzel text-white tracking-widest font-bold">FARAFERO GIFT SHOP & BOUTIQUE</p>
+        <p class="text-[10px]">جميع الحقوق محفوظة © 2026 - تواصل فوري وسحابي آمن</p>
+    </footer>
+
+    <!-- CART MODAL (سلة الهدايا) -->
+    <div id="cart-modal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="glass-card rounded-3xl w-full max-w-lg p-6 shadow-2xl space-y-4 border border-gold/40 text-slate-100 max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <div class="flex justify-between items-center border-b border-gold/20 pb-4">
+                <h3 class="font-black text-base text-white flex items-center font-cinzel">
+                    <i class="fa-solid fa-bag-shopping text-gold ml-2"></i> حقيبة الهدايا الخاصة بك
                 </h3>
-                <button onclick="toggleCartModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-700 font-bold flex items-center justify-center">✕</button>
+                <button onclick="toggleCartModal()" class="w-8 h-8 rounded-full bg-gold/10 text-gold flex items-center justify-center hover:bg-gold/20 transition-all font-bold">✕</button>
             </div>
 
-            <!-- بيانات العميل والتوصيل -->
-            <div class="space-y-3 bg-slate-50 p-3.5 rounded-2xl border">
-                <h4 class="text-xs font-black text-slate-800">بيانات التوصيل والشحن:</h4>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <!-- عناصر السلة -->
+            <div id="cart-items-container" class="divide-y divide-gold/10 max-h-[220px] overflow-y-auto custom-scrollbar space-y-2 pr-1"></div>
+
+            <!-- تفاصيل العميل وتأكيد الطلب -->
+            <div class="space-y-3 pt-2 bg-slate-900/60 p-4 rounded-2xl border border-gold/20">
+                <h4 class="text-xs font-black text-gold">بيانات الشحن والتوصيل:</h4>
+                <div class="space-y-2.5">
                     <div>
-                        <label class="text-[10px] font-bold text-slate-600 block mb-1">اسم العميل:</label>
-                        <input type="text" id="po-cust-name" placeholder="اسمك الكريم..." class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:border-gold">
+                        <label class="text-[10px] font-bold text-slate-300 block mb-1">الاسم الكامل:</label>
+                        <input type="text" id="po-cust-name" placeholder="اكتب اسمك الكريم..." class="w-full bg-slate-950 border border-gold/30 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
                     </div>
                     <div>
-                        <label class="text-[10px] font-bold text-slate-600 block mb-1">رقم الهاتف (11 رقم صحيح):</label>
-                        <input type="tel" id="po-cust-phone" maxlength="11" placeholder="مثال: 010xxxxxxxx..." class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:border-gold">
-                    </div>
-                </div>
-                
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <div>
-                        <label class="text-[10px] font-bold text-gold block mb-1">المحافظة:</label>
-                        <select id="po-cust-city" onchange="updateCartTotals()" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:border-gold">
-                            <option value="الإسكندرية">الإسكندرية (شحن 50 EGP)</option>
-                            <option value="القاهرة">القاهرة (شحن 80 EGP)</option>
-                        </select>
+                        <label class="text-[10px] font-bold text-slate-300 block mb-1">رقم الهاتف (موبايل):</label>
+                        <input type="tel" id="po-cust-phone" placeholder="010xxxxxxxx..." class="w-full bg-slate-950 border border-gold/30 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-gold dir-ltr text-right">
                     </div>
                     <div>
-                        <label class="text-[10px] font-bold text-slate-600 block mb-1">عنوان الاستلام بالتفصيل:</label>
-                        <input type="text" id="po-cust-address" placeholder="الشارع، العمارة، الطابق..." class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:border-gold">
+                        <label class="text-[10px] font-bold text-slate-300 block mb-1">العنوان بالتفصيل (المحافظة والمنطقة):</label>
+                        <textarea id="po-cust-address" placeholder="المحافظة، المدينة، الشارع، رقم الحلة..." class="w-full bg-slate-950 border border-gold/30 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-gold h-16 resize-none"></textarea>
                     </div>
                 </div>
             </div>
 
-            <!-- قائمة أصناف السلة -->
-            <div class="space-y-1">
-                <span class="text-xs font-bold text-slate-700">الأصناف المضافة:</span>
-                <div id="cart-items-list" class="divide-y max-h-[140px] overflow-y-auto my-1 text-xs bg-slate-50/50 p-2 rounded-xl border"></div>
-            </div>
-
-            <div class="space-y-2 pt-2 border-t text-xs">
-                <div class="flex justify-between font-bold text-slate-600">
-                    <span>قيمة المنتجات:</span>
-                    <span id="cart-subtotal">0 EGP</span>
-                </div>
-                <div class="flex justify-between font-bold text-slate-600">
-                    <span>مصاريف الشحن:</span>
-                    <span id="cart-shipping-cost">50 EGP</span>
-                </div>
-                <div class="flex justify-between font-black text-base border-t pt-2">
-                    <span>الإجمالي النهائي:</span>
+            <!-- الإجمالي وزر الإرسال -->
+            <div class="space-y-3 pt-2 border-t border-gold/20">
+                <div class="flex justify-between font-black text-base px-1">
+                    <span class="text-slate-300">الإجمالي النهائي:</span>
                     <span class="text-gold"><span id="cart-grand-total">0</span> EGP</span>
                 </div>
-                <button onclick="submitCustomerPO()" class="w-full bg-gold hover:bg-[#b08b49] text-white font-black py-3 rounded-2xl shadow-md text-xs transition-all flex items-center justify-center space-x-1.5 space-x-reverse mt-2">
-                    <i class="fa-solid fa-paper-plane"></i>
-                    <span>تأكيد وإرسال الطلب (PO) للمحل</span>
+                <button onclick="submitPurchaseOrderPO()" class="w-full bg-gradient-to-r from-gold to-[#b08b49] hover:opacity-90 text-slate-950 font-black py-3.5 rounded-2xl shadow-lg text-xs transition-all flex items-center justify-center space-x-2 space-x-reverse">
+                    <i class="fa-solid fa-paper-plane text-slate-950"></i>
+                    <span>إرسال طلب الشراء (PO) الآن</span>
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- IMAGE ZOOM MODAL -->
-    <div id="image-zoom-modal" class="fixed inset-0 z-50 hidden bg-slate-900/85 backdrop-blur-md flex items-center justify-center p-4" onclick="closeImageZoom()">
-        <div class="relative max-w-2xl w-full bg-white rounded-3xl p-4 shadow-2xl overflow-hidden text-center" onclick="event.stopPropagation()">
-            <button onclick="closeImageZoom()" class="absolute top-4 left-4 w-9 h-9 rounded-full bg-slate-100 text-slate-700 font-bold flex items-center justify-center shadow-md z-10">✕</button>
-            <h4 id="zoom-img-title" class="font-black text-base text-slate-900 mb-3"></h4>
-            <div class="max-h-[70vh] overflow-hidden rounded-2xl bg-slate-100 flex items-center justify-center p-2">
-                <img id="zoom-img-src" src="" class="max-h-[65vh] w-auto object-contain rounded-xl shadow-inner">
+    <!-- PRODUCT DETAILS / ZOOM MODAL -->
+    <div id="product-details-modal" class="fixed inset-0 z-50 hidden bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="glass-card rounded-3xl w-full max-w-md p-6 shadow-2xl space-y-4 border border-gold/40 text-slate-100 relative">
+            <button onclick="closeProductModal()" class="absolute top-4 left-4 w-8 h-8 rounded-full bg-gold/10 text-gold flex items-center justify-center hover:bg-gold/20 transition-all font-bold z-10">✕</button>
+            
+            <div class="h-60 rounded-2xl overflow-hidden bg-slate-950 relative border border-gold/20 shadow-inner">
+                <img id="modal-prod-img" src="" class="w-full h-full object-cover">
+                <span id="modal-prod-code" class="absolute bottom-3 right-3 bg-gold text-slate-950 text-xs font-black px-3 py-1 rounded-xl shadow-md"></span>
             </div>
+
+            <div class="space-y-2">
+                <span id="modal-prod-cat" class="text-[10px] text-gold font-bold bg-gold/10 px-2.5 py-0.5 rounded-md border border-gold/20"></span>
+                <h3 id="modal-prod-name" class="font-black text-lg text-white"></h3>
+                <div class="flex justify-between items-center pt-2 border-t border-gold/10">
+                    <span class="text-xs text-slate-400 font-bold">السعر الرسمي:</span>
+                    <span id="modal-prod-price" class="text-xl font-black text-gold"></span>
+                </div>
+            </div>
+
+            <button id="modal-add-btn" class="w-full bg-gradient-to-r from-gold to-[#b08b49] hover:opacity-90 text-slate-950 font-black py-3.5 rounded-2xl shadow-lg text-xs transition-all flex items-center justify-center space-x-2 space-x-reverse">
+                <i class="fa-solid fa-cart-plus text-base"></i>
+                <span>إضافة إلى حقيبة الهدايا</span>
+            </button>
         </div>
     </div>
 
-    <!-- SCRIPT ENGINE -->
+    <!-- SCRIPT ENGINE (Firebase & Store Logic) -->
     <script>
         const firebaseConfig = {
           apiKey: "AIzaSyAuP10QxT-N1gEo7nW6Zc9I1Nzg9ehdD6E",
@@ -180,9 +191,28 @@
         }
         const db = firebase.firestore();
 
-        let state = { products: [], orders: [], customerCart: [] };
+        let state = {
+            products: [],
+            categories: ["دباديب", "ورد", "هدايا استانلس", "شنط حريمى"],
+            cart: [],
+            selectedCategory: "الكل",
+            activeModalProduct: null
+        };
 
         function initStore() {
+            startStoreListeners();
+        }
+
+        function startStoreListeners() {
+            // الاستماع للفئات سحابياً
+            db.collection("settings").doc("categories").onSnapshot((doc) => {
+                if (doc.exists && doc.data().list) {
+                    state.categories = doc.data().list;
+                }
+                renderCategoryButtons();
+            });
+
+            // الاستماع للمنتجات والبضاعة سحابياً
             db.collection("products").onSnapshot((snapshot) => {
                 state.products = [];
                 snapshot.forEach((doc) => {
@@ -190,173 +220,225 @@
                 });
                 renderStoreProducts();
             });
+        }
 
-            db.collection("orders").onSnapshot((snapshot) => {
-                state.orders = [];
-                snapshot.forEach((doc) => {
-                    state.orders.push({ firebaseId: doc.id, ...doc.data() });
-                });
+        function renderCategoryButtons() {
+            const bar = document.getElementById('categories-filter-bar');
+            bar.innerHTML = `
+                <button onclick="filterCategory('الكل')" class="cat-filter-btn px-5 py-2.5 rounded-2xl text-xs font-black tracking-wide whitespace-nowrap transition-all ${state.selectedCategory === 'الكل' ? 'bg-gold text-slate-950 shadow-md' : 'glass-card text-slate-300 hover:text-gold border-gold/30'}">
+                    ✨ جميع الهدايا
+                </button>
+            `;
+            state.categories.forEach(cat => {
+                const isActive = state.selectedCategory === cat;
+                bar.innerHTML += `
+                    <button onclick="filterCategory('${cat}')" class="cat-filter-btn px-5 py-2.5 rounded-2xl text-xs font-black tracking-wide whitespace-nowrap transition-all ${isActive ? 'bg-gold text-slate-950 shadow-md' : 'glass-card text-slate-300 hover:text-gold border-gold/30'}">
+                        ${cat}
+                    </button>
+                `;
             });
         }
 
-        function getNextUnifiedPoId() {
-            let maxNum = 0;
-            state.orders.forEach(o => {
-                if (o.id) {
-                    const num = parseInt(o.id.replace(/[^0-9]/g, '')) || 0;
-                    if (num > maxNum) maxNum = num;
-                }
-            });
-            return 'PO-' + String(maxNum + 1).padStart(4, '0');
+        function filterCategory(catName) {
+            state.selectedCategory = catName;
+            renderCategoryButtons();
+            renderStoreProducts();
         }
 
         function renderStoreProducts() {
             const grid = document.getElementById('store-products-grid');
             const searchInput = document.getElementById('store-search');
             if(!grid) return;
-            const search = searchInput ? searchInput.value.toLowerCase().trim() : '';
+            const search = searchInput ? searchInput.value.toLowerCase() : '';
             grid.innerHTML = '';
 
-            const filtered = state.products.filter(p => p.stock > 0 && (p.name.toLowerCase().includes(search) || (p.code && p.code.toLowerCase().includes(search))));
+            const filtered = state.products.filter(p => {
+                const matchCat = state.selectedCategory === 'الكل' || p.category === state.selectedCategory;
+                const matchSearch = p.name.toLowerCase().includes(search) || (p.code && p.code.toLowerCase().includes(search));
+                return matchCat && matchSearch;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '<div class="col-span-full text-center py-16 text-slate-400 text-xs font-bold">لا توجد هدايا مطابقة لبحثك حالياً</div>';
+                return;
+            }
 
             filtered.forEach(p => {
+                const isAvailable = (p.stock || 0) > 0;
                 grid.innerHTML += `
-                    <div class="bg-white border rounded-2xl p-3 space-y-2 shadow-sm flex flex-col justify-between">
-                        <img src="${p.image}" class="w-full h-36 object-cover rounded-xl cursor-pointer" onclick="openImageZoom('${p.image}', '${p.name}')">
-                        <div>
-                            <span class="text-[10px] text-gold font-bold">${p.code || ''}</span>
-                            <h4 class="font-bold text-xs line-clamp-1">${p.name}</h4>
-                            <span class="text-[9px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-bold">${p.category}</span>
+                    <div class="glass-card rounded-3xl p-3.5 border border-gold/20 shadow-lg flex flex-col justify-between space-y-3 transition-all hover:border-gold/50 group">
+                        <div class="h-40 rounded-2xl overflow-hidden bg-slate-950 relative cursor-pointer shadow-inner" onclick="openProductModal('${p.id}')">
+                            <img src="${p.image}" class="w-full h-full object-cover group-hover:scale-105 transition-all duration-500">
+                            <span class="absolute top-2 right-2 bg-slate-950/80 backdrop-blur-md text-gold text-[10px] font-black px-2.5 py-1 rounded-xl border border-gold/30 shadow-md">${p.code || 'G-000'}</span>
                         </div>
-                        <div class="flex justify-between items-center pt-2 border-t">
-                            <span class="font-black text-xs text-gold">${Math.round(p.price)} EGP</span>
-                            <button onclick="addToCustomerCart('${p.id}')" class="bg-gold hover:bg-[#b08b49] text-white px-3 py-1.5 rounded-xl text-[10px] font-black shadow-sm">إضافة للسلة</button>
+                        <div class="space-y-1 cursor-pointer" onclick="openProductModal('${p.id}')">
+                            <span class="text-[9px] text-gold font-bold bg-gold/10 px-2 py-0.5 rounded">${p.category}</span>
+                            <h4 class="font-black text-white text-xs sm:text-sm line-clamp-1">${p.name}</h4>
+                        </div>
+                        <div class="flex items-center justify-between pt-2 border-t border-gold/10">
+                            <span class="font-black text-gold text-sm sm:text-base">${p.price} EGP</span>
+                            ${isAvailable ? `
+                                <button onclick="addToCart('${p.id}')" class="bg-gold/15 hover:bg-gold text-gold hover:text-slate-950 border border-gold/40 p-2.5 rounded-xl transition-all shadow-sm">
+                                    <i class="fa-solid fa-cart-plus text-xs"></i>
+                                </button>
+                            ` : `
+                                <span class="text-[10px] bg-rose-950/60 text-rose-400 px-2 py-1 rounded-lg font-bold border border-rose-800/40">نفذت مؤقتاً</span>
+                            `}
                         </div>
                     </div>
                 `;
             });
         }
 
-        function addToCustomerCart(id) {
+        function openProductModal(id) {
             const p = state.products.find(x => x.id === id);
-            if (!p || p.stock <= 0) return alert('عذراً، نفذت الكمية!');
-            const item = state.customerCart.find(x => x.id === id);
-            if (item) {
-                if (item.qty + 1 > p.stock) return alert('الكمية المطلوبة أكبر من المتاح بالمخزن!');
-                item.qty++;
+            if (!p) return;
+            state.activeModalProduct = p;
+
+            document.getElementById('modal-prod-img').src = p.image;
+            document.getElementById('modal-prod-code').innerText = p.code || 'G-000';
+            document.getElementById('modal-prod-cat').innerText = p.category;
+            document.getElementById('modal-prod-name').innerText = p.name;
+            document.getElementById('modal-prod-price').innerText = p.price + ' EGP';
+            
+            const btn = document.getElementById('modal-add-btn');
+            if ((p.stock || 0) > 0) {
+                btn.disabled = false;
+                btn.className = "w-full bg-gradient-to-r from-gold to-[#b08b49] hover:opacity-90 text-slate-950 font-black py-3.5 rounded-2xl shadow-lg text-xs transition-all flex items-center justify-center space-x-2 space-x-reverse cursor-pointer";
+                btn.innerHTML = '<i class="fa-solid fa-cart-plus text-base"></i><span>إضافة إلى حقيبة الهدايا</span>';
+                btn.onclick = function() { addToCart(p.id); closeProductModal(); };
             } else {
-                state.customerCart.push({ ...p, qty: 1 });
+                btn.disabled = true;
+                btn.className = "w-full bg-slate-800 text-slate-500 font-bold py-3.5 rounded-2xl text-xs cursor-not-allowed";
+                btn.innerHTML = '<span>عذراً، نفذت من المخزون</span>';
+            }
+
+            document.getElementById('product-details-modal').classList.remove('hidden');
+        }
+
+        function closeProductModal() {
+            document.getElementById('product-details-modal').classList.add('hidden');
+        }
+
+        function addToCart(id) {
+            const p = state.products.find(x => x.id === id);
+            if (!p || (p.stock || 0) <= 0) return alert('عذراً، هذا المنتج غير متوفر بالمخزون حالياً!');
+
+            const cartItem = state.cart.find(x => x.id === id);
+            if (cartItem) {
+                if (cartItem.qty + 1 > p.stock) return alert('لقد وصلت للحد الأقصى للكمية المتوفرة بالمخزون!');
+                cartItem.qty++;
+            } else {
+                state.cart.push({ ...p, qty: 1 });
             }
             updateCartBadge();
-            alert('تمت إضافة الهدية إلى السلة بنجاح!');
+            alert(`تم إضافة "${p.name}" إلى حقيبة الهدايا بنجاح! 🎁`);
         }
 
         function updateCartBadge() {
-            const totalItems = state.customerCart.reduce((sum, i) => sum + i.qty, 0);
-            document.getElementById('cart-badge').innerText = totalItems;
+            const totalQty = state.cart.reduce((sum, item) => sum + item.qty, 0);
+            document.getElementById('cart-badge').innerText = totalQty;
         }
 
         function toggleCartModal() {
             const modal = document.getElementById('cart-modal');
-            modal.classList.toggle('hidden');
-            if (!modal.classList.contains('hidden')) {
-                renderCartModalItems();
+            if (modal.classList.contains('hidden')) {
+                renderCartItems();
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
             }
         }
 
-        function getShippingCost() {
-            const city = document.getElementById('po-cust-city').value;
-            return city === 'القاهرة' ? 80 : 50;
-        }
-
-        function renderCartModalItems() {
-            const container = document.getElementById('cart-items-list');
+        function renderCartItems() {
+            const container = document.getElementById('cart-items-container');
             if(!container) return;
             container.innerHTML = '';
-            let subtotal = 0;
+            let grandTotal = 0;
 
-            if (state.customerCart.length === 0) {
-                container.innerHTML = '<p class="text-center text-slate-400 py-4">السلة فارغة حالياً</p>';
-                document.getElementById('cart-subtotal').innerText = '0 EGP';
-                document.getElementById('cart-shipping-cost').innerText = '0 EGP';
+            if (state.cart.length === 0) {
+                container.innerHTML = '<p class="text-center text-slate-400 py-6 text-xs font-bold">حقيبة الهدايا فارغة حالياً</p>';
                 document.getElementById('cart-grand-total').innerText = '0';
                 return;
             }
 
-            state.customerCart.forEach((i, idx) => {
-                subtotal += i.price * i.qty;
+            state.cart.forEach((item, idx) => {
+                const itemTotal = item.price * item.qty;
+                grandTotal += itemTotal;
                 container.innerHTML += `
-                    <div class="flex justify-between items-center py-1.5">
-                        <div><span class="font-bold">${i.name}</span><span class="text-slate-400 text-[10px] block">${i.price} × ${i.qty}</span></div>
-                        <div class="flex items-center space-x-2 space-x-reverse"><b>${i.price * i.qty} EGP</b><button onclick="removeFromCart(${idx})" class="text-rose-500 font-bold">✕</button></div>
-                    </div>`;
+                    <div class="flex items-center justify-between py-3">
+                        <div class="flex items-center space-x-3 space-x-reverse">
+                            <img src="${item.image}" class="w-12 h-12 rounded-xl object-cover border border-gold/30">
+                            <div>
+                                <h5 class="font-black text-white text-xs line-clamp-1">${item.name}</h5>
+                                <p class="text-[10px] text-gold font-bold">${item.price} EGP × ${item.qty}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2 space-x-reverse">
+                            <span class="font-black text-white text-xs">${itemTotal} EGP</span>
+                            <button onclick="removeFromCart(${idx})" class="text-rose-400 hover:text-rose-600 font-bold p-1">✕</button>
+                        </div>
+                    </div>
+                `;
             });
 
-            updateCartTotals();
-        }
-
-        function updateCartTotals() {
-            let subtotal = state.customerCart.reduce((sum, i) => sum + (i.price * i.qty), 0);
-            let shipping = getShippingCost();
-            let grandTotal = subtotal + (subtotal > 0 ? shipping : 0);
-
-            document.getElementById('cart-subtotal').innerText = Math.round(subtotal) + ' EGP';
-            document.getElementById('cart-shipping-cost').innerText = shipping + ' EGP';
-            document.getElementById('cart-grand-total').innerText = Math.round(grandTotal);
+            document.getElementById('cart-grand-total').innerText = grandTotal;
         }
 
         function removeFromCart(idx) {
-            state.customerCart.splice(idx, 1);
+            state.cart.splice(idx, 1);
             updateCartBadge();
-            renderCartModalItems();
+            renderCartItems();
         }
 
-        function openImageZoom(imgUrl, title) {
-            document.getElementById('zoom-img-src').src = imgUrl;
-            document.getElementById('zoom-img-title').innerText = title;
-            document.getElementById('image-zoom-modal').classList.remove('hidden');
-        }
+        function submitPurchaseOrderPO() {
+            if (state.cart.length === 0) return alert('حقيبة الهدايا فارغة!');
 
-        function closeImageZoom() {
-            document.getElementById('image-zoom-modal').classList.add('hidden');
-        }
+            const custName = document.getElementById('po-cust-name').value.trim();
+            const custPhone = document.getElementById('po-cust-phone').value.trim();
+            const custAddress = document.getElementById('po-cust-address').value.trim();
 
-        function submitCustomerPO() {
-            const name = document.getElementById('po-cust-name').value.trim();
-            const phone = document.getElementById('po-cust-phone').value.trim();
-            const city = document.getElementById('po-cust-city').value;
-            const address = document.getElementById('po-cust-address').value.trim();
+            if (!custName || !custPhone || !custAddress) {
+                alert('برجاء إكمال بيانات الشحن (الاسم، الهاتف، والعنوان بالتفصيل)!');
+                return;
+            }
 
-            if (!name) return alert('برجاء كتابة اسم العميل!');
-            if (!phone || phone.length < 10 || isNaN(phone)) return alert('برجاء إدخال رقم تليفون صحيح مكون من أرقام!');
-            if (!address) return alert('برجاء إدخال تفاصيل العنوان!');
-            if (state.customerCart.length === 0) return alert('السلة فارغة!');
-
-            let subtotal = state.customerCart.reduce((sum, i) => sum + (i.price * i.qty), 0);
-            let shipping = getShippingCost();
-            let total = subtotal + shipping;
-
-            const poId = getNextUnifiedPoId();
+            const grandTotal = state.cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
             const dateStr = new Date().toLocaleDateString('en-GB');
 
-            db.collection("orders").add({
-                id: poId,
-                type: 'po',
-                date: dateStr,
-                timestamp: Date.now(),
-                total: total,
-                shipping: shipping,
-                customerName: name,
-                customerPhone: phone + ' | المحافظة: ' + city + ' | العنوان: ' + address,
-                status: 'pending',
-                detailedItems: JSON.parse(JSON.stringify(state.customerCart))
-            }).then(() => {
-                alert('🎉 تم إرسال طلبك برقم ' + poId + ' بنجاح للمحل وسيتم مراجعته وتأكيده فوراً!');
-                state.customerCart = [];
-                updateCartBadge();
-                toggleCartModal();
-            }).catch(err => {
-                alert('حدث خطأ أثناء الإرسال، برجاء المحاولة مرة أخرى.');
+            // جلب عدد طلبات الـ PO الحالية لتوليد كود تسلسلي PO-0001
+            db.collection("orders").get().then((snapshot) => {
+                let poCount = 0;
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.type === 'po') poCount++;
+                });
+
+                const poId = 'PO-' + String(poCount + 1).padStart(4, '0');
+
+                const newPoOrder = {
+                    id: poId,
+                    type: 'po',
+                    date: dateStr,
+                    timestamp: Date.now(),
+                    total: grandTotal,
+                    customerName: custName + ' (' + custAddress + ')',
+                    customerPhone: custPhone,
+                    status: 'pending', // معلق بانتظار اعتماد المجر
+                    detailedItems: JSON.parse(JSON.stringify(state.cart))
+                };
+
+                db.collection("orders").add(newPoOrder).then(() => {
+                    alert(`تم إرسال طلب الشراء (PO) بنجاح برقم ${poId}! سيقوم فريق العمل بمراجعته وتأكيده قريباً.`);
+                    state.cart = [];
+                    updateCartBadge();
+                    toggleCartModal();
+                    document.getElementById('po-cust-name').value = '';
+                    document.getElementById('po-cust-phone').value = '';
+                    document.getElementById('po-cust-address').value = '';
+                }).catch(err => {
+                    alert('حدث خطأ أثناء إرسال الطلب سحابياً. تأكد من الاتصال بالإنترنت.');
+                });
             });
         }
 
