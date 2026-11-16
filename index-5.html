@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FARAFERO GIFT SHOP & BOUTIQUE</title>
+    <title id="store-browser-title">FARAFERO GIFT SHOP & BOUTIQUE</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&family=Cinzel:wght@500;600;700&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
@@ -43,57 +43,48 @@
     <header class="bg-[#2B0711]/95 backdrop-blur-md sticky top-0 z-40 border-b border-gold/20 shadow-xl">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
             
-            <!-- زر السلة العلوي الفخم -->
             <button onclick="toggleCartModal()" class="relative flex items-center space-x-2 space-x-reverse bg-gold/10 border border-gold/40 hover:bg-gold/20 px-4 py-2.5 rounded-2xl transition-all shadow-sm">
                 <i class="fa-solid fa-bag-shopping text-gold text-lg"></i>
                 <span class="text-xs font-black text-white hidden sm:inline">حقيبة الهدايا</span>
                 <span id="cart-badge" class="absolute -top-2 -left-2 bg-gold text-slate-950 text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow-md">0</span>
             </button>
 
-            <!-- اسم اللوجو المنتصف -->
+            <!-- اسم اللوجو (يسحب سحابياً) -->
             <div class="text-center cursor-pointer" onclick="filterCategory('الكل')">
-                <h1 class="text-lg font-bold tracking-[4px] text-white font-cinzel leading-tight">FARAFERO</h1>
-                <p class="text-[8px] text-gold font-semibold tracking-[5px] uppercase font-montserrat">GIFT SHOP & BOUTIQUE</p>
+                <h1 id="brand-title-el" class="text-lg font-bold tracking-[4px] text-white font-cinzel leading-tight">FARAFERO</h1>
+                <p id="brand-sub-el" class="text-[8px] text-gold font-semibold tracking-[5px] uppercase font-montserrat">GIFT SHOP & BOUTIQUE</p>
             </div>
 
-            <!-- شعار F الفخم -->
             <div class="w-10 h-10 rounded-xl bg-gold/15 border border-gold/40 flex items-center justify-center text-gold font-bold font-cinzel text-lg shadow-sm">
                 F
             </div>
         </div>
     </header>
 
-    <!-- HERO BANNER -->
+    <!-- HERO BANNER (يسحب سحابياً) -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 w-full">
         <div class="relative rounded-3xl overflow-hidden glass-card p-6 sm:p-10 border border-gold/30 text-center space-y-3 shadow-2xl">
             <div class="absolute -top-24 -right-24 w-48 h-48 bg-gold/10 rounded-full blur-3xl pointer-events-none"></div>
-            <span class="bg-gold/10 text-gold text-[11px] font-bold px-4 py-1.5 rounded-full border border-gold/30 tracking-wider">Make Every Moment Special</span>
-            <h2 class="text-2xl sm:text-4xl font-black font-cinzel text-white tracking-wide">اصنع لحظات لا تُنسى لمن تحب</h2>
-            <p class="text-xs sm:text-sm text-slate-300 max-w-xl mx-auto font-medium">اكتشف تشكيلة راقية من أرقى الهدايا، الدباديب، الورود، والمجوهرات المصممة خصيصاً لتناسب أذواقكم الرفيعة.</p>
+            <span id="hero-tag-el" class="bg-gold/10 text-gold text-[11px] font-bold px-4 py-1.5 rounded-full border border-gold/30 tracking-wider">Make Every Moment Special</span>
+            <h2 id="hero-title-el" class="text-2xl sm:text-4xl font-black font-cinzel text-white tracking-wide">اصنع لحظات لا تُنسى لمن تحب</h2>
+            <p id="hero-sub-el" class="text-xs sm:text-sm text-slate-300 max-w-xl mx-auto font-medium">اكتشف تشكيلة راقية من أرقى الهدايا، الدباديب، الورود، والمجوهرات المصممة خصيصاً لتناسب أذواقكم الرفيعة.</p>
         </div>
     </div>
 
     <!-- MAIN CONTAINER -->
     <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full space-y-6">
-
-        <!-- تصفية الفئات (Categories Bar) -->
         <div class="flex items-center space-x-2 space-x-reverse overflow-x-auto custom-scrollbar pb-2" id="categories-filter-bar">
             <button onclick="filterCategory('الكل')" class="cat-filter-btn px-5 py-2.5 rounded-2xl text-xs font-black tracking-wide whitespace-nowrap transition-all bg-gold text-slate-950 shadow-md">
                 ✨ جميع الهدايا
             </button>
         </div>
 
-        <!-- شريط البحث -->
         <div class="relative">
             <input type="text" id="store-search" oninput="renderStoreProducts()" placeholder="ابحث عن هدية، دبدوب، بوكيه ورد، أو كود..." class="w-full glass-card border border-gold/30 rounded-2xl px-5 py-3.5 pr-12 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-gold transition-all shadow-inner">
             <i class="fa-solid fa-magnifying-glass absolute right-4 top-4 text-gold/60 text-base"></i>
         </div>
 
-        <!-- شبكة عرض المنتجات -->
-        <div id="store-products-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            <!-- سيتم تعبئتها ديناميكياً من سحابة Firebase -->
-        </div>
-
+        <div id="store-products-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4"></div>
     </main>
 
     <!-- FOOTER -->
@@ -102,7 +93,7 @@
         <p class="text-[10px]">جميع الحقوق محفوظة © 2026 - تواصل فوري وسحابي آمن</p>
     </footer>
 
-    <!-- CART MODAL (سلة الهدايا) -->
+    <!-- CART MODAL -->
     <div id="cart-modal" class="fixed inset-0 z-50 hidden bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
         <div class="glass-card rounded-3xl w-full max-w-lg p-6 shadow-2xl space-y-4 border border-gold/40 text-slate-100 max-h-[90vh] overflow-y-auto custom-scrollbar">
             <div class="flex justify-between items-center border-b border-gold/20 pb-4">
@@ -111,11 +102,7 @@
                 </h3>
                 <button onclick="toggleCartModal()" class="w-8 h-8 rounded-full bg-gold/10 text-gold flex items-center justify-center hover:bg-gold/20 transition-all font-bold">✕</button>
             </div>
-
-            <!-- عناصر السلة -->
             <div id="cart-items-container" class="divide-y divide-gold/10 max-h-[220px] overflow-y-auto custom-scrollbar space-y-2 pr-1"></div>
-
-            <!-- تفاصيل العميل وتأكيد الطلب -->
             <div class="space-y-3 pt-2 bg-[#24040D]/80 p-4 rounded-2xl border border-gold/20">
                 <h4 class="text-xs font-black text-gold">بيانات الشحن والتوصيل:</h4>
                 <div class="space-y-2.5">
@@ -128,13 +115,11 @@
                         <input type="tel" id="po-cust-phone" placeholder="010xxxxxxxx..." class="w-full bg-[#1B030A] border border-gold/30 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-gold dir-ltr text-right">
                     </div>
                     <div>
-                        <label class="text-[10px] font-bold text-slate-300 block mb-1">العنوان بالتفصيل (المحافظة والمنطقة):</label>
-                        <textarea id="po-cust-address" placeholder="المحافظة، المدينة، الشارع، رقم الحلة..." class="w-full bg-[#1B030A] border border-gold/30 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-gold h-16 resize-none"></textarea>
+                        <label class="text-[10px] font-bold text-slate-300 block mb-1">العنوان بالتفصيل:</label>
+                        <textarea id="po-cust-address" placeholder="المحافظة، المدينة، الشارع..." class="w-full bg-[#1B030A] border border-gold/30 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-gold h-16 resize-none"></textarea>
                     </div>
                 </div>
             </div>
-
-            <!-- الإجمالي وزر الإرسال -->
             <div class="space-y-3 pt-2 border-t border-gold/20">
                 <div class="flex justify-between font-black text-base px-1">
                     <span class="text-slate-300">الإجمالي النهائي:</span>
@@ -148,16 +133,14 @@
         </div>
     </div>
 
-    <!-- PRODUCT DETAILS / ZOOM MODAL -->
+    <!-- PRODUCT DETAILS MODAL -->
     <div id="product-details-modal" class="fixed inset-0 z-50 hidden bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4">
         <div class="glass-card rounded-3xl w-full max-w-md p-6 shadow-2xl space-y-4 border border-gold/40 text-slate-100 relative">
             <button onclick="closeProductModal()" class="absolute top-4 left-4 w-8 h-8 rounded-full bg-gold/10 text-gold flex items-center justify-center hover:bg-gold/20 transition-all font-bold z-10">✕</button>
-            
             <div class="h-60 rounded-2xl overflow-hidden bg-[#1B030A] relative border border-gold/20 shadow-inner">
                 <img id="modal-prod-img" src="" class="w-full h-full object-cover">
                 <span id="modal-prod-code" class="absolute bottom-3 right-3 bg-gold text-slate-950 text-xs font-black px-3 py-1 rounded-xl shadow-md"></span>
             </div>
-
             <div class="space-y-2">
                 <span id="modal-prod-cat" class="text-[10px] text-gold font-bold bg-gold/10 px-2.5 py-0.5 rounded-md border border-gold/20"></span>
                 <h3 id="modal-prod-name" class="font-black text-lg text-white"></h3>
@@ -166,7 +149,6 @@
                     <span id="modal-prod-price" class="text-xl font-black text-gold"></span>
                 </div>
             </div>
-
             <button id="modal-add-btn" class="w-full bg-gradient-to-r from-gold to-[#b08b49] hover:opacity-90 text-slate-950 font-black py-3.5 rounded-2xl shadow-lg text-xs transition-all flex items-center justify-center space-x-2 space-x-reverse">
                 <i class="fa-solid fa-cart-plus text-base"></i>
                 <span>إضافة إلى حقيبة الهدايا</span>
@@ -174,7 +156,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT ENGINE (Firebase & Store Logic) -->
+    <!-- SCRIPT ENGINE -->
     <script>
         const firebaseConfig = {
           apiKey: "AIzaSyAuP10QxT-N1gEo7nW6Zc9I1Nzg9ehdD6E",
@@ -195,15 +177,27 @@
             products: [],
             categories: ["دباديب", "ورد", "هدايا استانلس", "شنط حريمى"],
             cart: [],
-            selectedCategory: "الكل",
-            activeModalProduct: null
+            selectedCategory: "الكل"
         };
 
         function initStore() {
-            startStoreListeners();
-        }
+            // الاستماع الفوري لإعدادات اللوجو والنصوص من لوحة الإدارة
+            db.collection("settings").doc("branding").onSnapshot((doc) => {
+                if (doc.exists) {
+                    const d = doc.data();
+                    if (d.logoTitle) {
+                        document.getElementById('brand-title-el').innerText = d.logoTitle;
+                        document.getElementById('store-browser-title').innerText = d.logoTitle + " " + (d.logoSubtitle || "GIFT SHOP");
+                    }
+                    if (d.logoSubtitle) {
+                        document.getElementById('brand-sub-el').innerText = d.logoSubtitle;
+                    }
+                    if (d.heroTag) document.getElementById('hero-tag-el').innerText = d.heroTag;
+                    if (d.heroTitle) document.getElementById('hero-title-el').innerText = d.heroTitle;
+                    if (d.heroSub) document.getElementById('hero-sub-el').innerText = d.heroSub;
+                }
+            });
 
-        function startStoreListeners() {
             db.collection("settings").doc("categories").onSnapshot((doc) => {
                 if (doc.exists && doc.data().list) {
                     state.categories = doc.data().list;
@@ -291,8 +285,6 @@
         function openProductModal(id) {
             const p = state.products.find(x => x.id === id);
             if (!p) return;
-            state.activeModalProduct = p;
-
             document.getElementById('modal-prod-img').src = p.image;
             document.getElementById('modal-prod-code').innerText = p.code || 'G-000';
             document.getElementById('modal-prod-cat').innerText = p.category;
@@ -302,15 +294,12 @@
             const btn = document.getElementById('modal-add-btn');
             if ((p.stock || 0) > 0) {
                 btn.disabled = false;
-                btn.className = "w-full bg-gradient-to-r from-gold to-[#b08b49] hover:opacity-90 text-slate-950 font-black py-3.5 rounded-2xl shadow-lg text-xs transition-all flex items-center justify-center space-x-2 space-x-reverse cursor-pointer";
                 btn.innerHTML = '<i class="fa-solid fa-cart-plus text-base"></i><span>إضافة إلى حقيبة الهدايا</span>';
                 btn.onclick = function() { addToCart(p.id); closeProductModal(); };
             } else {
                 btn.disabled = true;
-                btn.className = "w-full bg-slate-800 text-slate-500 font-bold py-3.5 rounded-2xl text-xs cursor-not-allowed";
                 btn.innerHTML = '<span>عذراً، نفذت من المخزون</span>';
             }
-
             document.getElementById('product-details-modal').classList.remove('hidden');
         }
 
@@ -321,7 +310,6 @@
         function addToCart(id) {
             const p = state.products.find(x => x.id === id);
             if (!p || (p.stock || 0) <= 0) return alert('عذراً، هذا المنتج غير متوفر بالمخزون حالياً!');
-
             const cartItem = state.cart.find(x => x.id === id);
             if (cartItem) {
                 if (cartItem.qty + 1 > p.stock) return alert('لقد وصلت للحد الأقصى للكمية المتوفرة بالمخزون!');
@@ -353,13 +341,11 @@
             if(!container) return;
             container.innerHTML = '';
             let grandTotal = 0;
-
             if (state.cart.length === 0) {
                 container.innerHTML = '<p class="text-center text-slate-400 py-6 text-xs font-bold">حقيبة الهدايا فارغة حالياً</p>';
                 document.getElementById('cart-grand-total').innerText = '0';
                 return;
             }
-
             state.cart.forEach((item, idx) => {
                 const itemTotal = item.price * item.qty;
                 grandTotal += itemTotal;
@@ -379,7 +365,6 @@
                     </div>
                 `;
             });
-
             document.getElementById('cart-grand-total').innerText = grandTotal;
         }
 
@@ -391,29 +376,20 @@
 
         function submitPurchaseOrderPO() {
             if (state.cart.length === 0) return alert('حقيبة الهدايا فارغة!');
-
             const custName = document.getElementById('po-cust-name').value.trim();
             const custPhone = document.getElementById('po-cust-phone').value.trim();
             const custAddress = document.getElementById('po-cust-address').value.trim();
-
-            if (!custName || !custPhone || !custAddress) {
-                alert('برجاء إكمال بيانات الشحن (الاسم، الهاتف، والعنوان بالتفصيل)!');
-                return;
-            }
+            if (!custName || !custPhone || !custAddress) return alert('برجاء إكمال بيانات الشحن!');
 
             const grandTotal = state.cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
             const dateStr = new Date().toLocaleDateString('en-GB');
 
             db.collection("orders").get().then((snapshot) => {
                 let poCount = 0;
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    if (data.type === 'po') poCount++;
-                });
-
+                snapshot.forEach(doc => { if (doc.data().type === 'po') poCount++; });
                 const poId = 'PO-' + String(poCount + 1).padStart(4, '0');
 
-                const newPoOrder = {
+                db.collection("orders").add({
                     id: poId,
                     type: 'po',
                     date: dateStr,
@@ -423,18 +399,14 @@
                     customerPhone: custPhone,
                     status: 'pending',
                     detailedItems: JSON.parse(JSON.stringify(state.cart))
-                };
-
-                db.collection("orders").add(newPoOrder).then(() => {
-                    alert(`تم إرسال طلب الشراء (PO) بنجاح برقم ${poId}! سيقوم فريق العمل بمراجعته وتأكيده قريباً.`);
+                }).then(() => {
+                    alert(`تم إرسال طلب الشراء (PO) بنجاح برقم ${poId}!`);
                     state.cart = [];
                     updateCartBadge();
                     toggleCartModal();
                     document.getElementById('po-cust-name').value = '';
                     document.getElementById('po-cust-phone').value = '';
                     document.getElementById('po-cust-address').value = '';
-                }).catch(err => {
-                    alert('حدث خطأ أثناء إرسال الطلب سحابياً. تأكد من الاتصال بالإنترنت.');
                 });
             });
         }
