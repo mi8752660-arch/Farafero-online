@@ -84,7 +84,7 @@
       {
         id: 'p4',
         name: 'بوكس ورد جوري صناعي دائم مع شوكولاتة فاخرة',
-        category: 'دباديب وورود',
+        category: 'بوكسات هدايا',
         price: 580,
         oldPrice: null,
         isOffer: false,
@@ -140,6 +140,30 @@
         rating: 5.0,
         image: 'https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=800&q=80',
         description: 'تصميم عصري وجذاب يناسب جميع المناسبات الرسمية والكاجوال مع ضمان سنة.'
+      },
+      {
+        id: 'p9',
+        name: 'مصباح إضاءة ليبي مع قاعدة خشبية طبيعية',
+        category: 'إضاءات وديكور',
+        price: 380,
+        oldPrice: 450,
+        isOffer: true,
+        inStock: true,
+        rating: 4.9,
+        image: 'https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?auto=format&fit=crop&w=800&q=80',
+        description: 'إضاءة دافئة مريحة للعين تضفي طابعاً ساحراً على غرف النوم وغرف المعيشة.'
+      },
+      {
+        id: 'p10',
+        name: 'شمعة معطرة طبيعية برائحة العود واللافندر الفاخر',
+        category: 'شموع وروائح',
+        price: 190,
+        oldPrice: null,
+        isOffer: false,
+        inStock: true,
+        rating: 4.8,
+        image: 'https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&w=800&q=80',
+        description: 'شمعة صويا طبيعية تدوم طويلاً وتملأ المكان برائحة استرخاء هادئة.'
       }
     ];
 
@@ -153,8 +177,8 @@
       address: 'الإسكندرية، مصر',
       freeShippingThreshold: 1000,
       heroBadge: '✨ تشكيلة هدايا 2026 الأصلية وصلت الآن',
-      heroTitle: 'هدايا استثنائية تصنع لحظات لا تُنسى',
-      heroDesc: 'في فرفيرو ستور جمعنالك أرقى المجان، الإضاءات الديكورية، الإكسسوارات الفاخرة، العطور ومستحضرات التجميل، والبوكسات الجاهزة بتغليف ملكي يليق بكل مناسباتك.'
+      heroTitle: 'Redefining the Art of Gifting, One Moment at a Time',
+      heroDesc: 'Where Every Gift Tells a Timeless Story of Love. Curated Elegance, Crafted for Your Most Precious Moments.'
     };
 
     function App() {
@@ -169,26 +193,22 @@
       const [quickViewProduct, setQuickViewProduct] = useState(null);
       const [quickViewQty, setQuickViewQty] = useState(1);
 
-      // Store Customization State
       const [storeInfo, setStoreInfo] = useState(() => {
         const saved = localStorage.getItem('farafero_store_info');
         return saved ? JSON.parse(saved) : DEFAULT_STORE_INFO;
       });
 
-      // Announcement Banner State
       const [announcementText, setAnnouncementText] = useState(() => {
         const saved = localStorage.getItem('farafero_announcement');
         return saved !== null ? saved : '🎁 شحن مجاني للطلبات فوق 1000 ج.م • استخدم كود FARAFERO10 لخصم 10%';
       });
 
-      // Categories State
       const [categories, setCategories] = useState(() => {
         const saved = localStorage.getItem('farafero_categories');
         return saved ? JSON.parse(saved) : DEFAULT_CATEGORIES;
       });
       const [newCategoryInput, setNewCategoryInput] = useState('');
 
-      // Custom Box Builder State
       const [customBox, setCustomBox] = useState({
         boxStyle: 'بوكس ملكي أسود × ذهبي',
         mug: 'مج رخامي بغطاء ذهبي',
@@ -196,7 +216,6 @@
         cardText: ''
       });
 
-      // Persistent Storage
       const [products, setProducts] = useState(() => {
         const saved = localStorage.getItem('farafero_products');
         return saved ? JSON.parse(saved) : INITIAL_PRODUCTS;
@@ -235,7 +254,6 @@
       const [couponInput, setCouponInput] = useState('');
       const [appliedCoupon, setAppliedCoupon] = useState(null);
 
-      // Admin State
       const [isAdmin, setIsAdmin] = useState(false);
       const [adminPasswordInput, setAdminPasswordInput] = useState('');
       const [adminTab, setAdminTab] = useState('products');
@@ -248,7 +266,6 @@
       const [tempShipping, setTempShipping] = useState(shippingRates);
       const [tempStoreSettings, setTempStoreSettings] = useState(storeInfo);
 
-      // Checkout Form
       const [checkoutForm, setCheckoutForm] = useState({
         name: '', phone: '', governorate: 'alexandria', address: '', paymentMethod: 'cod', notes: ''
       });
@@ -556,18 +573,15 @@
       return (
         <div className="min-h-screen flex flex-col bg-stone-50">
           
-          {/* Top Announcement Bar */}
           {announcementText && (
             <div className="bg-rose-950 text-rose-100 text-xs font-bold py-2.5 px-4 text-center tracking-wide shadow-inner flex items-center justify-center gap-2">
               <span>{announcementText}</span>
             </div>
           )}
 
-          {/* Main Header */}
           <header className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-stone-200 shadow-sm">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
               
-              {/* Brand Logo */}
               <div 
                 onClick={() => setCurrentPage('home')}
                 className="flex items-center gap-3 cursor-pointer group"
@@ -581,7 +595,6 @@
                 </div>
               </div>
 
-              {/* Desktop Nav Actions */}
               <div className="hidden md:flex items-center gap-5">
                 <button onClick={() => setCurrentPage('home')} className="font-bold text-stone-700 hover:text-rose-800 transition-colors text-sm">الرئيسية</button>
                 <button onClick={() => setCurrentPage('catalog')} className="font-bold text-stone-700 hover:text-rose-800 transition-colors text-sm">كل المنتجات</button>
@@ -589,7 +602,6 @@
                 <button onClick={() => setCurrentPage('admin-login')} className="font-bold text-amber-700 hover:text-amber-800 transition-colors text-sm bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200">لوحة التحكم 🔐</button>
               </div>
 
-              {/* Right Badges: Wishlist & Cart */}
               <div className="flex items-center gap-3">
                 <button 
                   onClick={() => setWishlistOpen(true)}
@@ -629,7 +641,6 @@
 
             </div>
 
-            {/* Mobile Nav Menu */}
             {mobileMenuOpen && (
               <div className="md:hidden bg-white border-b border-stone-200 px-4 py-4 space-y-3 animate-fadeIn">
                 <button onClick={() => { setCurrentPage('home'); setMobileMenuOpen(false); }} className="block w-full text-right font-bold py-2 text-stone-800">الرئيسية</button>
@@ -640,30 +651,26 @@
             )}
           </header>
 
-          {/* Toast Notification */}
           {toast && (
             <div className="fixed bottom-6 right-6 z-50 bg-stone-900 text-white px-5 py-3 rounded-2xl shadow-2xl font-bold text-xs flex items-center gap-3 border border-stone-700 animate-fadeIn">
               <span>{toast}</span>
             </div>
           )}
 
-          {/* MAIN PAGE RENDERER */}
           <main className="flex-1">
             
-            {/* HOME PAGE */}
             {currentPage === 'home' && (
               <div className="space-y-16 pb-20">
-                {/* Hero Section */}
                 <section className="relative bg-gradient-to-br from-stone-900 via-stone-800 to-rose-950 text-white py-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
                   <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#d1d5db_1px,transparent_1px)] [background-size:16px_16px]"></div>
                   <div className="max-w-5xl mx-auto text-center relative z-10 space-y-6">
                     <span className="inline-block bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-black px-4 py-1.5 rounded-full">
                       {storeInfo.heroBadge}
                     </span>
-                    <h1 className="text-4xl sm:text-6xl font-black tracking-tight leading-tight">
-                      {storeInfo.heroTitle.split(' ').slice(0, -2).join(' ')} <span className="text-amber-400">{storeInfo.heroTitle.split(' ').slice(-2).join(' ')}</span>
+                    <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight">
+                      {storeInfo.heroTitle}
                     </h1>
-                    <p className="text-stone-300 text-sm sm:text-lg max-w-2xl mx-auto leading-relaxed">
+                    <p className="text-stone-300 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
                       {storeInfo.heroDesc}
                     </p>
                     <div className="flex flex-wrap justify-center gap-4 pt-4">
@@ -683,7 +690,6 @@
                   </div>
                 </section>
 
-                {/* Categories Bar */}
                 <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-xl font-black text-stone-900">تصفح حسب التصنيف</h2>
@@ -702,7 +708,6 @@
                   </div>
                 </section>
 
-                {/* Special Offers Section */}
                 <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                   <div className="flex items-center justify-between mb-8">
                     <div>
@@ -719,7 +724,6 @@
                   </div>
                 </section>
 
-                {/* Custom Gift Box Banner */}
                 <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                   <div className="bg-gradient-to-r from-rose-900 via-rose-800 to-amber-700 rounded-3xl p-8 sm:p-12 text-white shadow-xl flex flex-col sm:flex-row items-center justify-between gap-8">
                     <div className="space-y-4 text-center sm:text-right max-w-xl">
@@ -738,7 +742,6 @@
                   </div>
                 </section>
 
-                {/* All Products Grid */}
                 <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                   <div className="flex items-center justify-between mb-8">
                     <h2 className="text-2xl font-black text-stone-900">✨ جميع منتجات المتجر</h2>
@@ -763,7 +766,6 @@
               </div>
             )}
 
-            {/* CATALOG PAGE */}
             {currentPage === 'catalog' && (
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-stone-200 shadow-sm">
@@ -792,7 +794,6 @@
                   </div>
                 </div>
 
-                {/* Categories Filter */}
                 <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
                   {categories.map(cat => (
                     <button
@@ -805,7 +806,6 @@
                   ))}
                 </div>
 
-                {/* Products Grid */}
                 {filteredProducts.length === 0 ? (
                   <div className="text-center py-20 bg-white rounded-3xl border border-stone-200">
                     <span className="text-4xl">🔍</span>
@@ -822,7 +822,6 @@
               </div>
             )}
 
-            {/* CUSTOM BOX BUILDER PAGE */}
             {currentPage === 'custombox' && (
               <div className="max-w-4xl mx-auto px-4 py-12">
                 <div className="bg-white rounded-3xl border border-stone-200 shadow-xl overflow-hidden p-8 sm:p-12">
@@ -906,7 +905,6 @@
               </div>
             )}
 
-            {/* ADMIN LOGIN PAGE */}
             {currentPage === 'admin-login' && !isAdmin && (
               <div className="max-w-md mx-auto px-4 py-20">
                 <div className="bg-white rounded-3xl border border-stone-200 shadow-xl p-8 space-y-6 text-center">
@@ -940,7 +938,6 @@
               </div>
             )}
 
-            {/* ADMIN DASHBOARD PAGE */}
             {currentPage === 'admin' && isAdmin && (
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-stone-200 shadow-sm">
@@ -956,7 +953,6 @@
                   </button>
                 </div>
 
-                {/* Admin Tabs */}
                 <div className="flex gap-2 overflow-x-auto pb-2">
                   <button 
                     onClick={() => setAdminTab('products')} 
@@ -1008,7 +1004,6 @@
                   </button>
                 </div>
 
-                {/* STORE SETTINGS TAB (Full Customization of Texts & Info) */}
                 {adminTab === 'store-settings' && (
                   <div className="bg-white rounded-3xl border border-stone-200 p-8 space-y-6 max-w-3xl">
                     <div>
@@ -1108,7 +1103,6 @@
                   </div>
                 )}
 
-                {/* CATEGORIES MANAGEMENT TAB */}
                 {adminTab === 'categories' && (
                   <div className="bg-white rounded-3xl border border-stone-200 p-8 space-y-6 max-w-xl">
                     <div>
@@ -1145,7 +1139,6 @@
                   </div>
                 )}
 
-                {/* SHIPPING RATES MANAGEMENT TAB */}
                 {adminTab === 'shipping' && (
                   <div className="bg-white rounded-3xl border border-stone-200 p-8 space-y-6 max-w-xl">
                     <div>
@@ -1188,7 +1181,6 @@
                   </div>
                 )}
 
-                {/* ANNOUNCEMENT TAB */}
                 {adminTab === 'announcement' && (
                   <div className="bg-white rounded-3xl border border-stone-200 p-8 space-y-6 max-w-2xl">
                     <div>
@@ -1217,10 +1209,8 @@
                   </div>
                 )}
 
-                {/* PRODUCTS TAB */}
                 {adminTab === 'products' && (
                   <div className="space-y-8">
-                    {/* Add / Edit Product Form */}
                     <div className="bg-white rounded-3xl border border-stone-200 p-8 space-y-6">
                       <h3 className="text-xl font-black text-stone-900">
                         {editingProduct ? 'تعديل المنتج المحدد' : 'إضافة منتج جديد للمتجر'}
@@ -1273,7 +1263,6 @@
                           />
                         </div>
 
-                        {/* Image Upload Input */}
                         <div className="space-y-1 sm:col-span-2">
                           <label className="text-xs font-bold text-stone-700">صورة المنتج (اختر ملف من جهازك):</label>
                           <div className="flex items-center gap-4">
@@ -1342,7 +1331,6 @@
                       </form>
                     </div>
 
-                    {/* Products List Table */}
                     <div className="bg-white rounded-3xl border border-stone-200 p-8 overflow-x-auto">
                       <h3 className="text-xl font-black text-stone-900 mb-6">قائمة منتجات المتجر الحالية</h3>
                       <table className="w-full text-right border-collapse">
@@ -1381,7 +1369,6 @@
                   </div>
                 )}
 
-                {/* ORDERS TAB */}
                 {adminTab === 'orders' && (
                   <div className="bg-white rounded-3xl border border-stone-200 p-8 space-y-6">
                     <h3 className="text-xl font-black text-stone-900">طلبات العملاء الواردة</h3>
@@ -1429,7 +1416,6 @@
                   </div>
                 )}
 
-                {/* CUSTOMERS TAB */}
                 {adminTab === 'customers' && (
                   <div className="bg-white rounded-3xl border border-stone-200 p-8 space-y-6">
                     <h3 className="text-xl font-black text-stone-900">سجل العملاء المميزين (VIP)</h3>
@@ -1462,7 +1448,6 @@
                   </div>
                 )}
 
-                {/* COUPONS TAB */}
                 {adminTab === 'coupons' && (
                   <div className="bg-white rounded-3xl border border-stone-200 p-8 space-y-6 max-w-xl">
                     <h3 className="text-xl font-black text-stone-900">إدارة أكواد الخصم</h3>
@@ -1510,7 +1495,6 @@
 
           </main>
 
-          {/* QUICK VIEW MODAL */}
           {quickViewProduct && (
             <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
               <div className="bg-white rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl animate-fadeIn relative">
@@ -1554,7 +1538,6 @@
             </div>
           )}
 
-          {/* CART SLIDE-OVER */}
           {cartOpen && (
             <div className="fixed inset-0 z-50 overflow-hidden bg-black/60 backdrop-blur-sm flex justify-start">
               <div className="bg-white w-full max-w-md h-full shadow-2xl flex flex-col justify-between animate-fadeIn">
@@ -1618,7 +1601,6 @@
             </div>
           )}
 
-          {/* WISHLIST SLIDE-OVER */}
           {wishlistOpen && (
             <div className="fixed inset-0 z-50 overflow-hidden bg-black/60 backdrop-blur-sm flex justify-start">
               <div className="bg-white w-full max-w-md h-full shadow-2xl flex flex-col justify-between animate-fadeIn">
@@ -1649,7 +1631,6 @@
             </div>
           )}
 
-          {/* CHECKOUT PAGE */}
           {currentPage === 'checkout' && (
             <div className="max-w-2xl mx-auto px-4 py-12">
               <div className="bg-white rounded-3xl border border-stone-200 shadow-xl p-8 sm:p-10 space-y-6">
@@ -1705,7 +1686,6 @@
                     ></textarea>
                   </div>
 
-                  {/* Coupon Box */}
                   <div className="flex gap-2 pt-2">
                     <input 
                       type="text"
@@ -1753,7 +1733,6 @@
             </div>
           )}
 
-          {/* Premium Footer Design */}
           <footer className="bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 text-stone-300 py-16 px-4 sm:px-6 lg:px-8 border-t border-stone-800/80 mt-20 relative overflow-hidden">
             <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#e11d48_1px,transparent_1px)] [background-size:20px_20px]"></div>
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 text-center md:text-right relative z-10">
