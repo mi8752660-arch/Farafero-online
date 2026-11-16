@@ -32,7 +32,7 @@
   <script type="text/babel">
     const { useState, useEffect, useMemo } = React;
 
-    const INITIAL_CATEGORIES = [
+    const DEFAULT_CATEGORIES = [
       'الكل',
       'مجات وأكواب',
       'إضاءات وديكور',
@@ -172,6 +172,13 @@
         return saved !== null ? saved : '🎁 شحن مجاني للطلبات فوق 1000 ج.م • استخدم كود FARAFERO10 لخصم 10%';
       });
 
+      // Categories State (Editable from Admin)
+      const [categories, setCategories] = useState(() => {
+        const saved = localStorage.getItem('farafero_categories');
+        return saved ? JSON.parse(saved) : DEFAULT_CATEGORIES;
+      });
+      const [newCategoryInput, setNewCategoryInput] = useState('');
+
       // Custom Box Builder State
       const [customBox, setCustomBox] = useState({
         boxStyle: 'بوكس ملكي أسود × ذهبي',
@@ -229,6 +236,7 @@
         name: '', category: 'مجات وأكواب', price: '', oldPrice: '', isOffer: false, inStock: true, image: '', description: ''
       });
       const [tempAnnouncementInput, setTempAnnouncementInput] = useState(announcementText);
+      const [tempShipping, setTempShipping] = useState(shippingRates);
 
       // Checkout Form
       const [checkoutForm, setCheckoutForm] = useState({
@@ -243,6 +251,7 @@
       useEffect(() => { localStorage.setItem('farafero_shipping', JSON.stringify(shippingRates)); }, [shippingRates]);
       useEffect(() => { localStorage.setItem('farafero_coupons', JSON.stringify(coupons)); }, [coupons]);
       useEffect(() => { localStorage.setItem('farafero_announcement', announcementText); }, [announcementText]);
+      useEffect(() => { localStorage.setItem('farafero_categories', JSON.stringify(categories)); }, [categories]);
 
       const showToast = (msg) => {
         setToast(msg);
@@ -395,7 +404,7 @@
           showToast('تمت إضافة المنتج الجديد للمتجر');
         }
 
-        setNewProductForm({ name: '', category: 'مجات وأكواب', price: '', oldPrice: '', isOffer: false, inStock: true, image: '', description: '' });
+        setNewProductForm({ name: '', category: categories[1] || 'مجات وأكواب', price: '', oldPrice: '', isOffer: false, inStock: true, image: '', description: '' });
       };
 
       const handleAddCoupon = (e) => {
@@ -410,6 +419,30 @@
         e.preventDefault();
         setAnnouncementText(tempAnnouncementInput);
         showToast('✨ تم تحديث شريط الإعلانات العلوي بنجاح');
+      };
+
+      const handleUpdateShipping = (e) => {
+        e.preventDefault();
+        setShippingRates(tempShipping);
+        showToast('🚚 تم تحديث مصاريف الشحن بنجاح');
+      };
+
+      const handleAddCategory = (e) => {
+        e.preventDefault();
+        if (!newCategoryInput.trim()) return;
+        if (categories.includes(newCategoryInput.trim())) {
+          showToast('❌ هذا التصنيف موجود بالفعل');
+          return;
+        }
+        setCategories(prev => [...prev, newCategoryInput.trim()]);
+        setNewCategoryInput('');
+        showToast('✨ تمت إضافة التصنيف الجديد بنجاح');
+      };
+
+      const deleteCategory = (catToDelete) => {
+        if (catToDelete === 'الكل') return;
+        setCategories(prev => prev.filter(c => c !== catToDelete));
+        showToast('تم حذف التصنيف');
       };
 
       const startEditProduct = (p) => {
@@ -506,7 +539,7 @@
       return (
         <div className="min-h-screen flex flex-col bg-stone-50">
           
-          {/* Top Announcement Bar (Controlled from Admin) */}
+          {/* Top Announcement Bar */}
           {announcementText && (
             <div className="bg-rose-950 text-rose-100 text-xs font-bold py-2.5 px-4 text-center tracking-wide shadow-inner flex items-center justify-center gap-2">
               <span>{announcementText}</span>
@@ -627,7 +660,7 @@
                         onClick={() => setCurrentPage('custombox')}
                         className="bg-amber-500 hover:bg-amber-600 text-stone-950 font-black px-8 py-4 rounded-2xl shadow-lg transition-transform hover:scale-105 text-sm"
                       >
-                        صمم بوكس هدينك بنفسك 🎀
+                        صمم بوكس هديتك بنفسك 🎀
                       </button>
                     </div>
                   </div>
@@ -640,7 +673,7 @@
                     <button onClick={() => setCurrentPage('catalog')} className="text-xs font-bold text-rose-800 hover:underline">عرض الكل ←</button>
                   </div>
                   <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-none">
-                    {INITIAL_CATEGORIES.map(cat => (
+                    {categories.map(cat => (
                       <button
                         key={cat}
                         onClick={() => { setSelectedCategory(cat); setCurrentPage('catalog'); }}
@@ -676,7 +709,7 @@
                       <span className="bg-white/20 text-white text-xs font-black px-4 py-1.5 rounded-full">خدمة حصرية</span>
                       <h3 className="text-2xl sm:text-4xl font-black">اصنع بوكس هديتك على ذوقك تماماً!</h3>
                       <p className="text-rose-100 text-xs sm:text-sm leading-relaxed">
-                        اختر شكل البوكس، المج المفضل، الهدية الإضافية (عطر، مكياج، دبدوب، ورد، أو إكسسوار)، واكتب كرسالة الإهداء الخاصة بك لنقوم بتجهيزه وتغليفه بإتقان.
+                        اختر شكل البوكس، المج المفضل، الهدية الإضافية (عطر، مكياج، دبدوب، ورد، أو إكسسوار)، واكتب رسالة الإهداء الخاصة بك لنقوم بتجهيزه وتغليفه بإتقان.
                       </p>
                     </div>
                     <button 
@@ -692,7 +725,7 @@
                 <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                   <div className="flex items-center justify-between mb-8">
                     <h2 className="text-2xl font-black text-stone-900">✨ جميع منتجات المتجر</h2>
-                    <span className="text-xs font-bold text-stone-500">{products.itemCount || products.length} منتج متاح</span>
+                    <span className="text-xs font-bold text-stone-500">{products.length} منتج متاح</span>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -744,7 +777,7 @@
 
                 {/* Categories Filter */}
                 <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
-                  {INITIAL_CATEGORIES.map(cat => (
+                  {categories.map(cat => (
                     <button
                       key={cat}
                       onClick={() => setSelectedCategory(cat)}
@@ -871,7 +904,7 @@
                   <form onSubmit={handleAdminLogin} className="space-y-4">
                     <input 
                       type="password"
-                      placeholder="أدخل كلمة مرور الإدارة (farafero2026)"
+                      placeholder="أدخل كلمة مرور الإدارة"
                       value={adminPasswordInput}
                       onChange={(e) => setAdminPasswordInput(e.target.value)}
                       className="w-full p-4 rounded-2xl border border-stone-200 text-xs font-bold text-center focus:outline-none focus:border-amber-600 bg-stone-50"
@@ -896,7 +929,7 @@
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-stone-200 shadow-sm">
                   <div>
                     <h2 className="text-2xl font-black text-stone-900">لوحة تحكم المتجر 🛠️</h2>
-                    <p className="text-xs text-stone-500 mt-1">إدارة المنتجات، الطلبات، الإعلانات، والعملاء بكل سهولة</p>
+                    <p className="text-xs text-stone-500 mt-1">إدارة المنتجات، الطلبات، الإعلانات، مصاريف الشحن والتصنيفات بكل سهولة</p>
                   </div>
                   <button 
                     onClick={() => { setIsAdmin(false); setCurrentPage('home'); }}
@@ -912,25 +945,37 @@
                     onClick={() => setAdminTab('products')} 
                     className={`px-5 py-3 rounded-xl text-xs font-black transition-all ${adminTab === 'products' ? 'bg-stone-900 text-white' : 'bg-white text-stone-700 border border-stone-200'}`}
                   >
-                    📦 إدارة المنتجات ({products.length})
+                    📦 المنتجات ({products.length})
+                  </button>
+                  <button 
+                    onClick={() => setAdminTab('categories')} 
+                    className={`px-5 py-3 rounded-xl text-xs font-black transition-all ${adminTab === 'categories' ? 'bg-stone-900 text-white' : 'bg-white text-stone-700 border border-stone-200'}`}
+                  >
+                    🏷️ أسامي التصنيفات
+                  </button>
+                  <button 
+                    onClick={() => setAdminTab('shipping')} 
+                    className={`px-5 py-3 rounded-xl text-xs font-black transition-all ${adminTab === 'shipping' ? 'bg-stone-900 text-white' : 'bg-white text-stone-700 border border-stone-200'}`}
+                  >
+                    🚚 مصاريف الشحن
                   </button>
                   <button 
                     onClick={() => setAdminTab('announcement')} 
                     className={`px-5 py-3 rounded-xl text-xs font-black transition-all ${adminTab === 'announcement' ? 'bg-stone-900 text-white' : 'bg-white text-stone-700 border border-stone-200'}`}
                   >
-                    📢 شريط الإعلانات العلوي
+                    📢 شريط الإعلانات
                   </button>
                   <button 
                     onClick={() => setAdminTab('orders')} 
                     className={`px-5 py-3 rounded-xl text-xs font-black transition-all ${adminTab === 'orders' ? 'bg-stone-900 text-white' : 'bg-white text-stone-700 border border-stone-200'}`}
                   >
-                    🛍️ طلبات العملاء ({orders.length})
+                    🛍️ الطلبات ({orders.length})
                   </button>
                   <button 
                     onClick={() => setAdminTab('customers')} 
                     className={`px-5 py-3 rounded-xl text-xs font-black transition-all ${adminTab === 'customers' ? 'bg-stone-900 text-white' : 'bg-white text-stone-700 border border-stone-200'}`}
                   >
-                    👥 سجل العملاء VIP ({customers.length})
+                    👥 العملاء VIP ({customers.length})
                   </button>
                   <button 
                     onClick={() => setAdminTab('coupons')} 
@@ -939,6 +984,86 @@
                     🎟️ أكواد الخصم
                   </button>
                 </div>
+
+                {/* CATEGORIES MANAGEMENT TAB */}
+                {adminTab === 'categories' && (
+                  <div className="bg-white rounded-3xl border border-stone-200 p-8 space-y-6 max-w-xl">
+                    <div>
+                      <h3 className="text-xl font-black text-stone-900">إدارة وتعديل أسامي التصنيفات</h3>
+                      <p className="text-xs text-stone-500 mt-1">أضف تصنيفات جديدة للمتجر أو احذف التصنيفات غير المرغوب فيها.</p>
+                    </div>
+
+                    <form onSubmit={handleAddCategory} className="flex gap-3">
+                      <input 
+                        type="text"
+                        placeholder="اسم التصنيف الجديد..."
+                        value={newCategoryInput}
+                        onChange={(e) => setNewCategoryInput(e.target.value)}
+                        className="flex-1 p-3.5 rounded-xl border border-stone-200 text-xs font-bold bg-stone-50 focus:outline-none focus:border-rose-800"
+                      />
+                      <button type="submit" className="bg-stone-900 hover:bg-rose-800 text-white font-black px-6 py-3.5 rounded-xl text-xs shadow-md">
+                        إضافة تصنيف ➕
+                      </button>
+                    </form>
+
+                    <div className="border-t pt-4 space-y-2">
+                      <h4 className="font-bold text-xs text-stone-700 mb-2">التصنيفات الحالية في المتجر:</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {categories.map(cat => (
+                          <div key={cat} className="flex items-center gap-2 bg-stone-100 px-3.5 py-2 rounded-xl border text-xs font-bold">
+                            <span>{cat}</span>
+                            {cat !== 'الكل' && (
+                              <button onClick={() => deleteCategory(cat)} className="text-rose-700 hover:text-rose-900 font-black">✕</button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* SHIPPING RATES MANAGEMENT TAB */}
+                {adminTab === 'shipping' && (
+                  <div className="bg-white rounded-3xl border border-stone-200 p-8 space-y-6 max-w-xl">
+                    <div>
+                      <h3 className="text-xl font-black text-stone-900">التحكم في مصاريف الشحن</h3>
+                      <p className="text-xs text-stone-500 mt-1">تعديل تكلفة التوصيل لكل منطقة جغرافية.</p>
+                    </div>
+
+                    <form onSubmit={handleUpdateShipping} className="space-y-4">
+                      <div>
+                        <label className="text-xs font-extrabold text-stone-800 block mb-1">شحن الإسكندرية (ج.م):</label>
+                        <input 
+                          type="number" required
+                          value={tempShipping.alexandria}
+                          onChange={(e) => setTempShipping({...tempShipping, alexandria: Number(e.target.value)})}
+                          className="w-full p-3.5 rounded-xl border border-stone-200 text-xs font-bold bg-stone-50"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-extrabold text-stone-800 block mb-1">شحن القاهرة والجيزة (ج.م):</label>
+                        <input 
+                          type="number" required
+                          value={tempShipping.cairo}
+                          onChange={(e) => setTempShipping({...tempShipping, cairo: Number(e.target.value)})}
+                          className="w-full p-3.5 rounded-xl border border-stone-200 text-xs font-bold bg-stone-50"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-extrabold text-stone-800 block mb-1">شحن باقي المحافظات (ج.م):</label>
+                        <input 
+                          type="number" required
+                          value={tempShipping.other}
+                          onChange={(e) => setTempShipping({...tempShipping, other: Number(e.target.value)})}
+                          className="w-full p-3.5 rounded-xl border border-stone-200 text-xs font-bold bg-stone-50"
+                        />
+                      </div>
+                      <button type="submit" className="bg-stone-900 hover:bg-rose-800 text-white font-black px-6 py-3.5 rounded-xl text-xs shadow-md">
+                        حفظ مصاريف الشحن 🚚
+                      </button>
+                    </form>
+                  </div>
+                )}
 
                 {/* ANNOUNCEMENT TAB */}
                 {adminTab === 'announcement' && (
@@ -997,7 +1122,7 @@
                             onChange={(e) => setNewProductForm({...newProductForm, category: e.target.value})}
                             className="w-full p-3 rounded-xl border border-stone-200 text-xs font-bold bg-stone-50"
                           >
-                            {INITIAL_CATEGORIES.filter(c => c !== 'الكل').map(c => (
+                            {categories.filter(c => c !== 'الكل').map(c => (
                               <option key={c} value={c}>{c}</option>
                             ))}
                           </select>
@@ -1025,7 +1150,7 @@
                           />
                         </div>
 
-                        {/* Image Upload Input (No Links) */}
+                        {/* Image Upload Input */}
                         <div className="space-y-1 sm:col-span-2">
                           <label className="text-xs font-bold text-stone-700">صورة المنتج (اختر ملف من جهازك):</label>
                           <div className="flex items-center gap-4">
@@ -1084,7 +1209,7 @@
                           {editingProduct && (
                             <button 
                               type="button"
-                              onClick={() => { setEditingProduct(null); setNewProductForm({ name: '', category: 'مجات وأكواب', price: '', oldPrice: '', isOffer: false, inStock: true, image: '', description: '' }); }}
+                              onClick={() => { setEditingProduct(null); setNewProductForm({ name: '', category: categories[1], price: '', oldPrice: '', isOffer: false, inStock: true, image: '', description: '' }); }}
                               className="bg-stone-200 hover:bg-stone-300 text-stone-800 font-bold px-6 py-3.5 rounded-xl text-xs"
                             >
                               إلغاء
@@ -1440,9 +1565,9 @@
                       onChange={(e) => setCheckoutForm({...checkoutForm, governorate: e.target.value})}
                       className="w-full p-3.5 rounded-xl border border-stone-200 text-xs font-bold bg-stone-50"
                     >
-                      <option value="alexandria">الإسكندرية (شحن 45 ج.م)</option>
-                      <option value="cairo">القاهرة والجيزة (شحن 65 ج.م)</option>
-                      <option value="other">باقي المحافظات (شحن 85 ج.م)</option>
+                      <option value="alexandria">الإسكندرية (شحن {shippingRates.alexandria} ج.م)</option>
+                      <option value="cairo">القاهرة والجيزة (شحن {shippingRates.cairo} ج.م)</option>
+                      <option value="other">باقي المحافظات (شحن {shippingRates.other} ج.م)</option>
                     </select>
                   </div>
 
@@ -1505,26 +1630,41 @@
             </div>
           )}
 
-          {/* Footer */}
-          <footer className="bg-stone-900 text-stone-300 py-12 px-4 sm:px-6 lg:px-8 border-t border-stone-800 mt-20">
-            <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-right">
-              <div>
-                <h3 className="text-white font-black text-lg mb-3">{STORE_INFO.arabicName}</h3>
-                <p className="text-xs text-stone-400 leading-relaxed">وجهتك الأولى لاختيار أرقى الهدايا والتحف العصرية وتغليفها بأعلى معايير الجودة والأناقة.</p>
+          {/* Premium Footer Design */}
+          <footer className="bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 text-stone-300 py-16 px-4 sm:px-6 lg:px-8 border-t border-stone-800/80 mt-20 relative overflow-hidden">
+            <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#e11d48_1px,transparent_1px)] [background-size:20px_20px]"></div>
+            <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 text-center md:text-right relative z-10">
+              
+              <div className="space-y-3">
+                <div className="flex items-center justify-center md:justify-start gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-tr from-rose-800 to-amber-600 rounded-xl flex items-center justify-center shadow">
+                    <span className="text-xl">🎁</span>
+                  </div>
+                  <h3 className="text-white font-black text-xl">{STORE_INFO.arabicName}</h3>
+                </div>
+                <p className="text-xs text-stone-400 leading-relaxed max-w-sm mx-auto md:mx-0">وجهتك الأولى لاختيار أرقى الهدايا والتحف العصرية وتغليفها بأعلى معايير الجودة والأناقة لصنع لحظات لا تُنسى.</p>
               </div>
-              <div>
-                <h4 className="text-white font-bold text-sm mb-3">تواصل معنا</h4>
-                <p className="text-xs text-stone-400 mb-1">هاتف / واتساب: {STORE_INFO.phone}</p>
-                <p className="text-xs text-stone-400">الإسكندرية، مصر</p>
+
+              <div className="space-y-3">
+                <h4 className="text-white font-bold text-sm tracking-wider uppercase border-b border-stone-800 pb-2 inline-block">تواصل معنا</h4>
+                <p className="text-xs text-stone-400">هاتف / واتساب: <span className="text-amber-400 font-bold">{STORE_INFO.phone}</span></p>
+                <p className="text-xs text-stone-400">العنوان: <span className="text-stone-300">{STORE_INFO.address}</span></p>
+                <p className="text-xs text-stone-400">البريد الإلكتروني: {STORE_INFO.email}</p>
               </div>
-              <div>
-                <h4 className="text-white font-bold text-sm mb-3">روابط سريعة</h4>
+
+              <div className="space-y-3">
+                <h4 className="text-white font-bold text-sm tracking-wider uppercase border-b border-stone-800 pb-2 inline-block">روابط سريعة</h4>
                 <div className="flex flex-col gap-2 text-xs">
-                  <button onClick={() => setCurrentPage('catalog')} className="text-stone-400 hover:text-white">المنتجات والعروض</button>
-                  <button onClick={() => setCurrentPage('custombox')} className="text-stone-400 hover:text-white">تصميم بوكس هدايا</button>
-                  <button onClick={() => setCurrentPage('admin-login')} className="text-stone-400 hover:text-white">لوحة تحكم الإدارة 🔐</button>
+                  <button onClick={() => setCurrentPage('catalog')} className="text-stone-400 hover:text-rose-400 transition-colors text-right">المنتجات والعروض الفاخرة</button>
+                  <button onClick={() => setCurrentPage('custombox')} className="text-stone-400 hover:text-rose-400 transition-colors text-right">تصميم بوكس هدايا مخصص 🎀</button>
+                  <button onClick={() => setCurrentPage('admin-login')} className="text-amber-500 hover:text-amber-400 transition-colors text-right font-bold">لوحة تحكم الإدارة 🔐</button>
                 </div>
               </div>
+
+            </div>
+            
+            <div className="max-w-7xl mx-auto border-t border-stone-800/60 mt-12 pt-6 text-center text-xs text-stone-500">
+              جميع الحقوق محفوطة © 2026 {STORE_INFO.name} • تم التصميم والتطوير بعناية فائقة 💖
             </div>
           </footer>
 
