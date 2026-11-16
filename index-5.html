@@ -19,28 +19,28 @@
             theme: {
                 extend: {
                     fontFamily: { sans: ['Cairo', 'sans-serif'], cinzel: ['Cinzel', 'serif'], montserrat: ['Montserrat', 'sans-serif'] },
-                    colors: { gold: '#C5A059' }
+                    colors: { gold: '#C5A059', burgundy: '#380614' }
                 }
             }
         }
     </script>
     <style>
-        body { font-family: 'Cairo', sans-serif; background-color: #0B1614; color: #f1f5f9; }
+        body { font-family: 'Cairo', sans-serif; background-color: #24040D; color: #f1f5f9; }
         .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #0B1614; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #24040D; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #C5A059; border-radius: 4px; }
         .glass-card {
-            background: rgba(15, 32, 28, 0.85);
+            background: rgba(43, 7, 17, 0.9);
             backdrop-filter: blur(16px);
             border: 1px solid rgba(197, 160, 89, 0.25);
-            box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.4);
         }
     </style>
 </head>
-<body class="bg-[#0B1614] text-slate-100 font-sans antialiased min-h-screen flex flex-col pb-20 selection:bg-gold selection:text-slate-950" dir="rtl">
+<body class="bg-[#24040D] text-slate-100 font-sans antialiased min-h-screen flex flex-col pb-20 selection:bg-gold selection:text-slate-950" dir="rtl">
 
     <!-- TOP HEADER -->
-    <header class="bg-[#0F201C]/95 backdrop-blur-md sticky top-0 z-40 border-b border-gold/20 shadow-xl">
+    <header class="bg-[#2B0711]/95 backdrop-blur-md sticky top-0 z-40 border-b border-gold/20 shadow-xl">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
             
             <!-- زر السلة العلوي الفخم -->
@@ -67,7 +67,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 w-full">
         <div class="relative rounded-3xl overflow-hidden glass-card p-6 sm:p-10 border border-gold/30 text-center space-y-3 shadow-2xl">
             <div class="absolute -top-24 -right-24 w-48 h-48 bg-gold/10 rounded-full blur-3xl pointer-events-none"></div>
-            <span class="bg-gold/10 text-gold text-[11px] font-bold px-4 py-1.5 rounded-full border border-gold/30 tracking-wider">مجموعة الهدايا الفاخرة 2026</span>
+            <span class="bg-gold/10 text-gold text-[11px] font-bold px-4 py-1.5 rounded-full border border-gold/30 tracking-wider">Make Every Moment Special</span>
             <h2 class="text-2xl sm:text-4xl font-black font-cinzel text-white tracking-wide">اصنع لحظات لا تُنسى لمن تحب</h2>
             <p class="text-xs sm:text-sm text-slate-300 max-w-xl mx-auto font-medium">اكتشف تشكيلة راقية من أرقى الهدايا، الدباديب، الورود، والمجوهرات المصممة خصيصاً لتناسب أذواقكم الرفيعة.</p>
         </div>
@@ -97,13 +97,13 @@
     </main>
 
     <!-- FOOTER -->
-    <footer class="bg-[#0F201C] border-t border-gold/20 py-8 text-center text-xs text-slate-400 space-y-2 mt-12">
+    <footer class="bg-[#24040D] border-t border-gold/20 py-8 text-center text-xs text-slate-400 space-y-2 mt-12">
         <p class="font-cinzel text-white tracking-widest font-bold">FARAFERO GIFT SHOP & BOUTIQUE</p>
         <p class="text-[10px]">جميع الحقوق محفوظة © 2026 - تواصل فوري وسحابي آمن</p>
     </footer>
 
     <!-- CART MODAL (سلة الهدايا) -->
-    <div id="cart-modal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div id="cart-modal" class="fixed inset-0 z-50 hidden bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
         <div class="glass-card rounded-3xl w-full max-w-lg p-6 shadow-2xl space-y-4 border border-gold/40 text-slate-100 max-h-[90vh] overflow-y-auto custom-scrollbar">
             <div class="flex justify-between items-center border-b border-gold/20 pb-4">
                 <h3 class="font-black text-base text-white flex items-center font-cinzel">
@@ -116,20 +116,20 @@
             <div id="cart-items-container" class="divide-y divide-gold/10 max-h-[220px] overflow-y-auto custom-scrollbar space-y-2 pr-1"></div>
 
             <!-- تفاصيل العميل وتأكيد الطلب -->
-            <div class="space-y-3 pt-2 bg-slate-900/60 p-4 rounded-2xl border border-gold/20">
+            <div class="space-y-3 pt-2 bg-[#24040D]/80 p-4 rounded-2xl border border-gold/20">
                 <h4 class="text-xs font-black text-gold">بيانات الشحن والتوصيل:</h4>
                 <div class="space-y-2.5">
                     <div>
                         <label class="text-[10px] font-bold text-slate-300 block mb-1">الاسم الكامل:</label>
-                        <input type="text" id="po-cust-name" placeholder="اكتب اسمك الكريم..." class="w-full bg-slate-950 border border-gold/30 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
+                        <input type="text" id="po-cust-name" placeholder="اكتب اسمك الكريم..." class="w-full bg-[#1B030A] border border-gold/30 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
                     </div>
                     <div>
                         <label class="text-[10px] font-bold text-slate-300 block mb-1">رقم الهاتف (موبايل):</label>
-                        <input type="tel" id="po-cust-phone" placeholder="010xxxxxxxx..." class="w-full bg-slate-950 border border-gold/30 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-gold dir-ltr text-right">
+                        <input type="tel" id="po-cust-phone" placeholder="010xxxxxxxx..." class="w-full bg-[#1B030A] border border-gold/30 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-gold dir-ltr text-right">
                     </div>
                     <div>
                         <label class="text-[10px] font-bold text-slate-300 block mb-1">العنوان بالتفصيل (المحافظة والمنطقة):</label>
-                        <textarea id="po-cust-address" placeholder="المحافظة، المدينة، الشارع، رقم الحلة..." class="w-full bg-slate-950 border border-gold/30 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-gold h-16 resize-none"></textarea>
+                        <textarea id="po-cust-address" placeholder="المحافظة، المدينة، الشارع، رقم الحلة..." class="w-full bg-[#1B030A] border border-gold/30 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-gold h-16 resize-none"></textarea>
                     </div>
                 </div>
             </div>
@@ -149,11 +149,11 @@
     </div>
 
     <!-- PRODUCT DETAILS / ZOOM MODAL -->
-    <div id="product-details-modal" class="fixed inset-0 z-50 hidden bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+    <div id="product-details-modal" class="fixed inset-0 z-50 hidden bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4">
         <div class="glass-card rounded-3xl w-full max-w-md p-6 shadow-2xl space-y-4 border border-gold/40 text-slate-100 relative">
             <button onclick="closeProductModal()" class="absolute top-4 left-4 w-8 h-8 rounded-full bg-gold/10 text-gold flex items-center justify-center hover:bg-gold/20 transition-all font-bold z-10">✕</button>
             
-            <div class="h-60 rounded-2xl overflow-hidden bg-slate-950 relative border border-gold/20 shadow-inner">
+            <div class="h-60 rounded-2xl overflow-hidden bg-[#1B030A] relative border border-gold/20 shadow-inner">
                 <img id="modal-prod-img" src="" class="w-full h-full object-cover">
                 <span id="modal-prod-code" class="absolute bottom-3 right-3 bg-gold text-slate-950 text-xs font-black px-3 py-1 rounded-xl shadow-md"></span>
             </div>
@@ -204,7 +204,6 @@
         }
 
         function startStoreListeners() {
-            // الاستماع للفئات سحابياً
             db.collection("settings").doc("categories").onSnapshot((doc) => {
                 if (doc.exists && doc.data().list) {
                     state.categories = doc.data().list;
@@ -212,7 +211,6 @@
                 renderCategoryButtons();
             });
 
-            // الاستماع للمنتجات والبضاعة سحابياً
             db.collection("products").onSnapshot((snapshot) => {
                 state.products = [];
                 snapshot.forEach((doc) => {
@@ -267,9 +265,9 @@
                 const isAvailable = (p.stock || 0) > 0;
                 grid.innerHTML += `
                     <div class="glass-card rounded-3xl p-3.5 border border-gold/20 shadow-lg flex flex-col justify-between space-y-3 transition-all hover:border-gold/50 group">
-                        <div class="h-40 rounded-2xl overflow-hidden bg-slate-950 relative cursor-pointer shadow-inner" onclick="openProductModal('${p.id}')">
+                        <div class="h-40 rounded-2xl overflow-hidden bg-[#1B030A] relative cursor-pointer shadow-inner" onclick="openProductModal('${p.id}')">
                             <img src="${p.image}" class="w-full h-full object-cover group-hover:scale-105 transition-all duration-500">
-                            <span class="absolute top-2 right-2 bg-slate-950/80 backdrop-blur-md text-gold text-[10px] font-black px-2.5 py-1 rounded-xl border border-gold/30 shadow-md">${p.code || 'G-000'}</span>
+                            <span class="absolute top-2 right-2 bg-[#1B030A]/90 backdrop-blur-md text-gold text-[10px] font-black px-2.5 py-1 rounded-xl border border-gold/30 shadow-md">${p.code || 'G-000'}</span>
                         </div>
                         <div class="space-y-1 cursor-pointer" onclick="openProductModal('${p.id}')">
                             <span class="text-[9px] text-gold font-bold bg-gold/10 px-2 py-0.5 rounded">${p.category}</span>
@@ -406,7 +404,6 @@
             const grandTotal = state.cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
             const dateStr = new Date().toLocaleDateString('en-GB');
 
-            // جلب عدد طلبات الـ PO الحالية لتوليد كود تسلسلي PO-0001
             db.collection("orders").get().then((snapshot) => {
                 let poCount = 0;
                 snapshot.forEach(doc => {
@@ -424,7 +421,7 @@
                     total: grandTotal,
                     customerName: custName + ' (' + custAddress + ')',
                     customerPhone: custPhone,
-                    status: 'pending', // معلق بانتظار اعتماد المجر
+                    status: 'pending',
                     detailedItems: JSON.parse(JSON.stringify(state.cart))
                 };
 
