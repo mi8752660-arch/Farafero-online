@@ -16,7 +16,7 @@
     ::-webkit-scrollbar-track { background: #f5f5f4; }
     ::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 999px; }
     ::-webkit-scrollbar-thumb:hover { background: #9f1239; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
     .animate-fadeIn { animation: fadeIn 0.3s ease-out forwards; }
   </style>
 </head>
@@ -34,31 +34,54 @@
 
     const DEFAULT_CATEGORIES = [
       'الكل',
-      'مجات وأكواب',
+      'أجندات ونوت بوك',
+      'مجات وأكواب فاخرة',
       'إضاءات وديكور',
       'إكسسوارات وساعات',
       'شموع وروائح',
-      'بوكسات هدايا',
-      'برفان وميكاب',
-      'دباديب وورود',
-      'محافظ جلدية'
+      'بوكسات هدايا مخصصة',
+      'برفان وميكاب'
     ];
 
     const INITIAL_PRODUCTS = [
       {
         id: 'p1',
+        name: 'أجندة سبيس المميزة 2026 - غلاف مخملي فاخر',
+        category: 'أجندات ونوت بوك',
+        price: 275,
+        oldPrice: 350,
+        isOffer: true,
+        inStock: true,
+        rating: 5.0,
+        image: 'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=800&q=80',
+        description: 'أجندة بتصميم استثنائي منظم بدقة لتخطيط أهدافك ويومياتك مع ورق عالي الجودة وتغليف هدية راقي.'
+      },
+      {
+        id: 'p2',
         name: 'مج حراري بتصميم رخامي فاخر وغطاء ذهبي',
-        category: 'مجات وأكواب',
+        category: 'مجات وأكواب فاخرة',
         price: 220,
         oldPrice: 280,
         isOffer: true,
         inStock: true,
         rating: 5.0,
         image: 'https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?auto=format&fit=crop&w=800&q=80',
-        description: 'مج سيراميك فاخر يحافظ على حرارة المشروبات لأطول فترة مع ملعقة ذهبية أنيقة وتغليف هدايا مبطن.'
+        description: 'مج سيراميك فاخر يحافظ على حرارة المشروبات لأطول فترة مع ملعقة ذهبية أنيقة وتغليف مبطن.'
       },
       {
-        id: 'p2',
+        id: 'p3',
+        name: 'نوت بوك Believe in your Dreams بتصميم عصري',
+        category: 'أجندات ونوت بوك',
+        price: 195,
+        oldPrice: null,
+        isOffer: false,
+        inStock: true,
+        rating: 4.9,
+        image: 'https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&w=800&q=80',
+        description: 'دفتر ملاحظات راقي لتدوين أفكارك اليومية وخواطرك بلمسة إبداعية مميزة.'
+      },
+      {
+        id: 'p4',
         name: 'عطر نسائي فرنسي فخم بنفحات الفانيليا والزهور',
         category: 'برفان وميكاب',
         price: 750,
@@ -70,107 +93,35 @@
         description: 'عطر ثابت يدوم طوال اليوم يمنحك حضوراً طاغياً وجذاباً في كل المناسبات.'
       },
       {
-        id: 'p3',
-        name: 'دبدوب أحمر عميق فائق النعومة مع قلب حب',
-        category: 'دباديب وورود',
-        price: 420,
-        oldPrice: 500,
+        id: 'p5',
+        name: 'بوكس ورد جوري دائم مع شوكولاتة بلجيكية فاخرة',
+        category: 'بوكسات هدايا مخصصة',
+        price: 580,
+        oldPrice: 650,
         isOffer: true,
         inStock: true,
         rating: 5.0,
-        image: 'https://images.unsplash.com/photo-1559454403-b8fb8852101e?auto=format&fit=crop&w=800&q=80',
-        description: 'دبدوب هدية مثالي للتعبير عن الحب والمشاعر الدافئة في الفلانتين وأعياد الميلاد.'
-      },
-      {
-        id: 'p4',
-        name: 'بوكس ورد جوري صناعي دائم مع شوكولاتة فاخرة',
-        category: 'بوكسات هدايا',
-        price: 580,
-        oldPrice: null,
-        isOffer: false,
-        inStock: true,
-        rating: 4.9,
         image: 'https://images.unsplash.com/photo-1526047932273-341f2a7631f9?auto=format&fit=crop&w=800&q=80',
-        description: 'تنسيق راقي من الورود الدائمة مع تشكيلة شوكولاتة بلجيكية فاخرة.'
-      },
-      {
-        id: 'p5',
-        name: 'سلسلة وتريات ستانلس ستيل مضادة للماء مطلي ذهب',
-        category: 'إكسسوارات وساعات',
-        price: 290,
-        oldPrice: 350,
-        isOffer: true,
-        inStock: true,
-        rating: 4.8,
-        image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80',
-        description: 'سلسلة عصرية أنيقة غير قابلة للصدأ مع علبة قطيفة هدية.'
+        description: 'تنسيق راقي من الورود الدائمة مع تشكيلة شوكولاتة فاخرة في بوكس هدايا ملكي.'
       },
       {
         id: 'p6',
-        name: 'محافظ جلد طبيعي رجالي مع إمكانية حفر الاسم',
-        category: 'محافظ جلدية',
-        price: 340,
-        oldPrice: null,
-        isOffer: false,
-        inStock: true,
-        rating: 4.9,
-        image: 'https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=800&q=80',
-        description: 'محفظة من الجلد الطبيعي الفاخر بتصميم عملي وأنيق لبطاقاتك ونقودك.'
-      },
-      {
-        id: 'p7',
-        name: 'مجموعة ميكاب أساسية متكاملة (روج، باليت آيشادو، ماسكرا)',
-        category: 'برفان وميكاب',
-        price: 890,
-        oldPrice: 1100,
-        isOffer: true,
-        inStock: true,
-        rating: 5.0,
-        image: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=800&q=80',
-        description: 'طقم مستحضرات تجميل أصلي بجودة عالمية يناسب إطلالتك اليومية والمناسبات.'
-      },
-      {
-        id: 'p8',
-        name: 'ساعة يد كلاسيكية نسائية بسوار جلدي راقي',
-        category: 'إكسسوارات وساعات',
-        price: 490,
-        oldPrice: null,
-        isOffer: false,
-        inStock: true,
-        rating: 5.0,
-        image: 'https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=800&q=80',
-        description: 'تصميم عصري وجذاب يناسب جميع المناسبات الرسمية والكاجوال مع ضمان سنة.'
-      },
-      {
-        id: 'p9',
-        name: 'مصباح إضاءة ليبي مع قاعدة خشبية طبيعية',
+        name: 'مصباح إضاءة ليبي ديكوري بتصميم عائم هادئ',
         category: 'إضاءات وديكور',
-        price: 380,
-        oldPrice: 450,
-        isOffer: true,
-        inStock: true,
-        rating: 4.9,
-        image: 'https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?auto=format&fit=crop&w=800&q=80',
-        description: 'إضاءة دافئة مريحة للعين تضفي طابعاً ساحراً على غرف النوم وغرف المعيشة.'
-      },
-      {
-        id: 'p10',
-        name: 'شمعة معطرة طبيعية برائحة العود واللافندر الفاخر',
-        category: 'شموع وروائح',
-        price: 190,
+        price: 430,
         oldPrice: null,
         isOffer: false,
         inStock: true,
         rating: 4.8,
-        image: 'https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&w=800&q=80',
-        description: 'شمعة صويا طبيعية تدوم طويلاً وتملأ المكان برائحة استرخاء هادئة.'
+        image: 'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&w=800&q=80',
+        description: 'إضاءة دافئة تضفي أجواء من الراحة والسكينة على غرفتك أو مكتبك.'
       }
     ];
 
     const DEFAULT_STORE_INFO = {
       name: 'Farafero Store',
       arabicName: 'فرفيرو ستور',
-      slogan: 'Gifts with Love',
+      slogan: 'Gifts with Love & Inspiration',
       phone: '01005187411',
       whatsapp: '201005187411',
       email: 'info@faraferostore.com',
@@ -212,7 +163,7 @@
       const [customBox, setCustomBox] = useState({
         boxStyle: 'بوكس ملكي أسود × ذهبي',
         mug: 'مج رخامي بغطاء ذهبي',
-        extra: 'شمعة عود وفانيليا',
+        extra: 'أجندة سبيس 2026',
         cardText: ''
       });
 
@@ -260,7 +211,7 @@
       const [editingProduct, setEditingProduct] = useState(null);
       const [newCouponForm, setNewCouponForm] = useState({ code: '', discountPercent: '' });
       const [newProductForm, setNewProductForm] = useState({
-        name: '', category: 'مجات وأكواب', price: '', oldPrice: '', isOffer: false, inStock: true, image: '', description: ''
+        name: '', category: 'أجندات ونوت بوك', price: '', oldPrice: '', isOffer: false, inStock: true, image: '', description: ''
       });
       const [tempAnnouncementInput, setTempAnnouncementInput] = useState(announcementText);
       const [tempShipping, setTempShipping] = useState(shippingRates);
@@ -328,7 +279,7 @@
         const customProduct = {
           id: `custom-${Date.now()}`,
           name: `بوكس هدية مخصص (${customBox.mug} + ${customBox.extra})`,
-          category: 'بوكسات هدايا',
+          category: 'بوكسات هدايا مخصصة',
           price: 520,
           inStock: true,
           image: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=800&q=80',
@@ -432,7 +383,7 @@
           showToast('تمت إضافة المنتج الجديد للمتجر');
         }
 
-        setNewProductForm({ name: '', category: categories[1] || 'مجات وأكواب', price: '', oldPrice: '', isOffer: false, inStock: true, image: '', description: '' });
+        setNewProductForm({ name: '', category: categories[1] || 'أجندات ونوت بوك', price: '', oldPrice: '', isOffer: false, inStock: true, image: '', description: '' });
       };
 
       const handleAddCoupon = (e) => {
@@ -712,7 +663,7 @@
                   <div className="flex items-center justify-between mb-8">
                     <div>
                       <h2 className="text-2xl font-black text-stone-900">🔥 عروض فرفيرو المميزة</h2>
-                      <p className="text-xs text-stone-500 mt-1">خصومات لفترة محدودة على أرقى الهدايا</p>
+                      <p className="text-xs text-stone-500 mt-1">خصومات لفترة محدودة على أرقى الهدايا والأجندات</p>
                     </div>
                     <button onClick={() => setCurrentPage('catalog')} className="text-xs font-bold text-rose-800 hover:underline">المزيد من العروض</button>
                   </div>
@@ -730,7 +681,7 @@
                       <span className="bg-white/20 text-white text-xs font-black px-4 py-1.5 rounded-full">خدمة حصرية</span>
                       <h3 className="text-2xl sm:text-4xl font-black">اصنع بوكس هديتك على ذوقك تماماً!</h3>
                       <p className="text-rose-100 text-xs sm:text-sm leading-relaxed">
-                        اختر شكل البوكس، المج المفضل، الهدية الإضافية (عطر، مكياج، دبدوب، ورد، أو إكسسوار)، واكتب رسالة الإهداء الخاصة بك لنقوم بتجهيزه وتغليفه بإتقان.
+                        اختر شكل البوكس، الأجندة أو المج المفضل، الهدية الإضافية، واكتب رسالة الإهداء الخاصة بك لنقوم بتجهيزه وتغليفه بإتقان.
                       </p>
                     </div>
                     <button 
@@ -771,13 +722,13 @@
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-stone-200 shadow-sm">
                   <div>
                     <h2 className="text-2xl font-black text-stone-900">كتالوج المنتجات</h2>
-                    <p className="text-xs text-stone-500 mt-1">اكتشف تشكيلتنا الواسعة من الهدايا والتحف والعطور</p>
+                    <p className="text-xs text-stone-500 mt-1">اكتشف تشكيلتنا الواسعة من الأجندات، الهدايا، والعطور</p>
                   </div>
                   
                   <div className="flex flex-wrap items-center gap-3">
                     <input 
                       type="text" 
-                      placeholder="ابحث عن هدية، برفان، مج..." 
+                      placeholder="ابحث عن أجندة، هدية، مج..." 
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="px-4 py-2.5 rounded-xl border border-stone-200 text-xs focus:outline-none focus:border-rose-800 w-full sm:w-64"
@@ -828,7 +779,7 @@
                   <div className="text-center space-y-2 mb-10">
                     <span className="bg-rose-50 text-rose-800 text-xs font-black px-4 py-1.5 rounded-full border border-rose-200">بوكس الهدايا المخصص</span>
                     <h2 className="text-3xl font-black text-stone-900">اصنع بوكس هديتك بنفسك 🎀</h2>
-                    <p className="text-xs text-stone-500 max-w-md mx-auto">قم بتخصيص محتويات البوكس واكتب رسالة الإهداء الخاصة بك لنقوم بتجهيزه بعناية فائقة.</p>
+                    <p className="text-xs text-stone-500 max-w-md mx-auto">قم بتخصيص محتويات البوكس والأجندة واكتب رسالة الإهداء الخاصة بك لنقوم بتجهيزه بعناية فائقة.</p>
                   </div>
 
                   <form onSubmit={addCustomBoxToCart} className="space-y-8">
@@ -848,7 +799,7 @@
                       </div>
 
                       <div className="space-y-2">
-                        <label className="text-xs font-extrabold text-stone-800">2. اختر المج أو الكوب الرئيسي:</label>
+                        <label className="text-xs font-extrabold text-stone-800">2. اختر الكوب أو المج:</label>
                         <select 
                           value={customBox.mug}
                           onChange={(e) => setCustomBox({...customBox, mug: e.target.value})}
@@ -861,17 +812,16 @@
                       </div>
 
                       <div className="space-y-2">
-                        <label className="text-xs font-extrabold text-stone-800">3. اختر الهدية الإضافية (عطر، مكياج، دبدوب، ورد...):</label>
+                        <label className="text-xs font-extrabold text-stone-800">3. اختر الأجندة أو النوت بوك أو الهدية الإضافية:</label>
                         <select 
                           value={customBox.extra}
                           onChange={(e) => setCustomBox({...customBox, extra: e.target.value})}
                           className="w-full p-3.5 rounded-2xl border border-stone-200 text-xs font-bold focus:outline-none focus:border-rose-800 bg-stone-50"
                         >
+                          <option value="أجندة سبيس 2026">أجندة سبيس 2026</option>
+                          <option value="نوت بوك Believe in your Dreams">نوت بوك Believe in your Dreams</option>
                           <option value="شمعة عود وفانيليا طبيعية">شمعة عود وفانيليا طبيعية</option>
                           <option value="عطر فرنسي مصغر فخم">عطر فرنسي مصغر فخم</option>
-                          <option value="دبدوب أحمر صغير لطيف">دبدوب أحمر صغير لطيف</option>
-                          <option value="سلسلة ستانلس ستيل مطلي ذهب">سلسلة ستانلس ستيل مطلي ذهب</option>
-                          <option value="بوكس ورد جوري صناعي دائم">بوكس ورد جوري صناعي دائم</option>
                         </select>
                       </div>
 
@@ -1223,7 +1173,7 @@
                             type="text" required
                             value={newProductForm.name}
                             onChange={(e) => setNewProductForm({...newProductForm, name: e.target.value})}
-                            placeholder="مثال: عطر فرنسي فاخر..."
+                            placeholder="مثال: أجندة 2026..."
                             className="w-full p-3 rounded-xl border border-stone-200 text-xs font-bold bg-stone-50"
                           />
                         </div>
@@ -1247,7 +1197,7 @@
                             type="number" required
                             value={newProductForm.price}
                             onChange={(e) => setNewProductForm({...newProductForm, price: e.target.value})}
-                            placeholder="350"
+                            placeholder="275"
                             className="w-full p-3 rounded-xl border border-stone-200 text-xs font-bold bg-stone-50"
                           />
                         </div>
@@ -1258,7 +1208,7 @@
                             type="number"
                             value={newProductForm.oldPrice}
                             onChange={(e) => setNewProductForm({...newProductForm, oldPrice: e.target.value})}
-                            placeholder="450"
+                            placeholder="350"
                             className="w-full p-3 rounded-xl border border-stone-200 text-xs font-bold bg-stone-50"
                           />
                         </div>
@@ -1744,7 +1694,7 @@
                   </div>
                   <h3 className="text-white font-black text-xl">{storeInfo.arabicName}</h3>
                 </div>
-                <p className="text-xs text-stone-400 leading-relaxed max-w-sm mx-auto md:mx-0">وجهتك الأولى لاختيار أرقى الهدايا والتحف العصرية وتغليفها بأعلى معايير الجودة والأناقة لصنع لحظات لا تُنسى.</p>
+                <p className="text-xs text-stone-400 leading-relaxed max-w-sm mx-auto md:mx-0">وجهتك الأولى لاختيار أرقى الهدايا، الأجندات العصرية والتحف وتغليفها بأعلى معايير الجودة والأناقة لصنع لحظات لا تُنسى.</p>
               </div>
 
               <div className="space-y-3">
@@ -1757,7 +1707,7 @@
               <div className="space-y-3">
                 <h4 className="text-white font-bold text-sm tracking-wider uppercase border-b border-stone-800 pb-2 inline-block">روابط سريعة</h4>
                 <div className="flex flex-col gap-2 text-xs">
-                  <button onClick={() => setCurrentPage('catalog')} className="text-stone-400 hover:text-rose-400 transition-colors text-right">المنتجات والعروض الفاخرة</button>
+                  <button onClick={() => setCurrentPage('catalog')} className="text-stone-400 hover:text-rose-400 transition-colors text-right">المنتجات والأجندات الفاخرة</button>
                   <button onClick={() => setCurrentPage('custombox')} className="text-stone-400 hover:text-rose-400 transition-colors text-right">تصميم بوكس هدايا مخصص 🎀</button>
                   <button onClick={() => setCurrentPage('admin-login')} className="text-amber-500 hover:text-amber-400 transition-colors text-right font-bold">لوحة تحكم الإدارة 🔐</button>
                 </div>
