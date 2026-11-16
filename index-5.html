@@ -49,7 +49,7 @@
                 <span id="cart-badge" class="absolute -top-2 -left-2 bg-gold text-slate-950 text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow-md">0</span>
             </button>
 
-            <!-- اسم اللوجو (يسحب سحابياً) -->
+            <!-- اسم اللوجو (مربوط تماماً بالسحابة) -->
             <div class="text-center cursor-pointer" onclick="filterCategory('الكل')">
                 <h1 id="brand-title-el" class="text-lg font-bold tracking-[4px] text-white font-cinzel leading-tight">FARAFERO</h1>
                 <p id="brand-sub-el" class="text-[8px] text-gold font-semibold tracking-[5px] uppercase font-montserrat">GIFT SHOP & BOUTIQUE</p>
@@ -61,7 +61,7 @@
         </div>
     </header>
 
-    <!-- HERO BANNER (يسحب سحابياً) -->
+    <!-- HERO BANNER (مربوط تماماً بالسحابة) -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 w-full">
         <div class="relative rounded-3xl overflow-hidden glass-card p-6 sm:p-10 border border-gold/30 text-center space-y-3 shadow-2xl">
             <div class="absolute -top-24 -right-24 w-48 h-48 bg-gold/10 rounded-full blur-3xl pointer-events-none"></div>
@@ -89,7 +89,7 @@
 
     <!-- FOOTER -->
     <footer class="bg-[#24040D] border-t border-gold/20 py-8 text-center text-xs text-slate-400 space-y-2 mt-12">
-        <p class="font-cinzel text-white tracking-widest font-bold">FARAFERO GIFT SHOP & BOUTIQUE</p>
+        <p id="footer-brand-el" class="font-cinzel text-white tracking-widest font-bold">FARAFERO GIFT SHOP & BOUTIQUE</p>
         <p class="text-[10px]">جميع الحقوق محفوظة © 2026 - تواصل فوري وسحابي آمن</p>
     </footer>
 
@@ -181,13 +181,13 @@
         };
 
         function initStore() {
-            // الاستماع الفوري لإعدادات اللوجو والنصوص من لوحة الإدارة
+            // الاستماع الفوري واللحظي لتحديثات الاسم والنصوص من سحابة Firebase
             db.collection("settings").doc("branding").onSnapshot((doc) => {
                 if (doc.exists) {
                     const d = doc.data();
                     if (d.logoTitle) {
                         document.getElementById('brand-title-el').innerText = d.logoTitle;
-                        document.getElementById('store-browser-title').innerText = d.logoTitle + " " + (d.logoSubtitle || "GIFT SHOP");
+                        document.getElementById('store-browser-title').innerText = d.logoTitle + " " + (d.logoSubtitle || "");
                     }
                     if (d.logoSubtitle) {
                         document.getElementById('brand-sub-el').innerText = d.logoSubtitle;
@@ -195,6 +195,10 @@
                     if (d.heroTag) document.getElementById('hero-tag-el').innerText = d.heroTag;
                     if (d.heroTitle) document.getElementById('hero-title-el').innerText = d.heroTitle;
                     if (d.heroSub) document.getElementById('hero-sub-el').innerText = d.heroSub;
+                    if (d.logoTitle) {
+                        const footerEl = document.getElementById('footer-brand-el');
+                        if(footerEl) footerEl.innerText = d.logoTitle + " " + (d.logoSubtitle || "");
+                    }
                 }
             });
 
