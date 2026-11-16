@@ -143,7 +143,7 @@
       }
     ];
 
-    const STORE_INFO = {
+    const DEFAULT_STORE_INFO = {
       name: 'Farafero Store',
       arabicName: 'فرفيرو ستور',
       slogan: 'Gifts with Love',
@@ -151,7 +151,10 @@
       whatsapp: '201005187411',
       email: 'info@faraferostore.com',
       address: 'الإسكندرية، مصر',
-      freeShippingThreshold: 1000
+      freeShippingThreshold: 1000,
+      heroBadge: '✨ تشكيلة هدايا 2026 الأصلية وصلت الآن',
+      heroTitle: 'هدايا استثنائية تصنع لحظات لا تُنسى',
+      heroDesc: 'في فرفيرو ستور جمعنالك أرقى المجان، الإضاءات الديكورية، الإكسسوارات الفاخرة، العطور ومستحضرات التجميل، والبوكسات الجاهزة بتغليف ملكي يليق بكل مناسباتك.'
     };
 
     function App() {
@@ -166,13 +169,19 @@
       const [quickViewProduct, setQuickViewProduct] = useState(null);
       const [quickViewQty, setQuickViewQty] = useState(1);
 
+      // Store Customization State
+      const [storeInfo, setStoreInfo] = useState(() => {
+        const saved = localStorage.getItem('farafero_store_info');
+        return saved ? JSON.parse(saved) : DEFAULT_STORE_INFO;
+      });
+
       // Announcement Banner State
       const [announcementText, setAnnouncementText] = useState(() => {
         const saved = localStorage.getItem('farafero_announcement');
         return saved !== null ? saved : '🎁 شحن مجاني للطلبات فوق 1000 ج.م • استخدم كود FARAFERO10 لخصم 10%';
       });
 
-      // Categories State (Editable from Admin)
+      // Categories State
       const [categories, setCategories] = useState(() => {
         const saved = localStorage.getItem('farafero_categories');
         return saved ? JSON.parse(saved) : DEFAULT_CATEGORIES;
@@ -237,6 +246,7 @@
       });
       const [tempAnnouncementInput, setTempAnnouncementInput] = useState(announcementText);
       const [tempShipping, setTempShipping] = useState(shippingRates);
+      const [tempStoreSettings, setTempStoreSettings] = useState(storeInfo);
 
       // Checkout Form
       const [checkoutForm, setCheckoutForm] = useState({
@@ -252,6 +262,7 @@
       useEffect(() => { localStorage.setItem('farafero_coupons', JSON.stringify(coupons)); }, [coupons]);
       useEffect(() => { localStorage.setItem('farafero_announcement', announcementText); }, [announcementText]);
       useEffect(() => { localStorage.setItem('farafero_categories', JSON.stringify(categories)); }, [categories]);
+      useEffect(() => { localStorage.setItem('farafero_store_info', JSON.stringify(storeInfo)); }, [storeInfo]);
 
       const showToast = (msg) => {
         setToast(msg);
@@ -327,7 +338,7 @@
       const cartSubtotal = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
       const cartCount = cart.reduce((sum, item) => sum + item.qty, 0);
       const discountAmount = appliedCoupon ? Math.round((cartSubtotal * appliedCoupon.discountPercent) / 100) : 0;
-      const isFreeShipping = cartSubtotal >= STORE_INFO.freeShippingThreshold;
+      const isFreeShipping = cartSubtotal >= storeInfo.freeShippingThreshold;
       const currentShippingCost = isFreeShipping ? 0 : (shippingRates[checkoutForm.governorate] || 0);
       const orderTotal = Math.max(0, cartSubtotal - discountAmount + currentShippingCost);
 
@@ -364,13 +375,13 @@
 
         const govNames = { alexandria: 'الإسكندرية', cairo: 'القاهرة والجيزة', other: 'باقي المحافظات' };
         const itemsText = cart.map(i => `- ${i.name} (×${i.qty}) = ${i.price * i.qty} ج.م`).join('%0A');
-        const waText = `مرحباً ${STORE_INFO.name}، أود تأكيد طلبي رقم ${newOrder.id}:%0A%0A*بيانات العميل:*%0Aالاسم: ${checkoutForm.name}%0Aالموبايل: ${checkoutForm.phone}%0Aالمحافظة: ${govNames[checkoutForm.governorate]}%0Aالعنوان: ${checkoutForm.address}%0A%0A*المنتجات المطلوبة:*%0A${itemsText}%0A%0A${discountAmount > 0 ? `الخصم: -${discountAmount} ج.م%0A` : ''}مصاريف الشحن: ${currentShippingCost === 0 ? 'مجاني 🎉' : `${currentShippingCost} ج.م`}%0A*الإجمالي الكلي: ${orderTotal} ج.م*`;
+        const waText = `مرحباً ${storeInfo.name}، أود تأكيد طلبي رقم ${newOrder.id}:%0A%0A*بيانات العميل:*%0Aالاسم: ${checkoutForm.name}%0Aالموبايل: ${checkoutForm.phone}%0Aالمحافظة: ${govNames[checkoutForm.governorate]}%0Aالعنوان: ${checkoutForm.address}%0A%0A*المنتجات المطلوبة:*%0A${itemsText}%0A%0A${discountAmount > 0 ? `الخصم: -${discountAmount} ج.م%0A` : ''}مصاريف الشحن: ${currentShippingCost === 0 ? 'مجاني 🎉' : `${currentShippingCost} ج.م`}%0A*الإجمالي الكلي: ${orderTotal} ج.م*`;
 
         setCart([]);
         setAppliedCoupon(null);
         setCurrentPage('home');
         showToast('🎉 تم تسجيل طلبك بنجاح! جاري تحويلك للواتساب...');
-        window.open(`https://wa.me/${STORE_INFO.whatsapp}?text=${waText}`, '_blank');
+        window.open(`https://wa.me/${storeInfo.whatsapp}?text=${waText}`, '_blank');
       };
 
       const handleAdminLogin = (e) => {
@@ -425,6 +436,12 @@
         e.preventDefault();
         setShippingRates(tempShipping);
         showToast('🚚 تم تحديث مصاريف الشحن بنجاح');
+      };
+
+      const handleUpdateStoreSettings = (e) => {
+        e.preventDefault();
+        setStoreInfo(tempStoreSettings);
+        showToast('⚙️ تم تحديث بيانات وإعدادات المتجر الرئيسية بنجاح');
       };
 
       const handleAddCategory = (e) => {
@@ -559,8 +576,8 @@
                   <span className="text-2xl">🎁</span>
                 </div>
                 <div>
-                  <h1 className="font-black text-xl text-stone-900 tracking-tight">{STORE_INFO.name}</h1>
-                  <p className="text-[10px] font-bold text-amber-700 tracking-wider uppercase">{STORE_INFO.slogan}</p>
+                  <h1 className="font-black text-xl text-stone-900 tracking-tight">{storeInfo.name}</h1>
+                  <p className="text-[10px] font-bold text-amber-700 tracking-wider uppercase">{storeInfo.slogan}</p>
                 </div>
               </div>
 
@@ -641,13 +658,13 @@
                   <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#d1d5db_1px,transparent_1px)] [background-size:16px_16px]"></div>
                   <div className="max-w-5xl mx-auto text-center relative z-10 space-y-6">
                     <span className="inline-block bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-black px-4 py-1.5 rounded-full">
-                      ✨ تشكيلة هدايا 2026 الأصلية وصلت الآن
+                      {storeInfo.heroBadge}
                     </span>
                     <h1 className="text-4xl sm:text-6xl font-black tracking-tight leading-tight">
-                      هدايا استثنائية تصنع <span className="text-amber-400">لحظات لا تُنسى</span>
+                      {storeInfo.heroTitle.split(' ').slice(0, -2).join(' ')} <span className="text-amber-400">{storeInfo.heroTitle.split(' ').slice(-2).join(' ')}</span>
                     </h1>
                     <p className="text-stone-300 text-sm sm:text-lg max-w-2xl mx-auto leading-relaxed">
-                      في {STORE_INFO.name} جمعنالك أرقى المجان، الإضاءات الديكورية، الإكسسوارات الفاخرة، العطور ومستحضرات التجميل، والبوكسات الجاهزة بتغليف ملكي يليق بكل مناسباتك.
+                      {storeInfo.heroDesc}
                     </p>
                     <div className="flex flex-wrap justify-center gap-4 pt-4">
                       <button 
@@ -928,8 +945,8 @@
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-stone-200 shadow-sm">
                   <div>
-                    <h2 className="text-2xl font-black text-stone-900">لوحة تحكم المتجر 🛠️</h2>
-                    <p className="text-xs text-stone-500 mt-1">إدارة المنتجات، الطلبات، الإعلانات، مصاريف الشحن والتصنيفات بكل سهولة</p>
+                    <h2 className="text-2xl font-black text-stone-900">لوحة تحكم المتجر الشاملة 🛠️</h2>
+                    <p className="text-xs text-stone-500 mt-1">التحكم المطلق في كل ركن، منتج، نص، وإعدادات في الموقع</p>
                   </div>
                   <button 
                     onClick={() => { setIsAdmin(false); setCurrentPage('home'); }}
@@ -946,6 +963,12 @@
                     className={`px-5 py-3 rounded-xl text-xs font-black transition-all ${adminTab === 'products' ? 'bg-stone-900 text-white' : 'bg-white text-stone-700 border border-stone-200'}`}
                   >
                     📦 المنتجات ({products.length})
+                  </button>
+                  <button 
+                    onClick={() => setAdminTab('store-settings')} 
+                    className={`px-5 py-3 rounded-xl text-xs font-black transition-all ${adminTab === 'store-settings' ? 'bg-stone-900 text-white' : 'bg-white text-stone-700 border border-stone-200'}`}
+                  >
+                    ⚙️ إعدادات ونصوص الموقع
                   </button>
                   <button 
                     onClick={() => setAdminTab('categories')} 
@@ -984,6 +1007,106 @@
                     🎟️ أكواد الخصم
                   </button>
                 </div>
+
+                {/* STORE SETTINGS TAB (Full Customization of Texts & Info) */}
+                {adminTab === 'store-settings' && (
+                  <div className="bg-white rounded-3xl border border-stone-200 p-8 space-y-6 max-w-3xl">
+                    <div>
+                      <h3 className="text-xl font-black text-stone-900">تعديل بيانات ونصوص الموقع بالكامل</h3>
+                      <p className="text-xs text-stone-500 mt-1">تحكم في اسم المتجر، السلوجان، أرقام التواصل، وعناوين الواجهة الرئيسية.</p>
+                    </div>
+
+                    <form onSubmit={handleUpdateStoreSettings} className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                      <div>
+                        <label className="text-xs font-bold text-stone-700 block mb-1">اسم المتجر (English):</label>
+                        <input 
+                          type="text" required
+                          value={tempStoreSettings.name}
+                          onChange={(e) => setTempStoreSettings({...tempStoreSettings, name: e.target.value})}
+                          className="w-full p-3.5 rounded-xl border border-stone-200 text-xs font-bold bg-stone-50"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-stone-700 block mb-1">اسم المتجر (العربي):</label>
+                        <input 
+                          type="text" required
+                          value={tempStoreSettings.arabicName}
+                          onChange={(e) => setTempStoreSettings({...tempStoreSettings, arabicName: e.target.value})}
+                          className="w-full p-3.5 rounded-xl border border-stone-200 text-xs font-bold bg-stone-50"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-stone-700 block mb-1">الشعار المختصر (Slogan):</label>
+                        <input 
+                          type="text" required
+                          value={tempStoreSettings.slogan}
+                          onChange={(e) => setTempStoreSettings({...tempStoreSettings, slogan: e.target.value})}
+                          className="w-full p-3.5 rounded-xl border border-stone-200 text-xs font-bold bg-stone-50"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-stone-700 block mb-1">رقم الهاتف / الواتساب:</label>
+                        <input 
+                          type="text" required
+                          value={tempStoreSettings.phone}
+                          onChange={(e) => setTempStoreSettings({...tempStoreSettings, phone: e.target.value, whatsapp: e.target.value})}
+                          className="w-full p-3.5 rounded-xl border border-stone-200 text-xs font-bold bg-stone-50"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-stone-700 block mb-1">العنوان:</label>
+                        <input 
+                          type="text" required
+                          value={tempStoreSettings.address}
+                          onChange={(e) => setTempStoreSettings({...tempStoreSettings, address: e.target.value})}
+                          className="w-full p-3.5 rounded-xl border border-stone-200 text-xs font-bold bg-stone-50"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-stone-700 block mb-1">البريد الإلكتروني:</label>
+                        <input 
+                          type="email" required
+                          value={tempStoreSettings.email}
+                          onChange={(e) => setTempStoreSettings({...tempStoreSettings, email: e.target.value})}
+                          className="w-full p-3.5 rounded-xl border border-stone-200 text-xs font-bold bg-stone-50"
+                        />
+                      </div>
+                      <div className="sm:col-span-2">
+                        <label className="text-xs font-bold text-stone-700 block mb-1">شارة الواجهة الرئيسية (Hero Badge):</label>
+                        <input 
+                          type="text" required
+                          value={tempStoreSettings.heroBadge}
+                          onChange={(e) => setTempStoreSettings({...tempStoreSettings, heroBadge: e.target.value})}
+                          className="w-full p-3.5 rounded-xl border border-stone-200 text-xs font-bold bg-stone-50"
+                        />
+                      </div>
+                      <div className="sm:col-span-2">
+                        <label className="text-xs font-bold text-stone-700 block mb-1">عنوان الواجهة الرئيسي (Hero Title):</label>
+                        <input 
+                          type="text" required
+                          value={tempStoreSettings.heroTitle}
+                          onChange={(e) => setTempStoreSettings({...tempStoreSettings, heroTitle: e.target.value})}
+                          className="w-full p-3.5 rounded-xl border border-stone-200 text-xs font-bold bg-stone-50"
+                        />
+                      </div>
+                      <div className="sm:col-span-2">
+                        <label className="text-xs font-bold text-stone-700 block mb-1">وصف الواجهة (Hero Description):</label>
+                        <textarea 
+                          rows="3" required
+                          value={tempStoreSettings.heroDesc}
+                          onChange={(e) => setTempStoreSettings({...tempStoreSettings, heroDesc: e.target.value})}
+                          className="w-full p-3.5 rounded-xl border border-stone-200 text-xs font-bold bg-stone-50"
+                        ></textarea>
+                      </div>
+
+                      <div className="sm:col-span-2">
+                        <button type="submit" className="bg-stone-900 hover:bg-rose-800 text-white font-black px-8 py-4 rounded-xl text-xs shadow-md">
+                          حفظ كافة إعدادات ونصوص الموقع ⚙️
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                )}
 
                 {/* CATEGORIES MANAGEMENT TAB */}
                 {adminTab === 'categories' && (
@@ -1640,16 +1763,16 @@
                   <div className="w-10 h-10 bg-gradient-to-tr from-rose-800 to-amber-600 rounded-xl flex items-center justify-center shadow">
                     <span className="text-xl">🎁</span>
                   </div>
-                  <h3 className="text-white font-black text-xl">{STORE_INFO.arabicName}</h3>
+                  <h3 className="text-white font-black text-xl">{storeInfo.arabicName}</h3>
                 </div>
                 <p className="text-xs text-stone-400 leading-relaxed max-w-sm mx-auto md:mx-0">وجهتك الأولى لاختيار أرقى الهدايا والتحف العصرية وتغليفها بأعلى معايير الجودة والأناقة لصنع لحظات لا تُنسى.</p>
               </div>
 
               <div className="space-y-3">
                 <h4 className="text-white font-bold text-sm tracking-wider uppercase border-b border-stone-800 pb-2 inline-block">تواصل معنا</h4>
-                <p className="text-xs text-stone-400">هاتف / واتساب: <span className="text-amber-400 font-bold">{STORE_INFO.phone}</span></p>
-                <p className="text-xs text-stone-400">العنوان: <span className="text-stone-300">{STORE_INFO.address}</span></p>
-                <p className="text-xs text-stone-400">البريد الإلكتروني: {STORE_INFO.email}</p>
+                <p className="text-xs text-stone-400">هاتف / واتساب: <span className="text-amber-400 font-bold">{storeInfo.phone}</span></p>
+                <p className="text-xs text-stone-400">العنوان: <span className="text-stone-300">{storeInfo.address}</span></p>
+                <p className="text-xs text-stone-400">البريد الإلكتروني: {storeInfo.email}</p>
               </div>
 
               <div className="space-y-3">
@@ -1664,7 +1787,7 @@
             </div>
             
             <div className="max-w-7xl mx-auto border-t border-stone-800/60 mt-12 pt-6 text-center text-xs text-stone-500">
-              جميع الحقوق محفوطة © 2026 {STORE_INFO.name} • تم التصميم والتطوير بعناية فائقة 💖
+              جميع الحقوق محفوطة © 2026 {storeInfo.name} • تم التصميم والتطوير بعناية فائقة 💖
             </div>
           </footer>
 
