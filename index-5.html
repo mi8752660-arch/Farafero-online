@@ -1,1141 +1,366 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Farafero Store | فرفيرو للهدايا والتحف العصرية</title>
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts Cairo -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <style>
-    body { font-family: 'Cairo', sans-serif; }
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: #f5f5f4; }
-    ::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 3px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FARAFERO GIFT SHOP - المتجر الإلكتروني</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&family=Cinzel:wght@500;600;700&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Cairo', 'sans-serif'], cinzel: ['Cinzel', 'serif'], montserrat: ['Montserrat', 'sans-serif'] },
+                    colors: { gold: '#C5A059' }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Cairo', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #C5A059; border-radius: 4px; }
+    </style>
 </head>
-<body class="bg-stone-50 text-stone-900 antialiased min-h-screen flex flex-col selection:bg-rose-800 selection:text-white">
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col pb-16" dir="rtl">
 
-  <div id="root"></div>
-
-  <!-- React, ReactDOM, Babel & Lucide Icons -->
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
-
-  <script type="text/babel">
-    const { useState, useEffect } = React;
-
-    const INITIAL_CATEGORIES = [
-      'الكل',
-      'مجات وأكواب',
-      'إضاءات وديكور',
-      'إكسسوارات وساعات',
-      'شموع وروائح',
-      'بوكسات هدايا'
-    ];
-
-    const INITIAL_PRODUCTS = [
-      {
-        id: 'p1',
-        name: 'مج حراري بتصميم رخامي فاخر وغطاء ذهبي',
-        category: 'مجات وأكواب',
-        price: 220,
-        oldPrice: 280,
-        isOffer: true,
-        inStock: true,
-        image: 'https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?auto=format&fit=crop&w=800&q=80',
-        description: 'مج سيراميك فاخر يحافظ على حرارة المشروبات لأطول فترة مع ملعقة ذهبية أنيقة.'
-      },
-      {
-        id: 'p2',
-        name: 'أباجورة أكريليك مضيئة ثلاثية الأبعاد بتصميم رومانسى',
-        category: 'إضاءات وديكور',
-        price: 350,
-        oldPrice: null,
-        isOffer: false,
-        inStock: true,
-        image: 'https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?auto=format&fit=crop&w=800&q=80',
-        description: 'إضاءة ليلية دافئة بقاعدة خشبية طبيعية تضيف لمسة ساحرة ومميزة لغرفتك.'
-      },
-      {
-        id: 'p3',
-        name: 'بوكس السعادة المتكامل للهدايا الملكية',
-        category: 'بوكسات هدايا',
-        price: 650,
-        oldPrice: 800,
-        isOffer: true,
-        inStock: true,
-        image: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=800&q=80',
-        description: 'بوكس هدايا فخم يضم شمعة معطرة، مج، إكسسوارات، وكرت إهداء بتغليف ملكي.'
-      },
-      {
-        id: 'p4',
-        name: 'طقم إكسسوارات ستانلس ستيل مطلي الذهب الأصلي',
-        category: 'إكسسوارات وساعات',
-        price: 290,
-        oldPrice: null,
-        isOffer: false,
-        inStock: true,
-        image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80',
-        description: 'سلسلة وأسورة مضادة للماء ومقاومة لتغير اللون مع علبة قطيفة فاخرة.'
-      },
-      {
-        id: 'p5',
-        name: 'شمعة صويا طبيعية معطرة برائحة العود والفانيليا',
-        category: 'شموع وروائح',
-        price: 185,
-        oldPrice: 230,
-        isOffer: true,
-        inStock: true,
-        image: 'https://images.unsplash.com/photo-1602874801007-bd458bb1b8b6?auto=format&fit=crop&w=800&q=80',
-        description: 'شمعة طبيعية صديقة للبيئة تدوم لأكثر من 35 ساعة في برطمان زجاجي أنيق.'
-      },
-      {
-        id: 'p6',
-        name: 'ساعة يد كلاسيكية نسائية بسوار جلدي راقي',
-        category: 'إكسسوارات وساعات',
-        price: 490,
-        oldPrice: null,
-        isOffer: false,
-        inStock: true,
-        image: 'https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=800&q=80',
-        description: 'تصميم عصري وجذاب يناسب جميع المناسبات الرسمية والكاجوال مع ضمان سنة.'
-      }
-    ];
-
-    const STORE_INFO = {
-      name: 'Farafero Store',
-      arabicName: 'فرفيرو ستور',
-      slogan: 'Gifts with Love',
-      phone: '01005187411',
-      whatsapp: '201005187411',
-      email: 'info@faraferostore.com',
-      address: 'الإسكندرية، مصر'
-    };
-
-    function App() {
-      const [currentPage, setCurrentPage] = useState('home');
-      const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-      const [cartOpen, setCartOpen] = useState(false);
-      const [selectedCategory, setSelectedCategory] = useState('الكل');
-      const [searchQuery, setSearchQuery] = useState('');
-      const [toast, setToast] = useState(null);
-
-      // Persistent Storage
-      const [products, setProducts] = useState(() => {
-        const saved = localStorage.getItem('farafero_products');
-        return saved ? JSON.parse(saved) : INITIAL_PRODUCTS;
-      });
-
-      const [cart, setCart] = useState(() => {
-        const saved = localStorage.getItem('farafero_cart');
-        return saved ? JSON.parse(saved) : [];
-      });
-
-      const [orders, setOrders] = useState(() => {
-        const saved = localStorage.getItem('farafero_orders');
-        return saved ? JSON.parse(saved) : [];
-      });
-
-      const [customers, setCustomers] = useState(() => {
-        const saved = localStorage.getItem('farafero_customers');
-        return saved ? JSON.parse(saved) : [];
-      });
-
-      const [shippingRates, setShippingRates] = useState(() => {
-        const saved = localStorage.getItem('farafero_shipping');
-        return saved ? JSON.parse(saved) : { alexandria: 45, cairo: 65, other: 85 };
-      });
-
-      // Admin State
-      const [isAdmin, setIsAdmin] = useState(false);
-      const [adminPasswordInput, setAdminPasswordInput] = useState('');
-      const [adminTab, setAdminTab] = useState('products');
-      const [editingProduct, setEditingProduct] = useState(null);
-      const [newProductForm, setNewProductForm] = useState({
-        name: '', category: 'مجات وأكواب', price: '', oldPrice: '', isOffer: false, inStock: true, image: '', description: ''
-      });
-
-      // Checkout Form
-      const [checkoutForm, setCheckoutForm] = useState({
-        name: '', phone: '', governorate: 'alexandria', address: '', paymentMethod: 'cod', notes: ''
-      });
-
-      useEffect(() => { localStorage.setItem('farafero_products', JSON.stringify(products)); }, [products]);
-      useEffect(() => { localStorage.setItem('farafero_cart', JSON.stringify(cart)); }, [cart]);
-      useEffect(() => { localStorage.setItem('farafero_orders', JSON.stringify(orders)); }, [orders]);
-      useEffect(() => { localStorage.setItem('farafero_customers', JSON.stringify(customers)); }, [customers]);
-      useEffect(() => { localStorage.setItem('farafero_shipping', JSON.stringify(shippingRates)); }, [shippingRates]);
-
-      const showToast = (msg) => {
-        setToast(msg);
-        setTimeout(() => setToast(null), 3500);
-      };
-
-      const addToCart = (product) => {
-        if (!product.inStock) return;
-        setCart(prev => {
-          const existing = prev.find(item => item.id === product.id);
-          if (existing) {
-            return prev.map(item => item.id === product.id ? { ...item, qty: item.qty + 1 } : item);
-          }
-          return [...prev, { ...product, qty: 1 }];
-        });
-        showToast(`✨ تمت إضافة "${product.name}" إلى سلة المشتريات`);
-      };
-
-      const updateCartQty = (id, delta) => {
-        setCart(prev => prev.map(item => item.id === id ? { ...item, qty: item.qty + delta } : item).filter(item => item.qty > 0));
-      };
-
-      const cartSubtotal = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
-      const cartCount = cart.reduce((sum, item) => sum + item.qty, 0);
-      const currentShippingCost = shippingRates[checkoutForm.governorate] || 0;
-      const orderTotal = cartSubtotal + currentShippingCost;
-
-      const handlePlaceOrder = (e) => {
-        e.preventDefault();
-        if (cart.length === 0) return;
-
-        const newOrder = {
-          id: `ORD-${Date.now().toString().slice(-6)}`,
-          date: new Date().toLocaleDateString('ar-EG'),
-          customerName: checkoutForm.name,
-          phone: checkoutForm.phone,
-          governorate: checkoutForm.governorate,
-          address: checkoutForm.address,
-          paymentMethod: checkoutForm.paymentMethod,
-          notes: checkoutForm.notes,
-          items: cart,
-          subtotal: cartSubtotal,
-          shipping: currentShippingCost,
-          total: orderTotal,
-          status: 'قيد المراجعة'
-        };
-
-        setOrders(prev => [newOrder, ...prev]);
-
-        // Auto save customer record upon order creation
-        setCustomers(prev => {
-          const exists = prev.find(c => c.phone === checkoutForm.phone);
-          if (exists) {
-            return prev.map(c => c.phone === checkoutForm.phone ? { ...c, ordersCount: c.ordersCount + 1, totalSpent: c.totalSpent + orderTotal } : c);
-          }
-          return [{ id: `CUST-${Date.now().toString().slice(-5)}`, name: checkoutForm.name, phone: checkoutForm.phone, address: checkoutForm.address, ordersCount: 1, totalSpent: orderTotal }, ...prev];
-        });
-
-        const govNames = { alexandria: 'الإسكندرية', cairo: 'القاهرة والجيزة', other: 'باقي المحافظات' };
-        const itemsText = cart.map(i => `- ${i.name} (×${i.qty}) = ${i.price * i.qty} ج.م`).join('%0A');
-        const waText = `مرحباً ${STORE_INFO.name}، أود تأكيد طلبي رقم ${newOrder.id}:%0A%0A*بيانات العميل:*%0Aالاسم: ${checkoutForm.name}%0Aالموبايل: ${checkoutForm.phone}%0Aالمحافظة: ${govNames[checkoutForm.governorate]}%0Aالعنوان: ${checkoutForm.address}%0A%0A*المنتجات المطلوبة:*%0A${itemsText}%0A%0Aمصاريف الشحن: ${currentShippingCost} ج.م%0A*الإجمالي الكلي: ${orderTotal} ج.م*`;
-
-        setCart([]);
-        setCurrentPage('home');
-        showToast('🎉 تم تسجيل طلبك بنجاح! جاري تحويلك للواتساب...');
-        window.open(`https://wa.me/${STORE_INFO.whatsapp}?text=${waText}`, '_blank');
-      };
-
-      const handleAdminLogin = (e) => {
-        e.preventDefault();
-        if (adminPasswordInput === 'farafero2026') {
-          setIsAdmin(true);
-          setCurrentPage('admin');
-          setAdminPasswordInput('');
-          showToast('🔐 تم تسجيل الدخول للوحة التحكم بنجاح');
-        } else {
-          showToast('❌ كلمة المرور غير صحيحة');
-        }
-      };
-
-      const handleSaveProduct = (e) => {
-        e.preventDefault();
-        const productData = {
-          ...newProductForm,
-          price: Number(newProductForm.price),
-          oldPrice: newProductForm.oldPrice ? Number(newProductForm.oldPrice) : null,
-          image: newProductForm.image || 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=800&q=80'
-        };
-
-        if (editingProduct) {
-          setProducts(prev => prev.map(p => p.id === editingProduct.id ? { ...productData, id: p.id } : p));
-          setEditingProduct(null);
-          showToast('تم تحديث المنتج بنجاح');
-        } else {
-          setProducts(prev => [{ ...productData, id: `p-${Date.now()}` }, ...prev]);
-          showToast('تمت إضافة المنتج الجديد للمتجر');
-        }
-
-        setNewProductForm({ name: '', category: 'مجات وأكواب', price: '', oldPrice: '', isOffer: false, inStock: true, image: '', description: '' });
-      };
-
-      const startEditProduct = (p) => {
-        setEditingProduct(p);
-        setNewProductForm({ name: p.name, category: p.category, price: p.price, oldPrice: p.oldPrice || '', isOffer: p.isOffer, inStock: p.inStock, image: p.image, description: p.description });
-      };
-
-      const deleteProduct = (id) => {
-        setProducts(prev => prev.filter(p => p.id !== id));
-        showToast('تم حذف المنتج من المتجر');
-      };
-
-      const updateOrderStatus = (orderId, newStatus) => {
-        setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
-        showToast('تم تحديث حالة الطلب');
-      };
-
-      const filteredProducts = products.filter(p => {
-        const matchesCat = selectedCategory === 'الكل' || p.category === selectedCategory;
-        const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.category.toLowerCase().includes(searchQuery.toLowerCase());
-        return matchesCat && matchesSearch;
-      });
-
-      const offerProducts = products.filter(p => p.isOffer);
-
-      const ProductCard = ({ product }) => (
-        <div className="group bg-white rounded-3xl border border-stone-200 overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 flex flex-col">
-          <div className="relative aspect-square overflow-hidden bg-stone-100">
-            <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-            {product.isOffer && (
-              <span className="absolute top-3 right-3 bg-rose-700 text-white text-xs font-extrabold px-3.5 py-1.5 rounded-full shadow-md">
-                ✨ عرض خاص
-              </span>
-            )}
-            <span className={`absolute top-3 left-3 text-xs font-bold px-3 py-1 rounded-full ${product.inStock ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-stone-200 text-stone-600'}`}>
-              {product.inStock ? 'in stock' : 'غير متاح'}
-            </span>
-          </div>
-
-          <div className="p-5 flex-1 flex flex-col justify-between">
-            <div>
-              <span className="text-xs text-amber-700 font-bold tracking-wide">{product.category}</span>
-              <h3 className="font-extrabold text-stone-900 text-base mt-1.5 line-clamp-1">{product.name}</h3>
-              <p className="text-xs text-stone-500 mt-1 line-clamp-2 leading-relaxed">{product.description}</p>
-            </div>
-
-            <div className="mt-5 pt-4 border-t border-stone-100 flex items-center justify-between">
-              <div>
-                <span className="text-lg font-black text-rose-800">{product.price} ج.م</span>
-                {product.oldPrice && <span className="text-xs text-stone-400 line-through mr-2 font-medium">{product.oldPrice} ج.م</span>}
-              </div>
-
-              <button 
-                onClick={() => addToCart(product)} 
-                disabled={!product.inStock} 
-                className="bg-stone-900 hover:bg-rose-800 disabled:bg-stone-200 text-white px-4 py-2.5 rounded-2xl text-xs font-bold transition-all shadow hover:shadow-lg active:scale-95"
-              >
-                أضف للسلة 🛍️
-              </button>
-            </div>
-          </div>
-        </div>
-      );
-
-      return (
-        <div className="min-h-screen flex flex-col bg-stone-50 text-stone-900">
-          {/* Toast Notification */}
-          {toast && (
-            <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-stone-900 text-white px-6 py-3.5 rounded-2xl shadow-2xl text-sm font-bold flex items-center gap-2 border border-stone-700 animate-bounce">
-              {toast}
-            </div>
-          )}
-
-          {/* Header */}
-          <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-200/80 shadow-xs">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-              <button onClick={() => setCurrentPage('home')} className="flex items-center gap-3 text-right group">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-rose-800 to-amber-600 flex items-center justify-center text-white shadow-md text-xl group-hover:scale-105 transition-transform">
-                  🎁
+    <!-- TOP HEADER -->
+    <header class="bg-white/90 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center space-x-3 space-x-reverse">
+                <div class="w-12 h-12 flex items-center justify-center bg-white rounded-2xl border border-gold/40 shadow-sm p-1">
+                    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+                        <path d="M50 32C42 22 30 22 33 32C35.5 38.5 48 35 50 32Z" stroke="#C5A059" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M50 32C58 22 70 22 67 32C64.5 38.5 52 35 50 32Z" stroke="#C5A059" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                        <rect x="25" y="32" width="50" height="12" fill="white" stroke="#C5A059" stroke-width="3" stroke-linejoin="round"/>
+                        <rect x="28" y="44" width="44" height="34" fill="white" stroke="#C5A059" stroke-width="3" stroke-linejoin="round"/>
+                        <line x1="50" y1="32" x2="50" y2="78" stroke="#C5A059" stroke-width="3"/>
+                    </svg>
                 </div>
                 <div>
-                  <div className="text-xl font-black tracking-tight text-stone-900 leading-none">{STORE_INFO.name}</div>
-                  <div className="text-[11px] font-bold text-amber-700 tracking-widest uppercase mt-1">{STORE_INFO.slogan}</div>
+                    <h1 class="text-base font-bold tracking-[3px] text-slate-900 leading-tight font-cinzel">FARAFERO</h1>
+                    <p class="text-[9px] text-gold font-semibold tracking-[4px] uppercase font-montserrat">GIFT SHOP</p>
                 </div>
-              </button>
-
-              <nav className="hidden md:flex items-center gap-8 text-sm font-bold">
-                {[
-                  { id: 'home', label: 'الرئيسية' },
-                  { id: 'shop', label: 'المتجر' },
-                  { id: 'offers', label: 'العروض' },
-                  { id: 'about', label: 'من نحن' },
-                  { id: 'contact', label: 'تواصل معنا' }
-                ].map((link) => (
-                  <button 
-                    key={link.id} 
-                    onClick={() => setCurrentPage(link.id)} 
-                    className={`transition-all py-1 ${currentPage === link.id ? 'text-rose-800 border-b-2 border-rose-800 font-black' : 'text-stone-600 hover:text-rose-800'}`}
-                  >
-                    {link.label}
-                  </button>
-                ))}
-              </nav>
-
-              <div className="flex items-center gap-3">
-                <button 
-                  onClick={() => setCartOpen(true)} 
-                  className="relative p-3 rounded-2xl bg-stone-100 hover:bg-rose-50 text-stone-700 hover:text-rose-800 transition-all shadow-xs"
-                >
-                  🛒
-                  {cartCount > 0 && (
-                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-rose-800 text-white text-[11px] font-black rounded-full flex items-center justify-center shadow">
-                      {cartCount}
-                    </span>
-                  )}
-                </button>
-                <button 
-                  onClick={() => setCurrentPage(isAdmin ? 'admin' : 'admin-login')} 
-                  title="لوحة التحكم" 
-                  className={`p-3 rounded-2xl transition-all shadow-xs ${isAdmin ? 'bg-rose-800 text-white' : 'bg-stone-100 hover:bg-stone-200 text-stone-700'}`}
-                >
-                  🔒
-                </button>
-                <button 
-                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
-                  className="md:hidden p-3 rounded-2xl bg-stone-100 text-stone-700 font-bold"
-                >
-                  ☰
-                </button>
-              </div>
             </div>
 
-            {/* Mobile Menu Dropdown */}
-            {mobileMenuOpen && (
-              <div className="md:hidden bg-white border-t border-stone-100 px-4 py-4 space-y-2 shadow-xl">
-                {[
-                  { id: 'home', label: 'الرئيسية' },
-                  { id: 'shop', label: 'المتجر' },
-                  { id: 'offers', label: 'العروض' },
-                  { id: 'about', label: 'من نحن' },
-                  { id: 'contact', label: 'تواصل معنا' }
-                ].map((link) => (
-                  <button 
-                    key={link.id} 
-                    onClick={() => { setCurrentPage(link.id); setMobileMenuOpen(false); }} 
-                    className="block w-full text-right px-4 py-3 rounded-xl text-sm font-bold text-stone-700 hover:bg-rose-50 hover:text-rose-800"
-                  >
-                    {link.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </header>
-
-          {/* Main Content Area */}
-          <main className="flex-1">
-            {currentPage === 'home' && (
-              <div>
-                {/* Hero Banner */}
-                <section className="bg-gradient-to-bl from-rose-950 via-stone-900 to-stone-900 text-white relative overflow-hidden">
-                  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28 grid md:grid-cols-2 gap-12 items-center">
-                    <div className="space-y-6">
-                      <div className="inline-flex items-center gap-2 bg-white/10 border border-white/15 px-4 py-2 rounded-full text-amber-300 text-xs font-extrabold shadow">
-                        ✨ تشكيلة هدايا 2026 الأصلية وصلت الآن
-                      </div>
-                      <h1 className="text-4xl sm:text-6xl font-black leading-tight">
-                        هدايا استثنائية تصنع <span className="text-amber-400">لحظات لا تُنسى</span>
-                      </h1>
-                      <p className="text-stone-300 text-base sm:text-lg leading-relaxed max-w-xl">
-                        في {STORE_INFO.name} جمعنالك أرقى المجات، الإضاءات الديكورية، الإكسسوارات الفاخرة، وبوكسات الهدايا الجاهزة بتغليف ملكي يليق بكل مناسباتك.
-                      </p>
-                      <div className="flex flex-wrap gap-4 pt-4">
-                        <button 
-                          onClick={() => setCurrentPage('shop')} 
-                          className="bg-rose-700 hover:bg-rose-600 text-white px-8 py-4 rounded-2xl font-black text-sm shadow-xl transition-all hover:scale-105"
-                        >
-                          تسوق المنتجات الآن 🛍️
-                        </button>
-                        <button 
-                          onClick={() => setCurrentPage('offers')} 
-                          className="bg-white/10 hover:bg-white/20 border border-white/20 text-white px-8 py-4 rounded-2xl font-black text-sm transition-all backdrop-blur-xs"
-                        >
-                          اكتشف العروض والخصومات 🔥
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="relative">
-                      <img 
-                        src="https://images.unsplash.com/photo-1513885535751-8b9238bd345a?auto=format&fit=crop&w=900&q=80" 
-                        alt="هدايا فرفيرو ستور" 
-                        className="rounded-3xl shadow-2xl border border-white/10 w-full h-80 md:h-[420px] object-cover" 
-                      />
-                    </div>
-                  </div>
-                </section>
-
-                {/* Features Bar */}
-                <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-10">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                    {[
-                      { title: 'تغليف هدايا ملكي فاخر', desc: 'تجهيز وتغليف أنيق جاهز للتقديم مباشرة', icon: '🎁' },
-                      { title: 'شحن سريع لجميع المحافظات', desc: 'توصيل آمن وسريع لباب البيت', icon: '🚀' },
-                      { title: 'جودة مضمونة ومعاينة', desc: 'معاينة المنتج مع المندوب بكل اطمئنان', icon: '🛡️' }
-                    ].map((feat, idx) => (
-                      <div key={idx} className="bg-white p-6 rounded-3xl shadow-xl border border-stone-100 flex items-center gap-4">
-                        <div className="w-14 h-14 rounded-2xl bg-rose-50 text-rose-800 flex items-center justify-center text-2xl shrink-0 shadow-inner">
-                          {feat.icon}
-                        </div>
-                        <div>
-                          <h3 className="font-extrabold text-stone-900 text-sm">{feat.title}</h3>
-                          <p className="text-xs text-stone-500 mt-1">{feat.desc}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-
-                {/* Featured Section */}
-                <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-                  <div className="flex items-center justify-between mb-10">
-                    <div>
-                      <h2 className="text-3xl font-black text-stone-900">أحدث الهدايا المختارة</h2>
-                      <p className="text-sm text-stone-500 mt-1">قطع مميزة تم اختيارها بعناية لتناسب كل الأذواق</p>
-                    </div>
-                    <button 
-                      onClick={() => setCurrentPage('shop')} 
-                      className="text-rose-800 font-extrabold text-sm hover:underline flex items-center gap-1"
-                    >
-                      عرض الكل ←
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {products.slice(0, 6).map(product => <ProductCard key={product.id} product={product} />)}
-                  </div>
-                </section>
-              </div>
-            )}
-
-            {currentPage === 'shop' && (
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
-                  <div>
-                    <h1 className="text-3xl font-black text-stone-900">متجر الهدايا والتحف</h1>
-                    <p className="text-sm text-stone-500 mt-1">تصفح كافة المنتجات المتاحة واطلبها بضغطة زر</p>
-                  </div>
-                  <div className="relative w-full md:w-80">
-                    <input 
-                      type="text" 
-                      placeholder="ابحث عن اسم الهدية أو القسم..." 
-                      value={searchQuery} 
-                      onChange={(e) => setSearchQuery(e.target.value)} 
-                      className="w-full bg-white border border-stone-200 rounded-2xl px-5 py-3.5 text-sm shadow-xs focus:outline-none focus:border-rose-800" 
-                    />
-                  </div>
-                </div>
-
-                {/* Categories */}
-                <div className="flex items-center gap-3 overflow-x-auto pb-6 mb-8">
-                  {INITIAL_CATEGORIES.map(cat => (
-                    <button 
-                      key={cat} 
-                      onClick={() => setSelectedCategory(cat)} 
-                      className={`px-6 py-3 rounded-2xl text-xs font-black whitespace-nowrap transition-all shadow-xs ${selectedCategory === cat ? 'bg-rose-800 text-white shadow-md scale-105' : 'bg-white text-stone-600 border border-stone-200 hover:bg-stone-100'}`}
-                    >
-                      {cat}
-                    </button>
-                  ))}
-                </div>
-
-                {filteredProducts.length === 0 ? (
-                  <div className="bg-white p-16 rounded-3xl border border-stone-200 text-center space-y-3">
-                    <p className="text-stone-500 font-bold text-base">عذراً، لا توجد منتجات مطابقة لبحثك.</p>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {filteredProducts.map(product => <ProductCard key={product.id} product={product} />)}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {currentPage === 'offers' && (
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                <div className="bg-gradient-to-l from-rose-900 to-amber-700 text-white rounded-3xl p-10 mb-10 shadow-xl">
-                  <div className="inline-block bg-white/20 px-4 py-1.5 rounded-full text-xs font-extrabold mb-3">🔥 أقوى الخصومات</div>
-                  <h1 className="text-3xl sm:text-4xl font-black">عروض وباقات {STORE_INFO.name}</h1>
-                  <p className="text-rose-100 text-sm sm:text-base mt-2 max-w-2xl">
-                    استفد بالعروض الحصرية على بوكسات الهدايا والمجات والشموع المخفضة لفترة محدودة.
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {offerProducts.map(product => <ProductCard key={product.id} product={product} />)}
-                </div>
-              </div>
-            )}
-
-            {currentPage === 'checkout' && (
-              <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                <h1 className="text-3xl font-black text-stone-900 mb-8">إتمام وتأكيد الطلب</h1>
-
-                {cart.length === 0 ? (
-                  <div className="bg-white p-16 rounded-3xl border border-stone-200 text-center space-y-4 shadow-sm">
-                    <p className="text-stone-500 font-bold">سلة المشتريات فارغة حالياً.</p>
-                    <button 
-                      onClick={() => setCurrentPage('shop')} 
-                      className="bg-rose-800 text-white px-8 py-3.5 rounded-2xl text-sm font-black shadow-lg"
-                    >
-                      العودة للمتجر والتسوق
-                    </button>
-                  </div>
-                ) : (
-                  <div className="grid md:grid-cols-5 gap-8">
-                    <form onSubmit={handlePlaceOrder} className="md:col-span-3 bg-white p-8 rounded-3xl border border-stone-200 shadow-sm space-y-5">
-                      <h2 className="font-extrabold text-lg text-stone-900 border-b border-stone-100 pb-4">
-                        📍 بيانات التوصيل والشحن
-                      </h2>
-
-                      <div>
-                        <label className="block text-xs font-black text-stone-700 mb-1.5">الاسم بالكامل *</label>
-                        <input 
-                          required 
-                          type="text" 
-                          value={checkoutForm.name} 
-                          onChange={(e) => setCheckoutForm({ ...checkoutForm, name: e.target.value })} 
-                          className="w-full bg-stone-50 border border-stone-200 rounded-2xl px-4 py-3.5 text-sm focus:outline-none focus:border-rose-800" 
-                          placeholder="اكتب اسمك الثلاثي" 
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-black text-stone-700 mb-1.5">رقم الموبايل (واتساب) *</label>
-                        <input 
-                          required 
-                          type="tel" 
-                          value={checkoutForm.phone} 
-                          onChange={(e) => setCheckoutForm({ ...checkoutForm, phone: e.target.value })} 
-                          className="w-full bg-stone-50 border border-stone-200 rounded-2xl px-4 py-3.5 text-sm focus:outline-none focus:border-rose-800" 
-                          placeholder="01xxxxxxxxx" 
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-black text-stone-700 mb-1.5">المحافظة *</label>
-                        <select 
-                          value={checkoutForm.governorate} 
-                          onChange={(e) => setCheckoutForm({ ...checkoutForm, governorate: e.target.value })} 
-                          className="w-full bg-stone-50 border border-stone-200 rounded-2xl px-4 py-3.5 text-sm font-bold focus:outline-none focus:border-rose-800"
-                        >
-                          <option value="alexandria">الإسكندرية ({shippingRates.alexandria} ج.م)</option>
-                          <option value="cairo">القاهرة والجيزة ({shippingRates.cairo} ج.م)</option>
-                          <option value="other">باقي المحافظات ({shippingRates.other} ج.م)</option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-black text-stone-700 mb-1.5">العنوان بالتفصيل *</label>
-                        <textarea 
-                          required 
-                          rows="3" 
-                          value={checkoutForm.address} 
-                          onChange={(e) => setCheckoutForm({ ...checkoutForm, address: e.target.value })} 
-                          className="w-full bg-stone-50 border border-stone-200 rounded-2xl px-4 py-3.5 text-sm focus:outline-none focus:border-rose-800" 
-                          placeholder="المنطقة، اسم الشارع، رقم العمارة، الشقة..."
-                        ></textarea>
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-black text-stone-700 mb-1.5">ملاحظات إضافية أو كارت إهداء</label>
-                        <input 
-                          type="text" 
-                          value={checkoutForm.notes} 
-                          onChange={(e) => setCheckoutForm({ ...checkoutForm, notes: e.target.value })} 
-                          className="w-full bg-stone-50 border border-stone-200 rounded-2xl px-4 py-3.5 text-sm focus:outline-none focus:border-rose-800" 
-                          placeholder="اكتب جملة الإهداء لو تحب نكتبها في كارت مع الهدية" 
-                        />
-                      </div>
-
-                      <button 
-                        type="submit" 
-                        className="w-full bg-rose-800 hover:bg-rose-700 text-white py-4 rounded-2xl font-black text-base shadow-xl transition-all"
-                      >
-                        تأكيد الطلب وإرساله عبر واتساب ({orderTotal} ج.م) 📲
-                      </button>
-                    </form>
-
-                    {/* Summary Sidebar */}
-                    <div className="md:col-span-2 bg-white p-8 rounded-3xl border border-stone-200 shadow-sm h-fit space-y-5">
-                      <h2 className="font-extrabold text-lg text-stone-900 border-b border-stone-100 pb-4">
-                        📦 ملخص الطلب
-                      </h2>
-
-                      <div className="space-y-3 max-h-72 overflow-y-auto">
-                        {cart.map(item => (
-                          <div key={item.id} className="flex justify-between text-sm py-1">
-                            <span className="text-stone-700">
-                              {item.name} <strong className="text-rose-800">×{item.qty}</strong>
-                            </span>
-                            <span className="font-extrabold">{item.price * item.qty} ج.م</span>
-                          </div>
-                        ))}
-                      </div>
-
-                      <div className="border-t border-stone-100 pt-4 space-y-3 text-sm">
-                        <div className="flex justify-between text-stone-500 font-bold">
-                          <span>المجموع الفرعي</span>
-                          <span>{cartSubtotal} ج.م</span>
-                        </div>
-                        <div className="flex justify-between text-stone-500 font-bold">
-                          <span>مصاريف الشحن</span>
-                          <span>{currentShippingCost} ج.م</span>
-                        </div>
-                        <div className="flex justify-between text-lg font-black text-stone-900 pt-3 border-t border-stone-100">
-                          <span>الإجمالي الكلي</span>
-                          <span className="text-rose-800">{orderTotal} ج.م</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {currentPage === 'about' && (
-              <div className="max-w-4xl mx-auto px-4 py-16">
-                <div className="bg-white p-10 rounded-3xl border border-stone-200 shadow-sm space-y-6">
-                  <h1 className="text-3xl font-black text-stone-900">من نحن - {STORE_INFO.name}</h1>
-                  <p className="text-stone-600 leading-relaxed text-base">
-                    <strong>{STORE_INFO.name} ({STORE_INFO.arabicName})</strong> هو وجهتك الأولى لاختيار الهدايا المميزة والتحف العصرية والإكسسوارات في مصر. بدأنا بشغف حقيقي لتقديم منتجات تجمع بين الذوق الرفيع، الجودة العالية، والسعر المناسب.
-                  </p>
-                  <p className="text-stone-600 leading-relaxed text-base">
-                    نهتم بكل تفصيلة صغيرة من لحظة اختيارك للهدية وحتى وصولها مغلفة بأجمل شكل لمن تحب، لتترك أثراً جميلاً لا يُنسى.
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {currentPage === 'contact' && (
-              <div className="max-w-4xl mx-auto px-4 py-16">
-                <div className="bg-white p-10 rounded-3xl border border-stone-200 shadow-sm space-y-8">
-                  <h1 className="text-3xl font-black text-stone-900">تواصل معنا</h1>
-                  <p className="text-stone-600 text-sm">فريق {STORE_INFO.name} جاهز للرد على استفساراتكم طوال أيام الأسبوع.</p>
-                  <div className="grid sm:grid-cols-2 gap-5">
-                    <div className="p-6 rounded-2xl bg-stone-50 border border-stone-200 flex items-center gap-4">
-                      <span className="text-3xl">📞</span>
-                      <div>
-                        <div className="text-xs font-bold text-stone-400">رقم الهاتف</div>
-                        <div className="font-black text-base mt-0.5" dir="ltr">{STORE_INFO.phone}</div>
-                      </div>
-                    </div>
-                    <a 
-                      href={`https://wa.me/${STORE_INFO.whatsapp}`} 
-                      target="_blank" 
-                      rel="noreferrer"
-                      className="p-6 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center gap-4 hover:border-emerald-500 transition-colors"
-                    >
-                      <span className="text-3xl">💬</span>
-                      <div>
-                        <div className="text-xs font-bold text-emerald-700">واتساب مباشر</div>
-                        <div className="font-black text-base mt-0.5 text-emerald-900" dir="ltr">{STORE_INFO.phone}</div>
-                      </div>
-                    </a>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {currentPage === 'admin-login' && (
-              <div className="max-w-md mx-auto px-4 py-20">
-                <div className="bg-white p-10 rounded-3xl border border-stone-200 shadow-xl space-y-6">
-                  <div className="text-center space-y-2">
-                    <div className="w-16 h-16 bg-rose-50 text-rose-800 rounded-2xl flex items-center justify-center mx-auto text-2xl shadow-inner">
-                      🔐
-                    </div>
-                    <h1 className="text-2xl font-black text-stone-900">لوحة تحكم {STORE_INFO.name}</h1>
-                    <p className="text-xs text-stone-500 font-bold">كلمة المرور الافتراضية: farafero2026</p>
-                  </div>
-
-                  <form onSubmit={handleAdminLogin} className="space-y-4">
-                    <input 
-                      type="password" 
-                      required 
-                      value={adminPasswordInput} 
-                      onChange={(e) => setAdminPasswordInput(e.target.value)} 
-                      placeholder="أدخل كلمة مرور الإدارة" 
-                      className="w-full bg-stone-50 border border-stone-200 rounded-2xl px-5 py-4 text-sm focus:outline-none focus:border-rose-800" 
-                    />
-                    <button 
-                      type="submit" 
-                      className="w-full bg-stone-900 hover:bg-rose-800 text-white py-4 rounded-2xl font-black text-sm shadow-xl transition-colors"
-                    >
-                      تسجيل الدخول للإدارة
-                    </button>
-                  </form>
-
-                  <div className="text-center">
-                    <button 
-                      onClick={() => setCurrentPage('home')} 
-                      className="text-xs font-bold text-stone-400 hover:text-stone-800"
-                    >
-                      ← العودة للرئيسية
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {currentPage === 'admin' && isAdmin && (
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-                <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
-                  <div>
-                    <h1 className="text-3xl font-black text-stone-900">لوحة الإدارة الشاملة</h1>
-                    <p className="text-xs font-bold text-stone-500 mt-1">تحكم كامل في المنتجات، الطلبات، العملاء، ومصاريف الشحن</p>
-                  </div>
-                  <button 
-                    onClick={() => { setIsAdmin(false); setCurrentPage('home'); }} 
-                    className="bg-stone-200 hover:bg-rose-100 text-stone-800 hover:text-rose-800 px-5 py-2.5 rounded-2xl text-xs font-black transition-colors"
-                  >
-                    تسجيل خروج 🚪
-                  </button>
-                </div>
-
-                {/* Admin Tabs */}
-                <div className="flex gap-3 overflow-x-auto pb-4 mb-8">
-                  {[
-                    { id: 'products', label: `📦 المنتجات (${products.length})` },
-                    { id: 'orders', label: `🛍️ الطلبات (${orders.length})` },
-                    { id: 'customers', label: `👥 سجل العملاء (${customers.length})` },
-                    { id: 'shipping', label: '🚚 إعدادات الشحن' }
-                  ].map(tab => (
-                    <button 
-                      key={tab.id} 
-                      onClick={() => setAdminTab(tab.id)} 
-                      className={`px-6 py-3 rounded-2xl text-xs font-black whitespace-nowrap shadow-xs transition-all ${adminTab === tab.id ? 'bg-rose-800 text-white shadow-md' : 'bg-white text-stone-600 border border-stone-200'}`}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
-                </div>
-
-                {/* TAB 1: PRODUCTS */}
-                {adminTab === 'products' && (
-                  <div className="grid lg:grid-cols-3 gap-8">
-                    <form onSubmit={handleSaveProduct} className="bg-white p-6 rounded-3xl border border-stone-200 shadow-sm space-y-4 h-fit">
-                      <h2 className="font-extrabold text-lg text-stone-900 border-b border-stone-100 pb-3">
-                        {editingProduct ? '✏️ تعديل منتج' : '➕ إضافة منتج جديد'}
-                      </h2>
-
-                      <input 
-                        required 
-                        type="text" 
-                        placeholder="اسم المنتج" 
-                        value={newProductForm.name} 
-                        onChange={(e) => setNewProductForm({...newProductForm, name: e.target.value})} 
-                        className="w-full bg-stone-50 border border-stone-200 rounded-2xl px-4 py-3 text-sm" 
-                      />
-
-                      <select 
-                        value={newProductForm.category} 
-                        onChange={(e) => setNewProductForm({...newProductForm, category: e.target.value})} 
-                        className="w-full bg-stone-50 border border-stone-200 rounded-2xl px-4 py-3 text-sm font-bold"
-                      >
-                        {INITIAL_CATEGORIES.filter(c => c !== 'الكل').map(c => <option key={c} value={c}>{c}</option>)}
-                      </select>
-
-                      <div className="grid grid-cols-2 gap-3">
-                        <input 
-                          required 
-                          type="number" 
-                          placeholder="السعر الحالي" 
-                          value={newProductForm.price} 
-                          onChange={(e) => setNewProductForm({...newProductForm, price: e.target.value})} 
-                          className="w-full bg-stone-50 border border-stone-200 rounded-2xl px-4 py-3 text-sm" 
-                        />
-                        <input 
-                          type="number" 
-                          placeholder="السعر القديم" 
-                          value={newProductForm.oldPrice} 
-                          onChange={(e) => setNewProductForm({...newProductForm, oldPrice: e.target.value})} 
-                          className="w-full bg-stone-50 border border-stone-200 rounded-2xl px-4 py-3 text-sm" 
-                        />
-                      </div>
-
-                      <input 
-                        type="url" 
-                        placeholder="رابط صورة المنتج (URL)" 
-                        value={newProductForm.image} 
-                        onChange={(e) => setNewProductForm({...newProductForm, image: e.target.value})} 
-                        className="w-full bg-stone-50 border border-stone-200 rounded-2xl px-4 py-3 text-sm" 
-                      />
-
-                      <textarea 
-                        rows="2" 
-                        placeholder="وصف المنتج..." 
-                        value={newProductForm.description} 
-                        onChange={(e) => setNewProductForm({...newProductForm, description: e.target.value})} 
-                        className="w-full bg-stone-50 border border-stone-200 rounded-2xl px-4 py-3 text-sm" 
-                      ></textarea>
-
-                      <div className="flex items-center justify-between text-xs font-black pt-1">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input 
-                            type="checkbox" 
-                            checked={newProductForm.isOffer} 
-                            onChange={(e) => setNewProductForm({...newProductForm, isOffer: e.target.checked})} 
-                          />
-                          عرض خاص
-                        </label>
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input 
-                            type="checkbox" 
-                            checked={newProductForm.inStock} 
-                            onChange={(e) => setNewProductForm({...newProductForm, inStock: e.target.checked})} 
-                          />
-                          متاح (in stock)
-                        </label>
-                      </div>
-
-                      <button 
-                        type="submit" 
-                        className="w-full bg-rose-800 text-white py-3.5 rounded-2xl font-black text-sm shadow-md"
-                      >
-                        {editingProduct ? 'حفظ التعديلات' : 'إضافة المنتج'}
-                      </button>
-                    </form>
-
-                    <div className="lg:col-span-2 space-y-4">
-                      {products.map(p => (
-                        <div key={p.id} className="bg-white p-5 rounded-3xl border border-stone-200 flex items-center justify-between gap-4 shadow-xs">
-                          <div className="flex items-center gap-4">
-                            <img src={p.image} alt={p.name} className="w-16 h-16 rounded-2xl object-cover bg-stone-100" />
-                            <div>
-                              <div className="font-extrabold text-sm text-stone-900">{p.name}</div>
-                              <div className="text-xs text-stone-500 mt-1">
-                                {p.category} • <strong className="text-rose-800">{p.price} ج.م</strong> • {p.inStock ? 'in stock' : 'غير متاح'}
-                              </div>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <button onClick={() => startEditProduct(p)} className="p-2.5 rounded-xl bg-stone-100 hover:bg-amber-100 text-stone-700 font-bold text-xs">✏️ تعديل</button>
-                            <button onClick={() => deleteProduct(p.id)} className="p-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs">🗑️ حذف</button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* TAB 2: ORDERS */}
-                {adminTab === 'orders' && (
-                  <div className="space-y-4">
-                    {orders.length === 0 ? (
-                      <div className="bg-white p-12 rounded-3xl border border-stone-200 text-center text-stone-500 font-bold">لا توجد طلبات مسجلة حتى الآن.</div>
-                    ) : (
-                      orders.map(order => (
-                        <div key={order.id} className="bg-white p-6 rounded-3xl border border-stone-200 shadow-sm space-y-3">
-                          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-100 pb-3">
-                            <div>
-                              <span className="font-black text-rose-800 text-base">{order.id}</span>
-                              <span className="text-xs text-stone-400 mr-3 font-bold">{order.date}</span>
-                            </div>
-                            <select 
-                              value={order.status} 
-                              onChange={(e) => updateOrderStatus(order.id, e.target.value)} 
-                              className="border border-stone-200 rounded-xl px-4 py-1.5 text-xs font-black bg-stone-50"
-                            >
-                              <option value="قيد المراجعة">قيد المراجعة</option>
-                              <option value="تم الشحن">تم الشحن</option>
-                              <option value="تم التسليم">تم التسليم</option>
-                              <option value="ملغي">ملغي</option>
-                            </select>
-                          </div>
-                          <div className="text-xs text-stone-700 grid sm:grid-cols-3 gap-2 font-bold">
-                            <div><strong>العميل:</strong> {order.customerName}</div>
-                            <div><strong>الموبايل:</strong> {order.phone}</div>
-                            <div><strong>الإجمالي:</strong> <span className="text-rose-800 font-black">{order.total} ج.م</span></div>
-                            <div className="sm:col-span-3 text-stone-500"><strong>العنوان:</strong> {order.address}</div>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                )}
-
-                {/* TAB 3: CUSTOMERS */}
-                {adminTab === 'customers' && (
-                  <div className="bg-white rounded-3xl border border-stone-200 overflow-hidden shadow-sm">
-                    {customers.length === 0 ? (
-                      <div className="p-12 text-center text-stone-500 font-bold">سيتم تسجيل بيانات العملاء تلقائياً عند تنفيذ أول طلب شراء.</div>
-                    ) : (
-                      <table className="w-full text-right text-sm">
-                        <thead className="bg-stone-50 text-xs text-stone-500 border-b border-stone-200">
-                          <tr>
-                            <th className="p-5">اسم العميل</th>
-                            <th className="p-5">رقم الموبايل</th>
-                            <th className="p-5">العنوان</th>
-                            <th className="p-5">عدد الطلبات</th>
-                            <th className="p-5">إجمالي المشتريات</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-stone-100">
-                          {customers.map(c => (
-                            <tr key={c.id}>
-                              <td className="p-5 font-black">{c.name}</td>
-                              <td className="p-5 font-bold" dir="ltr">{c.phone}</td>
-                              <td className="p-5 text-xs text-stone-500">{c.address}</td>
-                              <td className="p-5 font-bold">{c.ordersCount}</td>
-                              <td className="p-5 font-black text-rose-800">{c.totalSpent} ج.م</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    )}
-                  </div>
-                )}
-
-                {/* TAB 4: SHIPPING SETTINGS */}
-                {adminTab === 'shipping' && (
-                  <div className="max-w-md bg-white p-8 rounded-3xl border border-stone-200 shadow-sm space-y-4">
-                    <h2 className="font-extrabold text-lg text-stone-900 border-b border-stone-100 pb-3">تعديل مصاريف الشحن (ج.م)</h2>
-                    <div>
-                      <label className="block text-xs font-black text-stone-600 mb-1">الإسكندرية</label>
-                      <input 
-                        type="number" 
-                        value={shippingRates.alexandria} 
-                        onChange={(e) => setShippingRates({...shippingRates, alexandria: Number(e.target.value)})} 
-                        className="w-full bg-stone-50 border border-stone-200 rounded-2xl px-4 py-3 text-sm font-bold" 
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-black text-stone-600 mb-1">القاهرة والجيزة</label>
-                      <input 
-                        type="number" 
-                        value={shippingRates.cairo} 
-                        onChange={(e) => setShippingRates({...shippingRates, cairo: Number(e.target.value)})} 
-                        className="w-full bg-stone-50 border border-stone-200 rounded-2xl px-4 py-3 text-sm font-bold" 
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-black text-stone-600 mb-1">باقي المحافظات</label>
-                      <input 
-                        type="number" 
-                        value={shippingRates.other} 
-                        onChange={(e) => setShippingRates({...shippingRates, other: Number(e.target.value)})} 
-                        className="w-full bg-stone-50 border border-stone-200 rounded-2xl px-4 py-3 text-sm font-bold" 
-                      />
-                    </div>
-                    <button 
-                      onClick={() => showToast('✅ تم حفظ أسعار الشحن بنجاح')} 
-                      className="w-full bg-rose-800 text-white py-3.5 rounded-2xl font-black text-sm shadow-md"
-                    >
-                      حفظ إعدادات الشحن
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-          </main>
-
-          {/* Cart Slide-over Drawer */}
-          {cartOpen && (
-            <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex justify-end animate-fadeIn">
-              <div className="w-full max-w-md bg-white h-full flex flex-col shadow-2xl">
-                <div className="p-6 border-b border-stone-200 flex items-center justify-between">
-                  <h2 className="font-black text-lg text-stone-900">سلة المشتريات ({cartCount})</h2>
-                  <button onClick={() => setCartOpen(false)} className="p-2 rounded-xl bg-stone-100 text-stone-700 font-bold">✕</button>
-                </div>
-
-                <div className="flex-1 overflow-y-auto p-6 space-y-4">
-                  {cart.length === 0 ? (
-                    <div className="text-center py-24 text-stone-400 font-bold text-sm">سلة المشتريات فارغة حالياً</div>
-                  ) : (
-                    cart.map(item => (
-                      <div key={item.id} className="flex items-center gap-4 bg-stone-50 p-4 rounded-2xl border border-stone-100">
-                        <img src={item.image} alt={item.name} className="w-16 h-16 rounded-2xl object-cover bg-white" />
-                        <div className="flex-1">
-                          <h4 className="font-extrabold text-xs text-stone-900 line-clamp-1">{item.name}</h4>
-                          <div className="text-rose-800 font-black text-sm mt-1">{item.price * item.qty} ج.م</div>
-                          <div className="flex items-center gap-2 mt-2">
-                            <button onClick={() => updateCartQty(item.id, -1)} className="w-7 h-7 rounded-xl bg-white border border-stone-200 font-black text-xs shadow-xs">-</button>
-                            <span className="text-xs font-black">{item.qty}</span>
-                            <button onClick={() => updateCartQty(item.id, 1)} className="w-7 h-7 rounded-xl bg-white border border-stone-200 font-black text-xs shadow-xs">+</button>
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-
-                {cart.length > 0 && (
-                  <div className="p-6 border-t border-stone-200 space-y-4 bg-stone-50">
-                    <div className="flex justify-between font-black text-base">
-                      <span>المجموع الفرعي</span>
-                      <span className="text-rose-800">{cartSubtotal} ج.م</span>
-                    </div>
-                    <button 
-                      onClick={() => { setCartOpen(false); setCurrentPage('checkout'); }} 
-                      className="w-full bg-rose-800 hover:bg-rose-700 text-white py-4 rounded-2xl font-black text-sm shadow-xl transition-all"
-                    >
-                      إتمام الطلب الآن 🛍️
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Footer */}
-          <footer className="bg-stone-900 text-stone-300 mt-20">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 grid grid-cols-1 md:grid-cols-3 gap-10">
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-rose-800 text-white flex items-center justify-center text-xl shadow">🎁</div>
-                  <div>
-                    <div className="text-lg font-black text-white">{STORE_INFO.name}</div>
-                    <div className="text-[11px] text-amber-400 font-bold">{STORE_INFO.slogan}</div>
-                  </div>
-                </div>
-                <p className="text-xs text-stone-400 leading-relaxed">
-                  وجهتك الأولى للهدايا العصرية والمجات والإكسسوارات والتحف الديكورية بجودة عالية وأسعار مناسبة.
-                </p>
-              </div>
-
-              <div>
-                <h4 className="text-white font-black text-sm mb-4">روابط سريعة</h4>
-                <ul className="space-y-2 text-xs font-bold text-stone-400">
-                  <li><button onClick={() => setCurrentPage('home')} className="hover:text-white">الرئيسية</button></li>
-                  <li><button onClick={() => setCurrentPage('shop')} className="hover:text-white">المتجر</button></li>
-                  <li><button onClick={() => setCurrentPage('offers')} className="hover:text-white">العروض</button></li>
-                  <li><button onClick={() => setCurrentPage('about')} className="hover:text-white">من نحن</button></li>
-                </ul>
-              </div>
-
-              <div>
-                <h4 className="text-white font-black text-sm mb-4">تواصل معنا</h4>
-                <ul className="space-y-2 text-xs font-bold text-stone-400">
-                  <li>الهاتف / واتساب: <span dir="ltr">{STORE_INFO.phone}</span></li>
-                  <li>الإيميل: {STORE_INFO.email}</li>
-                  <li>العنوان: {STORE_INFO.address}</li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="border-t border-stone-800 py-6 text-center text-xs font-bold text-stone-500">
-              © 2026 {STORE_INFO.name}. جميع الحقوق محفوظة.
-            </div>
-          </footer>
-
-          {/* Floating WhatsApp Button */}
-          <a 
-            href={`https://wa.me/${STORE_INFO.whatsapp}?text=${encodeURIComponent('مرحباً، أود الاستفسار عن منتجات Farafero Store')}`} 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            aria-label="تواصل عبر واتساب" 
-            className="fixed bottom-6 left-6 z-40 bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-3.5 rounded-full shadow-2xl flex items-center gap-2 text-xs font-black transition-transform hover:scale-105"
-          >
-            <span className="text-lg">💬</span>
-            <span>تواصل معنا</span>
-          </a>
+            <!-- زر السلة العلوي -->
+            <button onclick="toggleCartModal()" class="relative flex items-center space-x-2 space-x-reverse bg-amber-50 border border-gold/40 hover:bg-amber-100 px-4 py-2.5 rounded-2xl transition-all shadow-sm">
+                <i class="fa-solid fa-bag-shopping text-gold text-lg"></i>
+                <span class="text-xs font-black text-slate-800">السلة</span>
+                <span id="cart-badge" class="absolute -top-2 -left-2 bg-gold text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow-md">0</span>
+            </button>
         </div>
-      );
-    }
+    </header>
 
-    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
-  </script>
+    <!-- MAIN CONTAINER -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full space-y-6">
+        
+        <!-- قسم البحث والتصفية -->
+        <div class="bg-white rounded-3xl p-6 border shadow-sm space-y-4">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-3 gap-3">
+                <div>
+                    <h3 class="text-xl font-black text-slate-900 flex items-center">
+                        <i class="fa-solid fa-gift text-gold ml-2"></i> تصفح هدايا فرفيرو المميزة
+                    </h3>
+                    <p class="text-xs text-slate-500 mt-1">اختر الهدية التي تعجبك وأضفها للسلة لإتمام الطلب أونلاين</p>
+                </div>
+            </div>
+            
+            <div class="bg-slate-50 p-3 rounded-2xl border flex items-center space-x-3 space-x-reverse">
+                <i class="fa-solid fa-magnifying-glass text-gold"></i>
+                <input type="text" id="store-search" oninput="renderStoreProducts()" placeholder="ابحث عن هدية أو كود..." class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-bold focus:outline-none focus:border-gold">
+            </div>
+
+            <!-- شبكة المنتجات -->
+            <div id="store-products-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 p-1"></div>
+        </div>
+
+    </main>
+
+    <!-- SLIDING / POPUP CART MODAL -->
+    <div id="cart-modal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl w-full max-w-lg p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar" dir="rtl">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-black text-lg text-slate-900 flex items-center">
+                    <i class="fa-solid fa-bag-shopping text-gold ml-2"></i> سلة المشتريات
+                </h3>
+                <button onclick="toggleCartModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-700 font-bold flex items-center justify-center">✕</button>
+            </div>
+
+            <!-- بيانات العميل والتوصيل -->
+            <div class="space-y-3 bg-slate-50 p-3.5 rounded-2xl border">
+                <h4 class="text-xs font-black text-slate-800">بيانات التوصيل والشحن:</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-600 block mb-1">اسم العميل:</label>
+                        <input type="text" id="po-cust-name" placeholder="اسمك الكريم..." class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:border-gold">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-600 block mb-1">رقم الهاتف (11 رقم صحيح):</label>
+                        <input type="tel" id="po-cust-phone" maxlength="11" placeholder="مثال: 010xxxxxxxx..." class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:border-gold">
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-[10px] font-bold text-gold block mb-1">المحافظة:</label>
+                        <select id="po-cust-city" onchange="updateCartTotals()" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:border-gold">
+                            <option value="الإسكندرية">الإسكندرية (شحن 50 EGP)</option>
+                            <option value="القاهرة">القاهرة (شحن 80 EGP)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-600 block mb-1">عنوان الاستلام بالتفصيل:</label>
+                        <input type="text" id="po-cust-address" placeholder="الشارع، العمارة، الطابق..." class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:border-gold">
+                    </div>
+                </div>
+            </div>
+
+            <!-- قائمة أصناف السلة -->
+            <div class="space-y-1">
+                <span class="text-xs font-bold text-slate-700">الأصناف المضافة:</span>
+                <div id="cart-items-list" class="divide-y max-h-[140px] overflow-y-auto my-1 text-xs bg-slate-50/50 p-2 rounded-xl border"></div>
+            </div>
+
+            <div class="space-y-2 pt-2 border-t text-xs">
+                <div class="flex justify-between font-bold text-slate-600">
+                    <span>قيمة المنتجات:</span>
+                    <span id="cart-subtotal">0 EGP</span>
+                </div>
+                <div class="flex justify-between font-bold text-slate-600">
+                    <span>مصاريف الشحن:</span>
+                    <span id="cart-shipping-cost">50 EGP</span>
+                </div>
+                <div class="flex justify-between font-black text-base border-t pt-2">
+                    <span>الإجمالي النهائي:</span>
+                    <span class="text-gold"><span id="cart-grand-total">0</span> EGP</span>
+                </div>
+                <button onclick="submitCustomerPO()" class="w-full bg-gold hover:bg-[#b08b49] text-white font-black py-3 rounded-2xl shadow-md text-xs transition-all flex items-center justify-center space-x-1.5 space-x-reverse mt-2">
+                    <i class="fa-solid fa-paper-plane"></i>
+                    <span>تأكيد وإرسال الطلب (PO) للمحل</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- IMAGE ZOOM MODAL -->
+    <div id="image-zoom-modal" class="fixed inset-0 z-50 hidden bg-slate-900/85 backdrop-blur-md flex items-center justify-center p-4" onclick="closeImageZoom()">
+        <div class="relative max-w-2xl w-full bg-white rounded-3xl p-4 shadow-2xl overflow-hidden text-center" onclick="event.stopPropagation()">
+            <button onclick="closeImageZoom()" class="absolute top-4 left-4 w-9 h-9 rounded-full bg-slate-100 text-slate-700 font-bold flex items-center justify-center shadow-md z-10">✕</button>
+            <h4 id="zoom-img-title" class="font-black text-base text-slate-900 mb-3"></h4>
+            <div class="max-h-[70vh] overflow-hidden rounded-2xl bg-slate-100 flex items-center justify-center p-2">
+                <img id="zoom-img-src" src="" class="max-h-[65vh] w-auto object-contain rounded-xl shadow-inner">
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT ENGINE -->
+    <script>
+        const firebaseConfig = {
+          apiKey: "AIzaSyAuP10QxT-N1gEo7nW6Zc9I1Nzg9ehdD6E",
+          authDomain: "farafero-store-99e0d.firebaseapp.com",
+          projectId: "farafero-store-99e0d",
+          storageBucket: "farafero-store-99e0d.firebasestorage.app",
+          messagingSenderId: "47711607235",
+          appId: "1:47711607235:web:6cc25baa82eebcf6460576",
+          measurementId: "G-Q736FT0ZH5"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.firestore();
+
+        let state = { products: [], orders: [], customerCart: [] };
+
+        function initStore() {
+            db.collection("products").onSnapshot((snapshot) => {
+                state.products = [];
+                snapshot.forEach((doc) => {
+                    state.products.push({ id: doc.id, ...doc.data() });
+                });
+                renderStoreProducts();
+            });
+
+            db.collection("orders").onSnapshot((snapshot) => {
+                state.orders = [];
+                snapshot.forEach((doc) => {
+                    state.orders.push({ firebaseId: doc.id, ...doc.data() });
+                });
+            });
+        }
+
+        function getNextUnifiedPoId() {
+            let maxNum = 0;
+            state.orders.forEach(o => {
+                if (o.id) {
+                    const num = parseInt(o.id.replace(/[^0-9]/g, '')) || 0;
+                    if (num > maxNum) maxNum = num;
+                }
+            });
+            return 'PO-' + String(maxNum + 1).padStart(4, '0');
+        }
+
+        function renderStoreProducts() {
+            const grid = document.getElementById('store-products-grid');
+            const searchInput = document.getElementById('store-search');
+            if(!grid) return;
+            const search = searchInput ? searchInput.value.toLowerCase().trim() : '';
+            grid.innerHTML = '';
+
+            const filtered = state.products.filter(p => p.stock > 0 && (p.name.toLowerCase().includes(search) || (p.code && p.code.toLowerCase().includes(search))));
+
+            filtered.forEach(p => {
+                grid.innerHTML += `
+                    <div class="bg-white border rounded-2xl p-3 space-y-2 shadow-sm flex flex-col justify-between">
+                        <img src="${p.image}" class="w-full h-36 object-cover rounded-xl cursor-pointer" onclick="openImageZoom('${p.image}', '${p.name}')">
+                        <div>
+                            <span class="text-[10px] text-gold font-bold">${p.code || ''}</span>
+                            <h4 class="font-bold text-xs line-clamp-1">${p.name}</h4>
+                            <span class="text-[9px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-bold">${p.category}</span>
+                        </div>
+                        <div class="flex justify-between items-center pt-2 border-t">
+                            <span class="font-black text-xs text-gold">${Math.round(p.price)} EGP</span>
+                            <button onclick="addToCustomerCart('${p.id}')" class="bg-gold hover:bg-[#b08b49] text-white px-3 py-1.5 rounded-xl text-[10px] font-black shadow-sm">إضافة للسلة</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function addToCustomerCart(id) {
+            const p = state.products.find(x => x.id === id);
+            if (!p || p.stock <= 0) return alert('عذراً، نفذت الكمية!');
+            const item = state.customerCart.find(x => x.id === id);
+            if (item) {
+                if (item.qty + 1 > p.stock) return alert('الكمية المطلوبة أكبر من المتاح بالمخزن!');
+                item.qty++;
+            } else {
+                state.customerCart.push({ ...p, qty: 1 });
+            }
+            updateCartBadge();
+            alert('تمت إضافة الهدية إلى السلة بنجاح!');
+        }
+
+        function updateCartBadge() {
+            const totalItems = state.customerCart.reduce((sum, i) => sum + i.qty, 0);
+            document.getElementById('cart-badge').innerText = totalItems;
+        }
+
+        function toggleCartModal() {
+            const modal = document.getElementById('cart-modal');
+            modal.classList.toggle('hidden');
+            if (!modal.classList.contains('hidden')) {
+                renderCartModalItems();
+            }
+        }
+
+        function getShippingCost() {
+            const city = document.getElementById('po-cust-city').value;
+            return city === 'القاهرة' ? 80 : 50;
+        }
+
+        function renderCartModalItems() {
+            const container = document.getElementById('cart-items-list');
+            if(!container) return;
+            container.innerHTML = '';
+            let subtotal = 0;
+
+            if (state.customerCart.length === 0) {
+                container.innerHTML = '<p class="text-center text-slate-400 py-4">السلة فارغة حالياً</p>';
+                document.getElementById('cart-subtotal').innerText = '0 EGP';
+                document.getElementById('cart-shipping-cost').innerText = '0 EGP';
+                document.getElementById('cart-grand-total').innerText = '0';
+                return;
+            }
+
+            state.customerCart.forEach((i, idx) => {
+                subtotal += i.price * i.qty;
+                container.innerHTML += `
+                    <div class="flex justify-between items-center py-1.5">
+                        <div><span class="font-bold">${i.name}</span><span class="text-slate-400 text-[10px] block">${i.price} × ${i.qty}</span></div>
+                        <div class="flex items-center space-x-2 space-x-reverse"><b>${i.price * i.qty} EGP</b><button onclick="removeFromCart(${idx})" class="text-rose-500 font-bold">✕</button></div>
+                    </div>`;
+            });
+
+            updateCartTotals();
+        }
+
+        function updateCartTotals() {
+            let subtotal = state.customerCart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+            let shipping = getShippingCost();
+            let grandTotal = subtotal + (subtotal > 0 ? shipping : 0);
+
+            document.getElementById('cart-subtotal').innerText = Math.round(subtotal) + ' EGP';
+            document.getElementById('cart-shipping-cost').innerText = shipping + ' EGP';
+            document.getElementById('cart-grand-total').innerText = Math.round(grandTotal);
+        }
+
+        function removeFromCart(idx) {
+            state.customerCart.splice(idx, 1);
+            updateCartBadge();
+            renderCartModalItems();
+        }
+
+        function openImageZoom(imgUrl, title) {
+            document.getElementById('zoom-img-src').src = imgUrl;
+            document.getElementById('zoom-img-title').innerText = title;
+            document.getElementById('image-zoom-modal').classList.remove('hidden');
+        }
+
+        function closeImageZoom() {
+            document.getElementById('image-zoom-modal').classList.add('hidden');
+        }
+
+        function submitCustomerPO() {
+            const name = document.getElementById('po-cust-name').value.trim();
+            const phone = document.getElementById('po-cust-phone').value.trim();
+            const city = document.getElementById('po-cust-city').value;
+            const address = document.getElementById('po-cust-address').value.trim();
+
+            if (!name) return alert('برجاء كتابة اسم العميل!');
+            if (!phone || phone.length < 10 || isNaN(phone)) return alert('برجاء إدخال رقم تليفون صحيح مكون من أرقام!');
+            if (!address) return alert('برجاء إدخال تفاصيل العنوان!');
+            if (state.customerCart.length === 0) return alert('السلة فارغة!');
+
+            let subtotal = state.customerCart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+            let shipping = getShippingCost();
+            let total = subtotal + shipping;
+
+            const poId = getNextUnifiedPoId();
+            const dateStr = new Date().toLocaleDateString('en-GB');
+
+            db.collection("orders").add({
+                id: poId,
+                type: 'po',
+                date: dateStr,
+                timestamp: Date.now(),
+                total: total,
+                shipping: shipping,
+                customerName: name,
+                customerPhone: phone + ' | المحافظة: ' + city + ' | العنوان: ' + address,
+                status: 'pending',
+                detailedItems: JSON.parse(JSON.stringify(state.customerCart))
+            }).then(() => {
+                alert('🎉 تم إرسال طلبك برقم ' + poId + ' بنجاح للمحل وسيتم مراجعته وتأكيده فوراً!');
+                state.customerCart = [];
+                updateCartBadge();
+                toggleCartModal();
+            }).catch(err => {
+                alert('حدث خطأ أثناء الإرسال، برجاء المحاولة مرة أخرى.');
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', initStore);
+    </script>
 </body>
 </html>
