@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FARAFERO STORE - فرفيرو ستور</title>
+  <title>FARAFERO STORE — فرفيرو ستور</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -16,17 +16,16 @@
     .font-brand { font-family: 'Playfair Display', 'Cairo', serif; }
   </style>
 </head>
-<body class="bg-[#FDFCFB] text-stone-800">
+<body class="bg-[#FDFCFB] text-stone-800 antialiased">
   <div id="root"></div>
 
   <script type="text/babel">
-    const { useState, useEffect, useMemo } = React;
+    const { useState, useEffect, useMemo, useRef } = React;
 
     // =========================================================================
-    // إعدادات الربط السحابي (Cloud Sync Configuration)
-    // ضع هنا رابط الـ API / Apps Script / JSONBin الخاص بمزامنة البيانات سحابياً
+    // ضع رابط السحابة الافتراضي هنا إن أردت تثبيته في الكود مباشرة
     // =========================================================================
-    const DEFAULT_CLOUD_ENDPOINT = '';
+    const HARDCODED_CLOUD_URL = '';
 
     const INITIAL_SETTINGS = {
       storeName: 'FARAFERO STORE',
@@ -37,7 +36,8 @@
       phone: '01005187411',
       email: 'hello@faraferostore.com',
       location: 'الإسكندرية والقاهرة - شحن لجميع المحافظات، مصر',
-      cloudSyncUrl: DEFAULT_CLOUD_ENDPOINT,
+      cloudSyncUrl: HARDCODED_CLOUD_URL,
+      autoCloudSync: true,
       shippingRates: {
         alexandria: 45,
         cairoGiza: 60,
@@ -73,8 +73,7 @@
         image: 'https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?auto=format&fit=crop&w=800&q=80',
         description: 'مج سيراميك عالي الجودة بتصميم أنيق مع غطاء خشبي طبيعي وملعقة ستانلس ذهبية، يأتي داخل علبة هدايا مبطنة جاهزة للإهداء.',
         internalStock: 25,
-        inStock: true,
-        featured: true
+        inStock: true
       },
       {
         id: 'PRD-102',
@@ -85,8 +84,7 @@
         image: 'https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?auto=format&fit=crop&w=800&q=80',
         description: 'وحدة إضاءة ديكورية ساحرة بقاعدة خشبية مضيئة تضفي أجواء رومانسية هادئة على الغرفة، تعمل بوصلة USB وتعد هدية مثالية.',
         internalStock: 18,
-        inStock: true,
-        featured: true
+        inStock: true
       },
       {
         id: 'PRD-103',
@@ -97,8 +95,7 @@
         image: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=800&q=80',
         description: 'بوكس هدايا متكامل بتغليف Farafero الفاخر، يضم مج بورسلين، شمعة فانيليا وخشب الصندل، باقة ورد مجفف، وكارت إهداء مخصص.',
         internalStock: 14,
-        inStock: true,
-        featured: true
+        inStock: true
       },
       {
         id: 'PRD-104',
@@ -109,8 +106,7 @@
         image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80',
         description: 'ساعة يد أنيقة مقاومة للصدأ بتصميم عصري رقيق يناسب الإطلالات اليومية والمناسبات، مرفقة بعلبة قطيفة فاخرة.',
         internalStock: 20,
-        inStock: true,
-        featured: true
+        inStock: true
       },
       {
         id: 'PRD-105',
@@ -121,8 +117,7 @@
         image: 'https://images.unsplash.com/photo-1602874801007-bd458bb1b8b6?auto=format&fit=crop&w=800&q=80',
         description: 'شمعة طبيعية مصنوعة يدوياً من شمع الصويا النقي بفتيل قطني تدوم حتى 45 ساعة من الانتعاش والاسترخاء.',
         internalStock: 30,
-        inStock: true,
-        featured: false
+        inStock: true
       },
       {
         id: 'PRD-106',
@@ -133,8 +128,29 @@
         image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80',
         description: 'طقم إكسسوارات ناعم ثابت اللون ومقاوم للماء والعطور، يأتي في بوكس هدايا أنيق مع ضمان ثبات اللون.',
         internalStock: 22,
-        inStock: true,
-        featured: false
+        inStock: true
+      },
+      {
+        id: 'PRD-107',
+        name: 'مج حراري ذكي يحفظ الحرارة لمدة 8 ساعات - Matte Rose',
+        category: 'mugs',
+        price: 295,
+        oldPrice: null,
+        image: 'https://images.unsplash.com/photo-1577937927133-66ef06acdf18?auto=format&fit=crop&w=800&q=80',
+        description: 'مج حراري ستانلس 316 عازل للحرارة والبرودة بتصميم مطفي انسيابي ومقاوم للتسرب للجامعة والعمل والسفر.',
+        internalStock: 16,
+        inStock: true
+      },
+      {
+        id: 'PRD-108',
+        name: 'دبدوب قطيفة ناعم مع بوكيه ورد مجفف وكارت معطر',
+        category: 'boxes',
+        price: 340,
+        oldPrice: 410,
+        image: 'https://images.unsplash.com/photo-1559563458-527698bf5295?auto=format&fit=crop&w=800&q=80',
+        description: 'هدية لطيفة ومبهجة لأعياد الميلاد والمناسبات السعيدة، مغلفة بورق سوليفان وشرائط ستان فاخرة.',
+        internalStock: 12,
+        inStock: true
       }
     ];
 
@@ -186,54 +202,73 @@
 
     const ADMIN_PASSCODE = 'farafero2026';
 
-    // دوال المزامنة السحابية (Cloud Sync Helpers)
-    async function pullFromCloud(endpoint) {
-      if (!endpoint || !endpoint.trim()) return null;
-      const res = await fetch(endpoint.trim(), { method: 'GET', cache: 'no-store' });
-      if (!res.ok) throw new Error('Cloud GET failed');
+    async function cloudPull(url) {
+      const clean = (url || '').trim();
+      if (!clean) return null;
+      const sep = clean.includes('?') ? '&' : '?';
+      const res = await fetch(`${clean}${sep}t=${Date.now()}`, { method: 'GET', cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return await res.json();
     }
 
-    async function pushToCloud(endpoint, payload) {
-      if (!endpoint || !endpoint.trim()) return false;
-      const res = await fetch(endpoint.trim(), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      return res.ok;
+    async function cloudPush(url, payload) {
+      const clean = (url || '').trim();
+      if (!clean) return false;
+      try {
+        const res = await fetch(clean, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        return res.ok;
+      } catch {
+        // دعم Google Apps Script عبر no-cors عند الحاجة
+        await fetch(clean, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+        return true;
+      }
     }
 
     function App() {
       const [settings, setSettings] = useState(() => {
         try {
-          const saved = localStorage.getItem('farafero_settings_v1');
-          return saved ? { ...INITIAL_SETTINGS, ...JSON.parse(saved) } : INITIAL_SETTINGS;
+          const saved = localStorage.getItem('farafero_settings_v2');
+          const parsed = saved ? JSON.parse(saved) : {};
+          return {
+            ...INITIAL_SETTINGS,
+            ...parsed,
+            cloudSyncUrl: parsed.cloudSyncUrl || HARDCODED_CLOUD_URL
+          };
         } catch { return INITIAL_SETTINGS; }
       });
 
       const [products, setProducts] = useState(() => {
         try {
-          const saved = localStorage.getItem('farafero_products_v1');
+          const saved = localStorage.getItem('farafero_products_v2');
           return saved ? JSON.parse(saved) : INITIAL_PRODUCTS;
         } catch { return INITIAL_PRODUCTS; }
       });
 
       const [orders, setOrders] = useState(() => {
         try {
-          const saved = localStorage.getItem('farafero_orders_v1');
+          const saved = localStorage.getItem('farafero_orders_v2');
           return saved ? JSON.parse(saved) : INITIAL_ORDERS;
         } catch { return INITIAL_ORDERS; }
       });
 
       const [cart, setCart] = useState(() => {
         try {
-          const saved = localStorage.getItem('farafero_cart_v1');
+          const saved = localStorage.getItem('farafero_cart_v2');
           return saved ? JSON.parse(saved) : [];
         } catch { return []; }
       });
 
-      const [syncStatus, setSyncStatus] = useState('محلي');
+      const [syncState, setSyncState] = useState('محلي');
+      const [lastSyncedAt, setLastSyncedAt] = useState('');
       const [currentView, setCurrentView] = useState('home');
       const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
       const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -242,61 +277,105 @@
       const [selectedCategory, setSelectedCategory] = useState('all');
       const [quickViewProduct, setQuickViewProduct] = useState(null);
       const [toastMessage, setToastMessage] = useState(null);
+      const skipNextPush = useRef(false);
 
       const showToast = (msg) => {
         setToastMessage(msg);
         setTimeout(() => setToastMessage(null), 3200);
       };
 
-      // سحب البيانات من السحابة عند الفتح إذا كان هناك رابط مسجل
-      useEffect(() => {
-        let active = true;
-        async function initCloud() {
-          if (!settings.cloudSyncUrl) {
-            setSyncStatus('محلي (LocalStorage)');
-            return;
-          }
-          setSyncStatus('جاري المزامنة...');
-          try {
-            const data = await pullFromCloud(settings.cloudSyncUrl);
-            if (!active || !data) return;
-            if (Array.isArray(data.products)) setProducts(data.products);
-            if (Array.isArray(data.orders)) setOrders(data.orders);
-            if (data.settings) setSettings((prev) => ({ ...prev, ...data.settings }));
-            setSyncStatus('متصل سحابياً ✓');
-          } catch {
-            if (active) setSyncStatus('وضع غير متصل (محلي)');
-          }
+      const syncNow = async (mode = 'auto') => {
+        if (!settings.cloudSyncUrl || !settings.cloudSyncUrl.trim()) {
+          setSyncState('محلي فقط');
+          if (mode === 'manual') showToast('أضف رابط المزامنة السحابية أولاً من لوحة التحكم');
+          return;
         }
-        initCloud();
-        return () => { active = false; };
+        setSyncState('جاري المزامنة...');
+        try {
+          const remote = await cloudPull(settings.cloudSyncUrl);
+          if (remote && typeof remote === 'object') {
+            skipNextPush.current = true;
+            if (Array.isArray(remote.products) && remote.products.length > 0) setProducts(remote.products);
+            if (Array.isArray(remote.orders) && remote.orders.length > 0) setOrders(remote.orders);
+            if (remote.settings && typeof remote.settings === 'object') {
+              setSettings((prev) => ({
+                ...prev,
+                ...remote.settings,
+                cloudSyncUrl: prev.cloudSyncUrl
+              }));
+            }
+          }
+          await cloudPush(settings.cloudSyncUrl, {
+            products,
+            orders,
+            settings: { ...settings, cloudSyncUrl: undefined },
+            updatedAt: new Date().toISOString()
+          });
+          setSyncState('متصل سحابياً');
+          setLastSyncedAt(new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }));
+          if (mode === 'manual') showToast('تمت المزامنة السحابية بنجاح ✓');
+        } catch {
+          setSyncState('وضع غير متصل (محلي)');
+          if (mode === 'manual') showToast('تعذر الوصول للرابط السحابي، تم الإبقاء على النسخة المحلية');
+        }
+      };
+
+      useEffect(() => {
+        if (settings.cloudSyncUrl) {
+          syncNow('auto');
+        } else {
+          setSyncState('محلي فقط');
+        }
       }, [settings.cloudSyncUrl]);
 
-      // حفظ محلي + رفع سحابي تلقائي عند تغير البيانات الأساسية
       useEffect(() => {
-        try { localStorage.setItem('farafero_settings_v1', JSON.stringify(settings)); } catch {}
+        try { localStorage.setItem('farafero_settings_v2', JSON.stringify(settings)); } catch {}
       }, [settings]);
 
       useEffect(() => {
-        try { localStorage.setItem('farafero_products_v1', JSON.stringify(products)); } catch {}
-        if (settings.cloudSyncUrl) {
-          pushToCloud(settings.cloudSyncUrl, { products, orders, settings })
-            .then((ok) => setSyncStatus(ok ? 'متصل سحابياً ✓' : 'محلي'))
-            .catch(() => setSyncStatus('وضع غير متصل (محلي)'));
+        try { localStorage.setItem('farafero_products_v2', JSON.stringify(products)); } catch {}
+        if (skipNextPush.current) {
+          skipNextPush.current = false;
+          return;
+        }
+        if (settings.cloudSyncUrl && settings.autoCloudSync) {
+          cloudPush(settings.cloudSyncUrl, {
+            products,
+            orders,
+            settings: { ...settings, cloudSyncUrl: undefined },
+            updatedAt: new Date().toISOString()
+          }).then((ok) => {
+            if (ok) {
+              setSyncState('متصل سحابياً');
+              setLastSyncedAt(new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }));
+            }
+          });
         }
       }, [products]);
 
       useEffect(() => {
-        try { localStorage.setItem('farafero_orders_v1', JSON.stringify(orders)); } catch {}
-        if (settings.cloudSyncUrl) {
-          pushToCloud(settings.cloudSyncUrl, { products, orders, settings })
-            .then((ok) => setSyncStatus(ok ? 'متصل سحابياً ✓' : 'محلي'))
-            .catch(() => setSyncStatus('وضع غير متصل (محلي)'));
+        try { localStorage.setItem('farafero_orders_v2', JSON.stringify(orders)); } catch {}
+        if (skipNextPush.current) {
+          skipNextPush.current = false;
+          return;
+        }
+        if (settings.cloudSyncUrl && settings.autoCloudSync) {
+          cloudPush(settings.cloudSyncUrl, {
+            products,
+            orders,
+            settings: { ...settings, cloudSyncUrl: undefined },
+            updatedAt: new Date().toISOString()
+          }).then((ok) => {
+            if (ok) {
+              setSyncState('متصل سحابياً');
+              setLastSyncedAt(new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }));
+            }
+          });
         }
       }, [orders]);
 
       useEffect(() => {
-        try { localStorage.setItem('farafero_cart_v1', JSON.stringify(cart)); } catch {}
+        try { localStorage.setItem('farafero_cart_v2', JSON.stringify(cart)); } catch {}
       }, [cart]);
 
       const navigateTo = (view, category = null) => {
@@ -337,7 +416,7 @@
       const cartItemsCount = useMemo(() => cart.reduce((sum, item) => sum + item.quantity, 0), [cart]);
       const cartSubtotal = useMemo(() => cart.reduce((sum, item) => sum + item.price * item.quantity, 0), [cart]);
 
-      // تسجيل العملاء تلقائياً عند إنشاء طلب فقط
+      // تسجيل بيانات العملاء تلقائياً عند إنشاء طلب شراء فقط
       const customers = useMemo(() => {
         const map = new Map();
         orders.forEach((order) => {
@@ -412,7 +491,9 @@
             orders={orders}
             setOrders={setOrders}
             customers={customers}
-            syncStatus={syncStatus}
+            syncState={syncState}
+            lastSyncedAt={lastSyncedAt}
+            onSyncNow={() => syncNow('manual')}
             onLogout={() => { setIsAdminAuthenticated(false); navigateTo('home'); }}
             onVisitStore={() => navigateTo('home')}
             showToast={showToast}
@@ -613,7 +694,7 @@
               </div>
               <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-stone-500">
                 <p>© 2026 {settings.storeName} ({settings.arabicName}). جميع الحقوق محفوظة.</p>
-                <span className="text-stone-500">الحالة: {syncStatus}</span>
+                <span>الحالة: {syncState}{lastSyncedAt ? ` (${lastSyncedAt})` : ''}</span>
               </div>
             </div>
           </footer>
@@ -1083,9 +1164,75 @@
       );
     }
 
-    function AdminDashboardView({ settings, setSettings, products, setProducts, orders, setOrders, customers, syncStatus, onLogout, onVisitStore, showToast, toastMessage }) {
+    function ProductFormModal({ initialProduct, onClose, onSave }) {
+      const [name, setName] = useState(initialProduct?.name || '');
+      const [category, setCategory] = useState(initialProduct?.category || 'boxes');
+      const [price, setPrice] = useState(initialProduct?.price || '');
+      const [oldPrice, setOldPrice] = useState(initialProduct?.oldPrice || '');
+      const [image, setImage] = useState(initialProduct?.image || PRESET_IMAGES[0].url);
+      const [description, setDescription] = useState(initialProduct?.description || '');
+      const [internalStock, setInternalStock] = useState(initialProduct?.internalStock ?? 15);
+      const [inStock, setInStock] = useState(initialProduct?.inStock ?? true);
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        if (!name.trim() || !price) return;
+        onSave({
+          id: initialProduct?.id || `PRD-${Math.floor(200 + Math.random() * 799)}`,
+          name: name.trim(),
+          category,
+          price: Number(price),
+          oldPrice: oldPrice ? Number(oldPrice) : null,
+          image: image.trim() || PRESET_IMAGES[0].url,
+          description: description.trim() || 'هدية مميزة من FARAFERO STORE.',
+          internalStock: Number(internalStock),
+          inStock
+        });
+      };
+
+      return (
+        <div className="fixed inset-0 z-50 bg-stone-950/60 flex items-center justify-center p-4">
+          <form onSubmit={handleSubmit} className="bg-white w-full max-w-2xl rounded-3xl p-6 sm:p-8 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b pb-3">
+              <h3 className="font-extrabold text-lg text-stone-900">{initialProduct ? 'تعديل منتج' : 'إضافة منتج جديد'}</h3>
+              <button type="button" onClick={onClose} className="text-stone-400 hover:text-stone-800">✕</button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <input type="text" required value={name} onChange={(e) => setName(e.target.value)} placeholder="اسم المنتج *" className="px-4 py-2.5 rounded-xl border text-sm" />
+              <select value={category} onChange={(e) => setCategory(e.target.value)} className="px-4 py-2.5 rounded-xl border text-sm bg-white">
+                {CATEGORIES.filter((c) => c.id !== 'all').map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+              <input type="number" required min="1" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="السعر الحالي (ج.م) *" className="px-4 py-2.5 rounded-xl border text-sm" />
+              <input type="number" min="0" value={oldPrice} onChange={(e) => setOldPrice(e.target.value)} placeholder="السعر قبل الخصم (اختياري)" className="px-4 py-2.5 rounded-xl border text-sm" />
+              <input type="number" min="0" value={internalStock} onChange={(e) => setInternalStock(e.target.value)} placeholder="الكمية الداخلية (للإدارة فقط)" className="px-4 py-2.5 rounded-xl border text-sm" />
+              <label className="flex items-center gap-2 text-sm font-bold px-2">
+                <input type="checkbox" checked={inStock} onChange={(e) => setInStock(e.target.checked)} className="w-4 h-4 accent-rose-900" />
+                <span>متوفر (in stock)</span>
+              </label>
+            </div>
+            <input type="url" value={image} onChange={(e) => setImage(e.target.value)} placeholder="رابط صورة المنتج" className="w-full px-4 py-2.5 rounded-xl border text-sm" />
+            <div className="flex flex-wrap gap-1.5">
+              {PRESET_IMAGES.map((img, idx) => (
+                <button key={idx} type="button" onClick={() => setImage(img.url)} className="text-xs px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-rose-100">
+                  {img.label}
+                </button>
+              ))}
+            </div>
+            <textarea rows={2} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="وصف المنتج..." className="w-full px-4 py-2.5 rounded-xl border text-sm" />
+            <div className="flex justify-end gap-2 pt-2">
+              <button type="button" onClick={onClose} className="px-5 py-2.5 rounded-xl bg-stone-100 text-xs font-bold">إلغاء</button>
+              <button type="submit" className="px-6 py-2.5 rounded-xl bg-rose-900 text-white text-xs font-bold">حفظ المنتج</button>
+            </div>
+          </form>
+        </div>
+      );
+    }
+
+    function AdminDashboardView({ settings, setSettings, products, setProducts, orders, setOrders, customers, syncState, lastSyncedAt, onSyncNow, onLogout, onVisitStore, showToast, toastMessage }) {
       const [activeTab, setActiveTab] = useState('overview');
       const [cloudInput, setCloudInput] = useState(settings.cloudSyncUrl || '');
+      const [editingProduct, setEditingProduct] = useState(null);
+      const [productModalOpen, setProductModalOpen] = useState(false);
 
       const totalRevenue = useMemo(() => orders.filter((o) => o.status !== 'ملغي').reduce((s, o) => s + o.total, 0), [orders]);
 
@@ -1095,10 +1242,10 @@
             <div className="flex lg:flex-col gap-2 overflow-x-auto">
               {[
                 { id: 'overview', label: 'نظرة عامة' },
-                { id: 'products', label: 'المنتجات' },
+                { id: 'products', label: 'المنتجات والعروض' },
                 { id: 'orders', label: 'الطلبات' },
                 { id: 'customers', label: 'العملاء' },
-                { id: 'cloud', label: 'الربط السحابي' }
+                { id: 'cloud', label: 'الربط السحابي والشحن' }
               ].map((t) => (
                 <button key={t.id} onClick={() => setActiveTab(t.id)} className={`px-4 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap text-right ${activeTab === t.id ? 'bg-rose-900 text-white' : 'hover:bg-stone-900'}`}>
                   {t.label}
@@ -1106,15 +1253,18 @@
               ))}
             </div>
             <div className="flex lg:flex-col gap-2">
+              <button onClick={onSyncNow} className="px-4 py-2 rounded-xl bg-emerald-800 hover:bg-emerald-700 text-white text-xs font-bold">مزامنة الآن</button>
               <button onClick={onVisitStore} className="px-4 py-2 rounded-xl bg-stone-900 text-xs font-bold">معاينة المتجر</button>
               <button onClick={onLogout} className="px-4 py-2 rounded-xl bg-rose-950 text-rose-200 text-xs font-bold">خروج</button>
             </div>
           </aside>
 
           <main className="flex-1 p-6 sm:p-8 space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-3">
               <h1 className="text-2xl font-extrabold text-stone-900">إدارة {settings.storeName}</h1>
-              <span className="text-xs font-bold px-3 py-1 rounded-full bg-white border border-stone-200">{syncStatus}</span>
+              <span className="text-xs font-bold px-3.5 py-1.5 rounded-full bg-white border border-stone-200">
+                {syncState}{lastSyncedAt ? ` • ${lastSyncedAt}` : ''}
+              </span>
             </div>
 
             {activeTab === 'overview' && (
@@ -1126,14 +1276,36 @@
             )}
 
             {activeTab === 'products' && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {products.map((p) => (
-                  <div key={p.id} className="bg-white p-4 rounded-2xl border space-y-2">
-                    <img src={p.image} alt={p.name} className="w-full h-36 object-cover rounded-xl" />
-                    <h3 className="font-bold text-sm">{p.name}</h3>
-                    <p className="text-sm font-extrabold text-rose-900">{p.price} ج.م — <span className="text-xs text-emerald-700">{p.inStock ? 'in stock' : 'غير متوفر'}</span></p>
-                  </div>
-                ))}
+              <div className="space-y-4">
+                <button
+                  onClick={() => { setEditingProduct(null); setProductModalOpen(true); }}
+                  className="px-5 py-2.5 rounded-xl bg-rose-900 text-white text-xs font-bold"
+                >
+                  + إضافة منتج جديد
+                </button>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {products.map((p) => (
+                    <div key={p.id} className="bg-white p-4 rounded-2xl border space-y-3">
+                      <img src={p.image} alt={p.name} className="w-full h-36 object-cover rounded-xl" />
+                      <h3 className="font-bold text-sm line-clamp-2">{p.name}</h3>
+                      <p className="text-sm font-extrabold text-rose-900">{p.price} ج.م — <span className="text-xs text-emerald-700">{p.inStock ? 'in stock' : 'غير متوفر'}</span></p>
+                      <div className="flex gap-2 pt-1">
+                        <button
+                          onClick={() => { setEditingProduct(p); setProductModalOpen(true); }}
+                          className="flex-1 py-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-xs font-bold"
+                        >
+                          تعديل
+                        </button>
+                        <button
+                          onClick={() => { setProducts((prev) => prev.filter((item) => item.id !== p.id)); showToast('تم حذف المنتج'); }}
+                          className="py-1.5 px-3 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold"
+                        >
+                          حذف
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -1186,23 +1358,37 @@
             )}
 
             {activeTab === 'cloud' && (
-              <div className="bg-white p-6 rounded-2xl border max-w-2xl space-y-4">
-                <h2 className="font-extrabold text-base">ربط المزامنة السحابية</h2>
-                <p className="text-xs text-stone-500 leading-relaxed">
-                  أدخل رابط نقطة النهاية السحابية (API / Apps Script / JSON endpoint) التي تقرأ البيانات عبر GET وتحفظ التحديثات عبر POST لمزامنة المنتجات والطلبات والعملاء عبر الأجهزة.
-                </p>
-                <input
-                  type="url"
-                  dir="ltr"
-                  value={cloudInput}
-                  onChange={(e) => setCloudInput(e.target.value)}
-                  placeholder="https://script.google.com/macros/s/.../exec"
-                  className="w-full px-4 py-2.5 rounded-xl border text-sm text-left"
-                />
+              <div className="bg-white p-6 rounded-2xl border max-w-2xl space-y-5">
+                <h2 className="font-extrabold text-base">إعدادات المزامنة السحابية والشحن</h2>
+                <div className="space-y-2">
+                  <label className="block text-xs font-bold text-stone-700">رابط نقطة النهاية السحابية (API / Apps Script / JSON URL)</label>
+                  <input
+                    type="url"
+                    dir="ltr"
+                    value={cloudInput}
+                    onChange={(e) => setCloudInput(e.target.value)}
+                    placeholder="https://script.google.com/macros/s/.../exec"
+                    className="w-full px-4 py-2.5 rounded-xl border text-sm text-left"
+                  />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs text-stone-600 mb-1">شحن الإسكندرية</label>
+                    <input type="number" value={settings.shippingRates.alexandria} onChange={(e) => setSettings((p) => ({ ...p, shippingRates: { ...p.shippingRates, alexandria: Number(e.target.value) } }))} className="w-full px-3 py-2 rounded-xl border text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-stone-600 mb-1">شحن القاهرة والجيزة</label>
+                    <input type="number" value={settings.shippingRates.cairoGiza} onChange={(e) => setSettings((p) => ({ ...p, shippingRates: { ...p.shippingRates, cairoGiza: Number(e.target.value) } }))} className="w-full px-3 py-2 rounded-xl border text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-stone-600 mb-1">باقي المحافظات</label>
+                    <input type="number" value={settings.shippingRates.other} onChange={(e) => setSettings((p) => ({ ...p, shippingRates: { ...p.shippingRates, other: Number(e.target.value) } }))} className="w-full px-3 py-2 rounded-xl border text-sm" />
+                  </div>
+                </div>
                 <button
                   onClick={() => {
                     setSettings((prev) => ({ ...prev, cloudSyncUrl: cloudInput.trim() }));
-                    showToast('تم حفظ رابط المزامنة السحابية');
+                    showToast('تم حفظ الرابط السحابي وإعدادات الشحن');
                   }}
                   className="px-6 py-2.5 rounded-xl bg-rose-900 text-white text-xs font-bold"
                 >
@@ -1211,6 +1397,24 @@
               </div>
             )}
           </main>
+
+          {productModalOpen && (
+            <ProductFormModal
+              initialProduct={editingProduct}
+              onClose={() => { setProductModalOpen(false); setEditingProduct(null); }}
+              onSave={(saved) => {
+                if (editingProduct) {
+                  setProducts((prev) => prev.map((item) => item.id === saved.id ? saved : item));
+                  showToast('تم تحديث المنتج');
+                } else {
+                  setProducts((prev) => [saved, ...prev]);
+                  showToast('تم إضافة المنتج');
+                }
+                setProductModalOpen(false);
+                setEditingProduct(null);
+              }}
+            />
+          )}
 
           {toastMessage && (
             <div className="fixed bottom-6 left-6 bg-stone-900 text-white px-4 py-3 rounded-2xl text-xs font-bold shadow-xl">
