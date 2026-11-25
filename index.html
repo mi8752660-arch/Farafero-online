@@ -10,29 +10,87 @@
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Cormorant+Garamond:ital,wght@0,600;0,700;1,500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Cormorant+Garamond:ital,wght@0,600;0,700;1,500&display=swap" rel="stylesheet" />
   <style>
     body, * { font-family: 'Cairo', sans-serif; }
     .font-editorial { font-family: 'Cormorant Garamond', 'Cairo', serif; }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #fafaf9; }
-    ::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 9999px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(120, 113, 108, 0.35); border-radius: 9999px; }
     @media print {
       .no-print { display: none !important; }
-      body { background: #ffffff !important; }
+      body { background: #ffffff !important; color: #000000 !important; }
     }
   </style>
 </head>
-<body class="bg-white text-stone-900 antialiased selection:bg-stone-900 selection:text-white">
+<body>
   <div id="root"></div>
 
   <script type="text/babel">
     const { useState, useEffect, useMemo, useRef } = React;
 
     // =========================================================================
-    // الإعدادات الأساسية وجميع محافظات جمهورية مصر العربية
+    // الأنماط والثيمات المتعددة (Multi-Theme Engine)
     // =========================================================================
+    const THEMES = {
+      editorial: {
+        id: 'editorial',
+        name: 'Editorial Boutique',
+        arabicName: 'النمط الراقي النظيف',
+        pageBg: 'bg-white text-stone-900',
+        surfaceBg: 'bg-stone-50',
+        cardBg: 'bg-white',
+        border: 'border-stone-200',
+        mutedText: 'text-stone-500',
+        accentBtn: 'bg-stone-950 hover:bg-stone-800 text-white',
+        outlineBtn: 'border-stone-900 text-stone-900 hover:bg-stone-950 hover:text-white',
+        badgeSale: 'bg-rose-800 text-white',
+        topBarBg: 'bg-stone-950 text-white',
+        footerBg: 'bg-stone-100 text-stone-700'
+      },
+      warm: {
+        id: 'warm',
+        name: 'Warm Gift Studio',
+        arabicName: 'النمط الدافئ الفاخر',
+        pageBg: 'bg-[#FAF6F0] text-stone-900',
+        surfaceBg: 'bg-[#F3ECE1]',
+        cardBg: 'bg-white',
+        border: 'border-amber-900/15',
+        mutedText: 'text-stone-600',
+        accentBtn: 'bg-amber-900 hover:bg-amber-950 text-amber-50',
+        outlineBtn: 'border-amber-900 text-amber-900 hover:bg-amber-900 hover:text-amber-50',
+        badgeSale: 'bg-amber-700 text-white',
+        topBarBg: 'bg-amber-950 text-amber-50',
+        footerBg: 'bg-[#EFE6D8] text-stone-800'
+      },
+      velvet: {
+        id: 'velvet',
+        name: 'Dark Velvet',
+        arabicName: 'النمط الليلي الفخم',
+        pageBg: 'bg-stone-950 text-stone-100',
+        surfaceBg: 'bg-stone-900',
+        cardBg: 'bg-stone-900',
+        border: 'border-stone-800',
+        mutedText: 'text-stone-400',
+        accentBtn: 'bg-rose-700 hover:bg-rose-600 text-white',
+        outlineBtn: 'border-amber-400/70 text-amber-300 hover:bg-amber-400 hover:text-stone-950',
+        badgeSale: 'bg-amber-500 text-stone-950',
+        topBarBg: 'bg-black text-amber-200',
+        footerBg: 'bg-black text-stone-400'
+      }
+    };
+
+    const INITIAL_CATEGORIES = [
+      'بوكسات هدايا',
+      'مجات وأكواب',
+      'برفانات وعطور',
+      'إكسسوارات وساعات',
+      'إضاءات وأكريليك',
+      'دباديب وهدايا ناعمة'
+    ];
+
     const INITIAL_SETTINGS = {
+      themeId: 'editorial',
       storeName: 'FARAFERO GIFT SHOP',
       tagline: 'Curated Gifts & Luxury Keepsakes',
       whatsapp: '01005187411',
@@ -40,8 +98,8 @@
       email: 'hello@farafero.shop',
       cloudSyncUrl: '',
       announcements: [
-        'اكتشف تشكيلة الهدايا الفاخرة لعام 2027 — تغليف هدايا مجاني مع كل أوردر ✨',
-        'شحن سريع ومؤمّن لجميع محافظات جمهورية مصر العربية 🚚',
+        'تشكيلة الهدايا الفاخرة لعام 2027 — تغليف هدايا مجاني مع كل أوردر ✨',
+        'شحن سريع ومؤمّن لجميع محافظات جمهورية مصر العربية (27 محافظة) 🚚',
         'الدفع متاح عبر إنستاباي InstaPay • المحافظ الإلكترونية • فيزا • الدفع عند الاستلام 💳'
       ],
       shippingRates: {
@@ -114,7 +172,6 @@
         price: 680,
         oldPrice: 820,
         isBestSeller: true,
-        optionsLabel: 'الباقة',
         options: ['Standard Box', 'Deluxe + Perfume', 'VIP Royal'],
         image: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=900&q=80',
         hoverImage: 'https://images.unsplash.com/photo-1513201099705-a9746e1e201f?auto=format&fit=crop&w=900&q=80',
@@ -129,7 +186,6 @@
         price: 245,
         oldPrice: 310,
         isBestSeller: true,
-        optionsLabel: 'اللون',
         options: ['White Marble', 'Blush Pink', 'Emerald Green', 'Matte Black'],
         image: 'https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?auto=format&fit=crop&w=900&q=80',
         hoverImage: 'https://images.unsplash.com/photo-1577937927133-66ef06acdf18?auto=format&fit=crop&w=900&q=80',
@@ -144,7 +200,6 @@
         price: 390,
         oldPrice: 480,
         isBestSeller: true,
-        optionsLabel: 'الشكل',
         options: ['Galaxy', 'Full Moon', 'Saturn', 'Heart'],
         image: 'https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?auto=format&fit=crop&w=900&q=80',
         hoverImage: 'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&w=900&q=80',
@@ -159,11 +214,10 @@
         price: 520,
         oldPrice: 650,
         isBestSeller: true,
-        optionsLabel: 'اللون',
         options: ['Rose Gold', 'Classic Silver', 'Champagne Gold'],
         image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=900&q=80',
         hoverImage: 'https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=900&q=80',
-        description: 'ساعة يد أنيقة مقاومة للماء الخفيف مرفقة بعلبة قطيفة فاخرة.',
+        description: 'ساعة يد أنيقة مرفقة بعلبة قطيفة فاخرة.',
         inStock: true
       },
       {
@@ -174,7 +228,6 @@
         price: 460,
         oldPrice: 550,
         isBestSeller: false,
-        optionsLabel: 'الحجم',
         options: ['50ml', '100ml'],
         image: 'https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=900&q=80',
         hoverImage: 'https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=900&q=80',
@@ -189,11 +242,10 @@
         price: 340,
         oldPrice: 420,
         isBestSeller: true,
-        optionsLabel: 'اللون',
         options: ['Black Clover', 'White Mother of Pearl', 'Emerald'],
         image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=900&q=80',
         hoverImage: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=900&q=80',
-        description: 'طقم إكسسوارات ستانلس ستيل أصلي مقاوم للصدأ وتغير اللون داخل بوكس هدايا.',
+        description: 'طقم إكسسوارات ستانلس ستيل أصلي داخل بوكس هدايا.',
         inStock: true
       },
       {
@@ -204,7 +256,6 @@
         price: 375,
         oldPrice: 450,
         isBestSeller: false,
-        optionsLabel: 'الحجم',
         options: ['Medium 40cm', 'Large 65cm'],
         image: 'https://images.unsplash.com/photo-1559563458-527698bf5295?auto=format&fit=crop&w=900&q=80',
         hoverImage: 'https://images.unsplash.com/photo-1562040506-a9b32cb51b94?auto=format&fit=crop&w=900&q=80',
@@ -219,41 +270,10 @@
         price: 290,
         oldPrice: null,
         isBestSeller: false,
-        optionsLabel: 'الرائحة',
         options: ['Lavender Vanilla', 'Rose Garden', 'White Musk'],
         image: 'https://images.unsplash.com/photo-1602874801007-bd458bb1b8b6?auto=format&fit=crop&w=900&q=80',
         hoverImage: 'https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&w=900&q=80',
         description: 'شمعة شمع صويا طبيعي 100% مع فواحة عطرية لتعطير الغرفة بهدوء وأناقة.',
-        inStock: true
-      },
-      {
-        id: 'FRF-109',
-        name: 'Insulated Stainless Travel Tumbler 500ml',
-        arabicSubtitle: 'مج حراري حافظ للحرارة والبرودة لمدة 12 ساعة',
-        category: 'مجات وأكواب',
-        price: 280,
-        oldPrice: 340,
-        isBestSeller: false,
-        optionsLabel: 'اللون',
-        options: ['Dusty Rose', 'Beige Cream', 'Midnight Navy'],
-        image: 'https://images.unsplash.com/photo-1577937927133-66ef06acdf18?auto=format&fit=crop&w=900&q=80',
-        hoverImage: 'https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?auto=format&fit=crop&w=900&q=80',
-        description: 'مج حراري عملي جداً للجامعة والعمل والسفر بغطاء محكم الغلق ضد التسريب.',
-        inStock: true
-      },
-      {
-        id: 'FRF-110',
-        name: 'Luxury Men Leather Wallet & Perfume Box',
-        arabicSubtitle: 'بوكس هدايا رجالي (محفظة جلد طبيعي + عطر + ساعة)',
-        category: 'بوكسات هدايا',
-        price: 750,
-        oldPrice: 920,
-        isBestSeller: true,
-        optionsLabel: 'اللون',
-        options: ['Classic Black', 'Dark Havana Brown'],
-        image: 'https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=900&q=80',
-        hoverImage: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=900&q=80',
-        description: 'طقم هدايا رجالي متكامل في علبة خشبية فاخرة جاهزة للإهداء.',
         inStock: true
       }
     ];
@@ -290,13 +310,10 @@
       }
     }
 
-    // =========================================================================
-    // التطبيق الرئيسي (FARAFERO GIFT SHOP)
-    // =========================================================================
     function App() {
       const [settings, setSettings] = useState(() => {
         try {
-          const saved = JSON.parse(localStorage.getItem('farafero_editorial_settings_v1') || '{}');
+          const saved = JSON.parse(localStorage.getItem('farafero_pro_settings_v2') || '{}');
           return {
             ...INITIAL_SETTINGS,
             ...saved,
@@ -305,31 +322,38 @@
         } catch { return INITIAL_SETTINGS; }
       });
 
+      const [categoriesList, setCategoriesList] = useState(() => {
+        try {
+          return JSON.parse(localStorage.getItem('farafero_pro_categories_v2')) || INITIAL_CATEGORIES;
+        } catch { return INITIAL_CATEGORIES; }
+      });
+
       const [products, setProducts] = useState(() => {
         try {
-          return JSON.parse(localStorage.getItem('farafero_editorial_products_v1')) || INITIAL_PRODUCTS;
+          return JSON.parse(localStorage.getItem('farafero_pro_products_v2')) || INITIAL_PRODUCTS;
         } catch { return INITIAL_PRODUCTS; }
       });
 
       const [sliders, setSliders] = useState(() => {
         try {
-          return JSON.parse(localStorage.getItem('farafero_editorial_sliders_v1')) || INITIAL_SLIDERS;
+          return JSON.parse(localStorage.getItem('farafero_pro_sliders_v2')) || INITIAL_SLIDERS;
         } catch { return INITIAL_SLIDERS; }
       });
 
       const [orders, setOrders] = useState(() => {
         try {
-          return JSON.parse(localStorage.getItem('farafero_editorial_orders_v1')) || [];
+          return JSON.parse(localStorage.getItem('farafero_pro_orders_v2')) || [];
         } catch { return []; }
       });
 
       const [cart, setCart] = useState(() => {
         try {
-          return JSON.parse(localStorage.getItem('farafero_editorial_cart_v1')) || [];
+          return JSON.parse(localStorage.getItem('farafero_pro_cart_v2')) || [];
         } catch { return []; }
       });
 
-      // حالات الواجهة والفلاتر
+      const theme = THEMES[settings.themeId] || THEMES.editorial;
+
       const [view, setView] = useState('collection'); // collection | checkout | invoice | admin-login | admin | policy
       const [policyType, setPolicyType] = useState('exchange');
       const [selectedCategory, setSelectedCategory] = useState('الكل');
@@ -337,62 +361,61 @@
       const [searchQuery, setSearchQuery] = useState('');
       const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-      // فلاتر وترتيب مطابقة لستايل الموقع المرجعي
       const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
-      const [availabilityFilter, setAvailabilityFilter] = useState('all'); // all | instock | outofstock
+      const [availabilityFilter, setAvailabilityFilter] = useState('all');
       const [selectedOptionFilter, setSelectedOptionFilter] = useState('all');
       const [minPrice, setMinPrice] = useState('');
       const [maxPrice, setMaxPrice] = useState('');
-      const [sortBy, setSortBy] = useState('featured'); // featured | best-selling | price-asc | price-desc | newest
+      const [sortBy, setSortBy] = useState('featured');
 
-      // السلة الجانبية (Slide-over Cart Drawer) + نافذة تفاصيل المنتج السريعة
       const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
       const [lastAddedItem, setLastAddedItem] = useState(null);
       const [quickViewProduct, setQuickViewProduct] = useState(null);
 
-      // الإدارة والفواتير
       const [isAdmin, setIsAdmin] = useState(false);
       const [currentInvoice, setCurrentInvoice] = useState(null);
       const [announcementIdx, setAnnouncementIdx] = useState(0);
       const [syncStatus, setSyncStatus] = useState('محلي');
       const skipNextPush = useRef(false);
 
-      // حفظ في LocalStorage
       useEffect(() => {
-        try { localStorage.setItem('farafero_editorial_settings_v1', JSON.stringify(settings)); } catch {}
+        try { localStorage.setItem('farafero_pro_settings_v2', JSON.stringify(settings)); } catch {}
       }, [settings]);
 
       useEffect(() => {
-        try { localStorage.setItem('farafero_editorial_products_v1', JSON.stringify(products)); } catch {}
+        try { localStorage.setItem('farafero_pro_categories_v2', JSON.stringify(categoriesList)); } catch {}
+      }, [categoriesList]);
+
+      useEffect(() => {
+        try { localStorage.setItem('farafero_pro_products_v2', JSON.stringify(products)); } catch {}
         if (skipNextPush.current) { skipNextPush.current = false; return; }
         if (settings.cloudSyncUrl) {
-          cloudPush(settings.cloudSyncUrl, { products, orders, sliders, settings: { ...settings, cloudSyncUrl: undefined } });
+          cloudPush(settings.cloudSyncUrl, { products, orders, sliders, categories: categoriesList, settings: { ...settings, cloudSyncUrl: undefined } });
         }
       }, [products]);
 
       useEffect(() => {
-        try { localStorage.setItem('farafero_editorial_orders_v1', JSON.stringify(orders)); } catch {}
+        try { localStorage.setItem('farafero_pro_orders_v2', JSON.stringify(orders)); } catch {}
         if (skipNextPush.current) { skipNextPush.current = false; return; }
         if (settings.cloudSyncUrl) {
-          cloudPush(settings.cloudSyncUrl, { products, orders, sliders, settings: { ...settings, cloudSyncUrl: undefined } });
+          cloudPush(settings.cloudSyncUrl, { products, orders, sliders, categories: categoriesList, settings: { ...settings, cloudSyncUrl: undefined } });
         }
       }, [orders]);
 
       useEffect(() => {
-        try { localStorage.setItem('farafero_editorial_sliders_v1', JSON.stringify(sliders)); } catch {}
+        try { localStorage.setItem('farafero_pro_sliders_v2', JSON.stringify(sliders)); } catch {}
       }, [sliders]);
 
       useEffect(() => {
-        try { localStorage.setItem('farafero_editorial_cart_v1', JSON.stringify(cart)); } catch {}
+        try { localStorage.setItem('farafero_pro_cart_v2', JSON.stringify(cart)); } catch {}
       }, [cart]);
 
-      // شريط الإعلانات العلوي المتحرك
       useEffect(() => {
         if (!settings.announcements || settings.announcements.length <= 1) return;
-        const timer = setInterval(() => {
+        const t = setInterval(() => {
           setAnnouncementIdx(prev => (prev + 1) % settings.announcements.length);
-        }, 4000);
-        return () => clearInterval(timer);
+        }, 4200);
+        return () => clearInterval(t);
       }, [settings.announcements]);
 
       const syncCloudNow = async () => {
@@ -408,15 +431,19 @@
             if (Array.isArray(remote.products) && remote.products.length) setProducts(remote.products);
             if (Array.isArray(remote.orders) && remote.orders.length) setOrders(remote.orders);
             if (Array.isArray(remote.sliders) && remote.sliders.length) setSliders(remote.sliders);
+            if (Array.isArray(remote.categories) && remote.categories.length) setCategoriesList(remote.categories);
           }
-          await cloudPush(settings.cloudSyncUrl, { products, orders, sliders, settings: { ...settings, cloudSyncUrl: undefined } });
+          await cloudPush(settings.cloudSyncUrl, { products, orders, sliders, categories: categoriesList, settings: { ...settings, cloudSyncUrl: undefined } });
           setSyncStatus('متصل سحابياً');
         } catch {
           setSyncStatus('وضع محلي');
         }
       };
 
-      const categories = useMemo(() => ['الكل', ...new Set(products.map(p => p.category).filter(Boolean))], [products]);
+      const categories = useMemo(() => {
+        const merged = new Set(['الكل', ...categoriesList, ...products.map(p => p.category).filter(Boolean)]);
+        return Array.from(merged);
+      }, [categoriesList, products]);
 
       const allAvailableOptions = useMemo(() => {
         const set = new Set();
@@ -429,9 +456,8 @@
         return Math.max(...products.map(p => Number(p.price) || 0));
       }, [products]);
 
-      // تطبيق الفلاتر والترتيب
       const filteredAndSortedProducts = useMemo(() => {
-        let list = products.filter(p => {
+        const list = products.filter(p => {
           if (selectedCategory !== 'الكل' && p.category !== selectedCategory) return false;
           if (availabilityFilter === 'instock' && !p.inStock) return false;
           if (availabilityFilter === 'outofstock' && p.inStock) return false;
@@ -451,15 +477,10 @@
         });
 
         const sorted = [...list];
-        if (sortBy === 'best-selling') {
-          sorted.sort((a, b) => (b.isBestSeller ? 1 : 0) - (a.isBestSeller ? 1 : 0));
-        } else if (sortBy === 'price-asc') {
-          sorted.sort((a, b) => a.price - b.price);
-        } else if (sortBy === 'price-desc') {
-          sorted.sort((a, b) => b.price - a.price);
-        } else if (sortBy === 'newest') {
-          sorted.reverse();
-        }
+        if (sortBy === 'best-selling') sorted.sort((a, b) => (b.isBestSeller ? 1 : 0) - (a.isBestSeller ? 1 : 0));
+        else if (sortBy === 'price-asc') sorted.sort((a, b) => a.price - b.price);
+        else if (sortBy === 'price-desc') sorted.sort((a, b) => b.price - a.price);
+        else if (sortBy === 'newest') sorted.reverse();
         return sorted;
       }, [products, selectedCategory, availabilityFilter, selectedOptionFilter, minPrice, maxPrice, searchQuery, sortBy]);
 
@@ -477,7 +498,6 @@
         (minPrice !== '' ? 1 : 0) +
         (maxPrice !== '' ? 1 : 0);
 
-      // إدارة السلة
       const addToCart = (product, chosenOption) => {
         if (!product.inStock) return;
         const opt = chosenOption || (product.options && product.options[0]) || 'قياسي';
@@ -566,7 +586,6 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
       };
 
-      // عرض لوحة التحكم أو تسجيل الدخول
       if (view === 'admin-login') {
         return (
           <AdminLogin
@@ -582,6 +601,8 @@
           <AdminPanel
             settings={settings}
             setSettings={setSettings}
+            categoriesList={categoriesList}
+            setCategoriesList={setCategoriesList}
             products={products}
             setProducts={setProducts}
             sliders={sliders}
@@ -608,23 +629,23 @@
       }
 
       return (
-        <div className="min-h-screen flex flex-col bg-white text-stone-900">
-          {/* 1. شريط الإعلانات العلوي (Announcement Bar) */}
-          <div className="bg-stone-950 text-white text-xs py-2.5 px-4 border-b border-stone-800">
+        <div className={`min-h-screen flex flex-col transition-colors duration-300 ${theme.pageBg}`}>
+          {/* شريط الإعلانات العلوي */}
+          <div className={`${theme.topBarBg} text-xs py-2.5 px-4`}>
             <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
               <button
                 onClick={() => setAnnouncementIdx(prev => (prev - 1 + settings.announcements.length) % settings.announcements.length)}
-                className="text-stone-400 hover:text-white px-2"
+                className="opacity-70 hover:opacity-100 px-2"
                 aria-label="السابق"
               >
                 ›
               </button>
-              <p className="text-center font-medium tracking-wide truncate">
+              <p className="text-center font-medium truncate">
                 {settings.announcements[announcementIdx]}
               </p>
               <button
                 onClick={() => setAnnouncementIdx(prev => (prev + 1) % settings.announcements.length)}
-                className="text-stone-400 hover:text-white px-2"
+                className="opacity-70 hover:opacity-100 px-2"
                 aria-label="التالي"
               >
                 ‹
@@ -632,14 +653,13 @@
             </div>
           </div>
 
-          {/* 2. الهيدر النظيف (Header) */}
-          <header className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-stone-200">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-4">
-              {/* يمين: زر الموبايل + روابط الأقسام */}
+          {/* الهيدر */}
+          <header className={`sticky top-0 z-40 backdrop-blur border-b ${theme.border} ${settings.themeId === 'velvet' ? 'bg-stone-950/90' : 'bg-white/95'}`}>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-3">
               <div className="flex items-center gap-4 flex-1">
                 <button
                   onClick={() => setMobileMenuOpen(true)}
-                  className="lg:hidden p-2 -mr-2 text-stone-800 hover:bg-stone-100 rounded-lg"
+                  className="lg:hidden p-2 -mr-2 rounded-lg"
                   aria-label="القائمة"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="1.75" viewBox="0 0 24 24">
@@ -647,18 +667,18 @@
                   </svg>
                 </button>
 
-                <nav className="hidden lg:flex items-center gap-6 text-sm font-semibold text-stone-700">
+                <nav className="hidden lg:flex items-center gap-5 text-sm font-semibold">
                   <button
                     onClick={() => { setSelectedCategory('الكل'); setView('collection'); }}
-                    className={`hover:text-stone-950 transition pb-1 ${view === 'collection' && selectedCategory === 'الكل' ? 'border-b-2 border-stone-900 text-stone-950' : ''}`}
+                    className={`pb-1 transition ${view === 'collection' && selectedCategory === 'الكل' ? 'border-b-2 border-current font-bold' : 'opacity-75 hover:opacity-100'}`}
                   >
-                    الرئيسية
+                    الكل
                   </button>
                   {categories.filter(c => c !== 'الكل').slice(0, 4).map(cat => (
                     <button
                       key={cat}
                       onClick={() => { setSelectedCategory(cat); setView('collection'); }}
-                      className={`hover:text-stone-950 transition pb-1 ${view === 'collection' && selectedCategory === cat ? 'border-b-2 border-stone-900 text-stone-950' : ''}`}
+                      className={`pb-1 transition ${view === 'collection' && selectedCategory === cat ? 'border-b-2 border-current font-bold' : 'opacity-75 hover:opacity-100'}`}
                     >
                       {cat}
                     </button>
@@ -666,23 +686,35 @@
                 </nav>
               </div>
 
-              {/* المنتصف: اللوجو */}
               <div className="text-center">
-                <button onClick={() => { setSelectedCategory('الكل'); setView('collection'); }} className="group">
-                  <div className="font-editorial text-xl sm:text-2xl lg:text-3xl font-bold tracking-wider text-stone-950 uppercase">
+                <button onClick={() => { setSelectedCategory('الكل'); setView('collection'); }}>
+                  <div className="font-editorial text-xl sm:text-2xl lg:text-3xl font-bold tracking-wider uppercase">
                     {settings.storeName}
                   </div>
-                  <div className="text-[10px] tracking-[0.22em] text-stone-400 uppercase hidden sm:block">
+                  <div className={`text-[10px] tracking-[0.22em] uppercase hidden sm:block ${theme.mutedText}`}>
                     {settings.tagline}
                   </div>
                 </button>
               </div>
 
-              {/* يسار: البحث + الإدارة + حقيبة التسوق */}
-              <div className="flex items-center justify-end gap-2 sm:gap-4 flex-1">
+              <div className="flex items-center justify-end gap-2 sm:gap-3 flex-1">
+                {/* مبدّل الأنماط السريع */}
+                <select
+                  value={settings.themeId}
+                  onChange={e => setSettings(prev => ({ ...prev, themeId: e.target.value }))}
+                  aria-label="نمط التصميم"
+                  className={`hidden md:block text-xs font-bold px-2.5 py-1.5 border bg-transparent cursor-pointer ${theme.border}`}
+                >
+                  {Object.values(THEMES).map(t => (
+                    <option key={t.id} value={t.id} className="text-stone-900 bg-white">
+                      {t.arabicName}
+                    </option>
+                  ))}
+                </select>
+
                 <button
                   onClick={() => setSearchOpen(!searchOpen)}
-                  className="p-2 text-stone-700 hover:text-stone-950 hover:bg-stone-100 rounded-full transition"
+                  className="p-2 rounded-full opacity-80 hover:opacity-100 transition"
                   aria-label="بحث"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.75" viewBox="0 0 24 24">
@@ -692,29 +724,28 @@
 
                 <button
                   onClick={() => setView('admin-login')}
-                  className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-stone-200 text-xs font-bold text-stone-700 hover:border-stone-900 hover:text-stone-950 transition"
+                  className={`px-3 py-1.5 border text-xs font-bold transition ${theme.border}`}
                 >
                   الإدارة
                 </button>
 
                 <button
                   onClick={() => setCartDrawerOpen(true)}
-                  className="relative p-2 text-stone-800 hover:bg-stone-100 rounded-full transition flex items-center gap-1.5"
+                  className="relative p-2 flex items-center gap-1.5"
                   aria-label="حقيبة التسوق"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.75" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007Z" />
                   </svg>
-                  <span className="text-xs font-bold bg-stone-900 text-white w-5 h-5 rounded-full flex items-center justify-center">
+                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${theme.accentBtn}`}>
                     {cartCount}
                   </span>
                 </button>
               </div>
             </div>
 
-            {/* شريط البحث المنبثق */}
             {searchOpen && (
-              <div className="border-t border-stone-100 bg-stone-50 px-4 py-3">
+              <div className={`border-t px-4 py-3 ${theme.border} ${theme.surfaceBg}`}>
                 <div className="max-w-2xl mx-auto flex items-center gap-2">
                   <input
                     type="text"
@@ -722,14 +753,14 @@
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
                     placeholder="ابحث عن بوكس هدايا، مج، برفان، ساعة..."
-                    className="w-full px-4 py-2.5 bg-white border border-stone-300 rounded-none text-sm focus:outline-none focus:border-stone-900"
+                    className={`w-full px-4 py-2.5 border text-sm focus:outline-none ${theme.cardBg} ${theme.border}`}
                   />
                   {searchQuery && (
-                    <button onClick={() => setSearchQuery('')} className="px-3 py-2.5 text-xs font-bold text-stone-500">
+                    <button onClick={() => setSearchQuery('')} className="px-3 py-2.5 text-xs font-bold opacity-70">
                       مسح
                     </button>
                   )}
-                  <button onClick={() => setSearchOpen(false)} className="px-3 py-2.5 text-xs font-bold text-stone-900">
+                  <button onClick={() => setSearchOpen(false)} className="px-3 py-2.5 text-xs font-bold">
                     إغلاق
                   </button>
                 </div>
@@ -737,17 +768,15 @@
             )}
           </header>
 
-          {/* محتوى الصفحة */}
           {view === 'collection' && (
             <main className="flex-1">
-              {/* 3. سلايدر الإعلانات والبانر الرئيسي */}
               <HeroBannerSlider
                 sliders={sliders}
-                onSelectCategory={(cat) => setSelectedCategory(cat)}
+                onSelectCategory={cat => setSelectedCategory(cat)}
               />
 
-              {/* 4. شريط الكوليكشنز (Collections Bar) */}
-              <section className="border-b border-stone-200 bg-stone-50/70">
+              {/* شريط الأقسام */}
+              <section className={`border-b ${theme.border} ${theme.surfaceBg}`}>
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center gap-2 sm:gap-3 overflow-x-auto">
                   {categories.map(cat => (
                     <button
@@ -755,8 +784,8 @@
                       onClick={() => setSelectedCategory(cat)}
                       className={`px-4 py-2 text-xs sm:text-sm font-bold whitespace-nowrap transition border ${
                         selectedCategory === cat
-                          ? 'bg-stone-900 text-white border-stone-900'
-                          : 'bg-white text-stone-700 border-stone-200 hover:border-stone-900'
+                          ? theme.accentBtn + ' border-transparent'
+                          : `${theme.cardBg} ${theme.border} opacity-85 hover:opacity-100`
                       }`}
                     >
                       {cat}
@@ -765,21 +794,22 @@
                 </div>
               </section>
 
-              {/* 5. رأس الكوليكشن + شريط الفلترة والترتيب (Filter and Sort Bar) */}
+              {/* الفلاتر والترتيب والمنتجات */}
               <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-8 pb-16">
-                <div className="mb-6">
-                  <p className="text-xs text-stone-400 uppercase tracking-widest mb-1">Collection</p>
-                  <h1 className="text-2xl sm:text-3xl font-bold text-stone-950">
-                    {selectedCategory === 'الكل' ? 'جميع الهدايا والمجموعات (Gift Collection 2027)' : selectedCategory}
-                  </h1>
+                <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+                  <div>
+                    <p className={`text-xs uppercase tracking-widest mb-1 ${theme.mutedText}`}>Collection</p>
+                    <h1 className="text-2xl sm:text-3xl font-bold">
+                      {selectedCategory === 'الكل' ? 'جميع الهدايا والمجموعات (Gift Collection 2027)' : selectedCategory}
+                    </h1>
+                  </div>
                 </div>
 
-                {/* شريط الفلاتر العلوي المطابق للستايل المرجعي */}
-                <div className="flex flex-wrap items-center justify-between gap-4 py-3.5 border-y border-stone-200 mb-6 text-xs sm:text-sm">
+                <div className={`flex flex-wrap items-center justify-between gap-4 py-3.5 border-y mb-6 text-xs sm:text-sm ${theme.border}`}>
                   <div className="flex items-center gap-4">
                     <button
                       onClick={() => setFilterDrawerOpen(true)}
-                      className="inline-flex items-center gap-2 font-bold text-stone-800 hover:text-stone-950"
+                      className="inline-flex items-center gap-2 font-bold"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.75" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
@@ -787,26 +817,25 @@
                       <span>فلترة وترتيب {activeFiltersCount > 0 ? `(${activeFiltersCount})` : ''}</span>
                     </button>
 
-                    {/* فلاتر سريعة على الديسكتوب */}
-                    <div className="hidden md:flex items-center gap-3 border-r border-stone-200 pr-4">
+                    <div className={`hidden md:flex items-center gap-3 border-r pr-4 ${theme.border}`}>
                       <select
                         value={availabilityFilter}
                         onChange={e => setAvailabilityFilter(e.target.value)}
-                        className="bg-transparent font-semibold text-stone-700 focus:outline-none cursor-pointer"
+                        className="bg-transparent font-semibold focus:outline-none cursor-pointer"
                       >
-                        <option value="all">التوفر: الكل</option>
-                        <option value="instock">متوفر (in stock)</option>
-                        <option value="outofstock">غير متوفر</option>
+                        <option value="all" className="text-stone-900">التوفر: الكل</option>
+                        <option value="instock" className="text-stone-900">in stock</option>
+                        <option value="outofstock" className="text-stone-900">غير متوفر</option>
                       </select>
 
                       <select
                         value={selectedOptionFilter}
                         onChange={e => setSelectedOptionFilter(e.target.value)}
-                        className="bg-transparent font-semibold text-stone-700 focus:outline-none cursor-pointer"
+                        className="bg-transparent font-semibold focus:outline-none cursor-pointer"
                       >
-                        <option value="all">النوع / اللون: الكل</option>
+                        <option value="all" className="text-stone-900">النوع / اللون: الكل</option>
                         {allAvailableOptions.map(opt => (
-                          <option key={opt} value={opt}>{opt}</option>
+                          <option key={opt} value={opt} className="text-stone-900">{opt}</option>
                         ))}
                       </select>
                     </div>
@@ -814,64 +843,53 @@
 
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
-                      <label className="text-stone-500 hidden sm:inline">ترتيب حسب:</label>
+                      <label className={`hidden sm:inline ${theme.mutedText}`}>ترتيب:</label>
                       <select
                         value={sortBy}
                         onChange={e => setSortBy(e.target.value)}
-                        className="bg-transparent font-bold text-stone-800 focus:outline-none cursor-pointer"
+                        className="bg-transparent font-bold focus:outline-none cursor-pointer"
                       >
-                        <option value="featured">المميز (Featured)</option>
-                        <option value="best-selling">الأكثر مبيعاً (Best selling)</option>
-                        <option value="price-asc">السعر: من الأقل للأعلى</option>
-                        <option value="price-desc">السعر: من الأعلى للأقل</option>
-                        <option value="newest">الأحدث (Date, new to old)</option>
+                        <option value="featured" className="text-stone-900">المميز (Featured)</option>
+                        <option value="best-selling" className="text-stone-900">الأكثر مبيعاً</option>
+                        <option value="price-asc" className="text-stone-900">السعر: من الأقل للأعلى</option>
+                        <option value="price-desc" className="text-stone-900">السعر: من الأعلى للأقل</option>
+                        <option value="newest" className="text-stone-900">الأحدث</option>
                       </select>
                     </div>
 
-                    <span className="text-stone-500 font-semibold">
+                    <span className={`font-semibold ${theme.mutedText}`}>
                       {filteredAndSortedProducts.length} منتج
                     </span>
                   </div>
                 </div>
 
-                {/* شارات الفلاتر النشطة */}
                 {activeFiltersCount > 0 && (
                   <div className="flex flex-wrap items-center gap-2 mb-6">
                     {availabilityFilter !== 'all' && (
-                      <button
-                        onClick={() => setAvailabilityFilter('all')}
-                        className="px-3 py-1 rounded-full bg-stone-100 text-xs font-bold text-stone-800 hover:bg-stone-200"
-                      >
+                      <button onClick={() => setAvailabilityFilter('all')} className={`px-3 py-1 border text-xs font-bold ${theme.surfaceBg} ${theme.border}`}>
                         {availabilityFilter === 'instock' ? 'in stock' : 'غير متوفر'} ✕
                       </button>
                     )}
                     {selectedOptionFilter !== 'all' && (
-                      <button
-                        onClick={() => setSelectedOptionFilter('all')}
-                        className="px-3 py-1 rounded-full bg-stone-100 text-xs font-bold text-stone-800 hover:bg-stone-200"
-                      >
+                      <button onClick={() => setSelectedOptionFilter('all')} className={`px-3 py-1 border text-xs font-bold ${theme.surfaceBg} ${theme.border}`}>
                         {selectedOptionFilter} ✕
                       </button>
                     )}
                     {(minPrice !== '' || maxPrice !== '') && (
-                      <button
-                        onClick={() => { setMinPrice(''); setMaxPrice(''); }}
-                        className="px-3 py-1 rounded-full bg-stone-100 text-xs font-bold text-stone-800 hover:bg-stone-200"
-                      >
+                      <button onClick={() => { setMinPrice(''); setMaxPrice(''); }} className={`px-3 py-1 border text-xs font-bold ${theme.surfaceBg} ${theme.border}`}>
                         السعر: {minPrice || 0} - {maxPrice || highestPriceInStore} ج.م ✕
                       </button>
                     )}
-                    <button onClick={resetAllFilters} className="text-xs font-bold underline text-stone-600 hover:text-stone-950 mr-2">
+                    <button onClick={resetAllFilters} className="text-xs font-bold underline mr-2">
                       مسح الكل
                     </button>
                   </div>
                 )}
 
-                {/* 6. شبكة المنتجات (Product Grid) */}
                 {filteredAndSortedProducts.length === 0 ? (
-                  <div className="py-20 text-center border border-stone-200 bg-stone-50/50 space-y-3">
-                    <p className="text-base font-bold text-stone-800">لا توجد منتجات مطابقة للفلاتر الحالية</p>
-                    <button onClick={resetAllFilters} className="px-5 py-2.5 bg-stone-900 text-white text-xs font-bold">
+                  <div className={`py-20 text-center border space-y-3 ${theme.border} ${theme.surfaceBg}`}>
+                    <p className="text-base font-bold">لا توجد منتجات مطابقة للفلاتر الحالية</p>
+                    <button onClick={resetAllFilters} className={`px-5 py-2.5 text-xs font-bold ${theme.accentBtn}`}>
                       إعادة ضبط الفلاتر
                     </button>
                   </div>
@@ -881,6 +899,7 @@
                       <EditorialProductCard
                         key={product.id}
                         product={product}
+                        theme={theme}
                         onAddToCart={addToCart}
                         onQuickView={() => setQuickViewProduct(product)}
                       />
@@ -891,12 +910,12 @@
             </main>
           )}
 
-          {/* صفحة إتمام الطلب (Checkout) */}
           {view === 'checkout' && (
             <CheckoutPage
               cart={cart}
               cartSubtotal={cartSubtotal}
               settings={settings}
+              theme={theme}
               updateCartQty={updateCartQty}
               removeFromCart={removeFromCart}
               onBackToStore={() => setView('collection')}
@@ -904,32 +923,32 @@
             />
           )}
 
-          {/* صفحة السياسات (Exchange / Shipping) */}
           {view === 'policy' && (
             <PolicyPage
               type={policyType}
               settings={settings}
+              theme={theme}
               onBack={() => setView('collection')}
             />
           )}
 
-          {/* 7. الفوتر الاحترافي المطابق للموقع */}
-          <footer className="bg-stone-100 border-t border-stone-200 text-stone-700 mt-auto">
+          {/* الفوتر */}
+          <footer className={`border-t mt-auto ${theme.border} ${theme.footerBg}`}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 grid grid-cols-1 md:grid-cols-4 gap-8 text-sm">
               <div className="space-y-3">
-                <div className="font-editorial text-xl font-bold text-stone-950 uppercase">{settings.storeName}</div>
-                <p className="text-xs text-stone-500 leading-relaxed">
-                  هدايا مختارة بعناية وتغليف فاخر يليق بكل مناسبة سعيدة. توصيل سريع وآمن لجميع محافظات مصر.
+                <div className="font-editorial text-xl font-bold uppercase">{settings.storeName}</div>
+                <p className="text-xs opacity-75 leading-relaxed">
+                  هدايا مختارة بعناية وتغليف فاخر يليق بكل مناسبة سعيدة. توصيل سريع لجميع محافظات مصر.
                 </p>
-                <p className="text-xs font-bold text-stone-800">واتساب وخدمة العملاء: {settings.whatsapp}</p>
+                <p className="text-xs font-bold">واتساب: {settings.whatsapp}</p>
               </div>
 
               <div className="space-y-2.5">
-                <h3 className="font-bold text-stone-950 text-xs uppercase tracking-wider">الأقسام (Shop)</h3>
-                <ul className="space-y-1.5 text-xs text-stone-600">
+                <h3 className="font-bold text-xs uppercase tracking-wider">الأقسام</h3>
+                <ul className="space-y-1.5 text-xs opacity-80">
                   {categories.map(cat => (
                     <li key={cat}>
-                      <button onClick={() => { setSelectedCategory(cat); setView('collection'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="hover:text-stone-950">
+                      <button onClick={() => { setSelectedCategory(cat); setView('collection'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="hover:underline">
                         {cat}
                       </button>
                     </li>
@@ -938,166 +957,140 @@
               </div>
 
               <div className="space-y-2.5">
-                <h3 className="font-bold text-stone-950 text-xs uppercase tracking-wider">المساعدة والسياسات (Help)</h3>
-                <ul className="space-y-1.5 text-xs text-stone-600">
+                <h3 className="font-bold text-xs uppercase tracking-wider">المساعدة والسياسات</h3>
+                <ul className="space-y-1.5 text-xs opacity-80">
                   <li>
-                    <button onClick={() => { setPolicyType('exchange'); setView('policy'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="hover:text-stone-950">
-                      سياسة الاستبدال والاسترجاع (Exchange Policy)
+                    <button onClick={() => { setPolicyType('exchange'); setView('policy'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="hover:underline">
+                      سياسة الاستبدال والاسترجاع
                     </button>
                   </li>
                   <li>
-                    <button onClick={() => { setPolicyType('shipping'); setView('policy'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="hover:text-stone-950">
-                      أسعار ومواعيد الشحن للمحافظات (Shipping Policy)
+                    <button onClick={() => { setPolicyType('shipping'); setView('policy'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="hover:underline">
+                      أسعار الشحن للمحافظات (27 محافظة)
                     </button>
                   </li>
                   <li>
-                    <button onClick={() => setView('admin-login')} className="hover:text-stone-950 font-bold text-stone-800">
-                      لوحة تحكم المتجر
+                    <button onClick={() => setView('admin-login')} className="hover:underline font-bold">
+                      لوحة التحكم
                     </button>
                   </li>
                 </ul>
               </div>
 
               <div className="space-y-3">
-                <h3 className="font-bold text-stone-950 text-xs uppercase tracking-wider">طرق الدفع المتاحة</h3>
-                <div className="flex flex-wrap gap-1.5 text-[11px] font-bold">
-                  <span className="px-2.5 py-1 bg-white border border-stone-300 text-stone-800">VISA / Mastercard</span>
-                  <span className="px-2.5 py-1 bg-white border border-stone-300 text-purple-800">InstaPay</span>
-                  <span className="px-2.5 py-1 bg-white border border-stone-300 text-red-700">Vodafone / Etisalat Cash</span>
-                  <span className="px-2.5 py-1 bg-white border border-stone-300 text-stone-800">الدفع عند الاستلام</span>
+                <h3 className="font-bold text-xs uppercase tracking-wider">طرق الدفع</h3>
+                <div className="flex flex-wrap gap-1.5 text-[11px] font-bold text-stone-900">
+                  <span className="px-2.5 py-1 bg-white border border-stone-300">VISA / Mastercard</span>
+                  <span className="px-2.5 py-1 bg-white border border-stone-300">InstaPay</span>
+                  <span className="px-2.5 py-1 bg-white border border-stone-300">محفظة إلكترونية</span>
+                  <span className="px-2.5 py-1 bg-white border border-stone-300">الدفع عند الاستلام</span>
                 </div>
               </div>
             </div>
 
-            <div className="border-t border-stone-200 py-4 px-4 text-center text-xs text-stone-500">
+            <div className={`border-t py-4 px-4 text-center text-xs opacity-75 ${theme.border}`}>
               © 2027 {settings.storeName} — جميع الحقوق محفوظة
             </div>
           </footer>
 
-          {/* ================================================================= */}
-          {/* النوافذ الجانبية (Drawers & Modals)                                */}
-          {/* ================================================================= */}
-
-          {/* قائمة الموبايل الجانبية */}
+          {/* قائمة الموبايل */}
           {mobileMenuOpen && (
             <div className="fixed inset-0 z-50 flex">
-              <div className="fixed inset-0 bg-black/40" onClick={() => setMobileMenuOpen(false)} />
-              <div className="relative bg-white w-72 max-w-[85vw] h-full p-6 flex flex-col justify-between z-10 shadow-2xl">
+              <div className="fixed inset-0 bg-black/50" onClick={() => setMobileMenuOpen(false)} />
+              <div className={`relative w-72 max-w-[85vw] h-full p-6 flex flex-col justify-between z-10 shadow-2xl ${theme.pageBg}`}>
                 <div className="space-y-6">
-                  <div className="flex items-center justify-between border-b pb-4">
+                  <div className={`flex items-center justify-between border-b pb-4 ${theme.border}`}>
                     <span className="font-editorial font-bold text-lg">{settings.storeName}</span>
                     <button onClick={() => setMobileMenuOpen(false)} className="text-lg font-bold p-1">✕</button>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="block text-[11px] font-bold opacity-70">نمط التصميم</label>
+                    <select
+                      value={settings.themeId}
+                      onChange={e => setSettings(prev => ({ ...prev, themeId: e.target.value }))}
+                      className={`w-full px-3 py-2 border text-xs font-bold ${theme.cardBg} ${theme.border}`}
+                    >
+                      {Object.values(THEMES).map(t => (
+                        <option key={t.id} value={t.id}>{t.arabicName}</option>
+                      ))}
+                    </select>
                   </div>
                   <nav className="flex flex-col space-y-3 text-sm font-bold">
                     {categories.map(cat => (
                       <button
                         key={cat}
                         onClick={() => { setSelectedCategory(cat); setView('collection'); setMobileMenuOpen(false); }}
-                        className={`text-right py-1.5 ${selectedCategory === cat ? 'text-stone-950 underline' : 'text-stone-600'}`}
+                        className={`text-right py-1 ${selectedCategory === cat ? 'underline font-black' : 'opacity-75'}`}
                       >
                         {cat}
                       </button>
                     ))}
                   </nav>
                 </div>
-                <div className="space-y-2 border-t pt-4">
-                  <button
-                    onClick={() => { setMobileMenuOpen(false); setView('admin-login'); }}
-                    className="w-full py-2.5 bg-stone-900 text-white text-xs font-bold"
-                  >
-                    دخول لوحة الإدارة
-                  </button>
-                </div>
+                <button
+                  onClick={() => { setMobileMenuOpen(false); setView('admin-login'); }}
+                  className={`w-full py-2.5 text-xs font-bold ${theme.accentBtn}`}
+                >
+                  دخول لوحة الإدارة
+                </button>
               </div>
             </div>
           )}
 
-          {/* درج الفلترة والترتيب (Filter & Sort Drawer) */}
+          {/* درج الفلترة والترتيب */}
           {filterDrawerOpen && (
             <div className="fixed inset-0 z-50 flex justify-start">
-              <div className="fixed inset-0 bg-black/40" onClick={() => setFilterDrawerOpen(false)} />
-              <div className="relative bg-white w-80 max-w-[90vw] h-full p-6 flex flex-col justify-between z-10 shadow-2xl overflow-y-auto">
+              <div className="fixed inset-0 bg-black/50" onClick={() => setFilterDrawerOpen(false)} />
+              <div className={`relative w-80 max-w-[90vw] h-full p-6 flex flex-col justify-between z-10 shadow-2xl overflow-y-auto ${theme.pageBg}`}>
                 <div className="space-y-6">
-                  <div className="flex items-center justify-between border-b pb-4">
+                  <div className={`flex items-center justify-between border-b pb-4 ${theme.border}`}>
                     <div>
                       <h2 className="font-bold text-base">فلترة وترتيب</h2>
-                      <p className="text-xs text-stone-500">{filteredAndSortedProducts.length} منتج</p>
+                      <p className={`text-xs ${theme.mutedText}`}>{filteredAndSortedProducts.length} منتج</p>
                     </div>
                     <button onClick={() => setFilterDrawerOpen(false)} className="text-lg font-bold p-1">✕</button>
                   </div>
 
-                  {/* فلتر التوفر */}
-                  <div className="space-y-2.5 border-b pb-5">
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-stone-500">التوفر (Availability)</h3>
+                  <div className={`space-y-2.5 border-b pb-5 ${theme.border}`}>
+                    <h3 className={`text-xs font-bold uppercase ${theme.mutedText}`}>التوفر</h3>
                     <div className="space-y-2 text-sm">
                       {[
                         { id: 'all', label: 'الكل' },
-                        { id: 'instock', label: 'in stock (متوفر حالياً)' },
+                        { id: 'instock', label: 'in stock' },
                         { id: 'outofstock', label: 'غير متوفر' }
                       ].map(opt => (
                         <label key={opt.id} className="flex items-center gap-2.5 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="avail"
-                            checked={availabilityFilter === opt.id}
-                            onChange={() => setAvailabilityFilter(opt.id)}
-                            className="accent-stone-900"
-                          />
+                          <input type="radio" name="availDrawer" checked={availabilityFilter === opt.id} onChange={() => setAvailabilityFilter(opt.id)} />
                           <span>{opt.label}</span>
                         </label>
                       ))}
                     </div>
                   </div>
 
-                  {/* فلتر السعر */}
-                  <div className="space-y-2.5 border-b pb-5">
+                  <div className={`space-y-2.5 border-b pb-5 ${theme.border}`}>
                     <div className="flex items-center justify-between">
-                      <h3 className="text-xs font-bold uppercase tracking-wider text-stone-500">السعر (Price)</h3>
-                      <span className="text-[11px] text-stone-400">أعلى سعر {highestPriceInStore} ج.م</span>
+                      <h3 className={`text-xs font-bold uppercase ${theme.mutedText}`}>السعر</h3>
+                      <span className={`text-[11px] ${theme.mutedText}`}>أعلى سعر {highestPriceInStore} ج.م</span>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
-                      <input
-                        type="number"
-                        placeholder="من (ج.م)"
-                        value={minPrice}
-                        onChange={e => setMinPrice(e.target.value)}
-                        className="px-3 py-2 border border-stone-300 text-xs"
-                      />
-                      <input
-                        type="number"
-                        placeholder="إلى (ج.م)"
-                        value={maxPrice}
-                        onChange={e => setMaxPrice(e.target.value)}
-                        className="px-3 py-2 border border-stone-300 text-xs"
-                      />
+                      <input type="number" placeholder="من (ج.م)" value={minPrice} onChange={e => setMinPrice(e.target.value)} className={`px-3 py-2 border text-xs ${theme.cardBg} ${theme.border}`} />
+                      <input type="number" placeholder="إلى (ج.م)" value={maxPrice} onChange={e => setMaxPrice(e.target.value)} className={`px-3 py-2 border text-xs ${theme.cardBg} ${theme.border}`} />
                     </div>
                   </div>
 
-                  {/* فلتر اللون / النوع */}
-                  <div className="space-y-2.5 border-b pb-5">
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-stone-500">النوع / اللون</h3>
-                    <select
-                      value={selectedOptionFilter}
-                      onChange={e => setSelectedOptionFilter(e.target.value)}
-                      className="w-full px-3 py-2 border border-stone-300 text-xs bg-white font-semibold"
-                    >
-                      <option value="all">جميع الأنواع والألوان</option>
-                      {allAvailableOptions.map(opt => (
-                        <option key={opt} value={opt}>{opt}</option>
-                      ))}
+                  <div className={`space-y-2.5 border-b pb-5 ${theme.border}`}>
+                    <h3 className={`text-xs font-bold uppercase ${theme.mutedText}`}>النوع / اللون</h3>
+                    <select value={selectedOptionFilter} onChange={e => setSelectedOptionFilter(e.target.value)} className={`w-full px-3 py-2 border text-xs font-semibold ${theme.cardBg} ${theme.border}`}>
+                      <option value="all">الكل</option>
+                      {allAvailableOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                     </select>
                   </div>
 
-                  {/* الترتيب */}
                   <div className="space-y-2.5">
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-stone-500">ترتيب حسب (Sort by)</h3>
-                    <select
-                      value={sortBy}
-                      onChange={e => setSortBy(e.target.value)}
-                      className="w-full px-3 py-2 border border-stone-300 text-xs bg-white font-semibold"
-                    >
-                      <option value="featured">المميز (Featured)</option>
-                      <option value="best-selling">الأكثر مبيعاً (Best selling)</option>
+                    <h3 className={`text-xs font-bold uppercase ${theme.mutedText}`}>الترتيب</h3>
+                    <select value={sortBy} onChange={e => setSortBy(e.target.value)} className={`w-full px-3 py-2 border text-xs font-semibold ${theme.cardBg} ${theme.border}`}>
+                      <option value="featured">المميز</option>
+                      <option value="best-selling">الأكثر مبيعاً</option>
                       <option value="price-asc">السعر: من الأقل للأعلى</option>
                       <option value="price-desc">السعر: من الأعلى للأقل</option>
                       <option value="newest">الأحدث</option>
@@ -1105,28 +1098,24 @@
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 pt-4 border-t mt-6">
-                  <button onClick={resetAllFilters} className="py-2.5 border border-stone-300 text-xs font-bold">
-                    مسح الكل
-                  </button>
-                  <button onClick={() => setFilterDrawerOpen(false)} className="py-2.5 bg-stone-900 text-white text-xs font-bold">
-                    عرض النتائج
-                  </button>
+                <div className={`grid grid-cols-2 gap-2 pt-4 border-t mt-6 ${theme.border}`}>
+                  <button onClick={resetAllFilters} className={`py-2.5 border text-xs font-bold ${theme.border}`}>مسح الكل</button>
+                  <button onClick={() => setFilterDrawerOpen(false)} className={`py-2.5 text-xs font-bold ${theme.accentBtn}`}>عرض النتائج</button>
                 </div>
               </div>
             </div>
           )}
 
-          {/* السلة الجانبية (Shopify-style Slide-over Cart Drawer) */}
+          {/* السلة الجانبية */}
           {cartDrawerOpen && (
             <div className="fixed inset-0 z-50 flex justify-end">
-              <div className="fixed inset-0 bg-black/45" onClick={() => setCartDrawerOpen(false)} />
-              <div className="relative bg-white w-96 max-w-[92vw] h-full flex flex-col justify-between z-10 shadow-2xl">
-                <div className="p-5 border-b border-stone-200 flex items-center justify-between">
+              <div className="fixed inset-0 bg-black/50" onClick={() => setCartDrawerOpen(false)} />
+              <div className={`relative w-96 max-w-[92vw] h-full flex flex-col justify-between z-10 shadow-2xl ${theme.pageBg}`}>
+                <div className={`p-5 border-b flex items-center justify-between ${theme.border}`}>
                   <div>
                     <h2 className="font-bold text-base">حقيبة التسوق ({cartCount})</h2>
                     {lastAddedItem && (
-                      <p className="text-[11px] text-emerald-700 font-bold mt-0.5">
+                      <p className="text-[11px] text-emerald-600 font-bold mt-0.5">
                         ✓ تمت إضافة "{lastAddedItem.name}" للسلة
                       </p>
                     )}
@@ -1137,31 +1126,28 @@
                 <div className="flex-1 overflow-y-auto p-5 space-y-4">
                   {cart.length === 0 ? (
                     <div className="text-center py-16 space-y-3">
-                      <p className="text-sm font-bold text-stone-500">حقيبة التسوق فارغة حالياً</p>
-                      <button
-                        onClick={() => setCartDrawerOpen(false)}
-                        className="px-5 py-2.5 bg-stone-900 text-white text-xs font-bold"
-                      >
+                      <p className={`text-sm font-bold ${theme.mutedText}`}>حقيبة التسوق فارغة حالياً</p>
+                      <button onClick={() => setCartDrawerOpen(false)} className={`px-5 py-2.5 text-xs font-bold ${theme.accentBtn}`}>
                         متابعة التسوق
                       </button>
                     </div>
                   ) : (
                     cart.map(item => (
-                      <div key={item.cartKey} className="flex gap-3.5 border-b border-stone-100 pb-4">
-                        <img src={item.image} alt={item.name} className="w-20 h-24 object-cover bg-stone-100 shrink-0" />
+                      <div key={item.cartKey} className={`flex gap-3.5 border-b pb-4 ${theme.border}`}>
+                        <img src={item.image} alt={item.name} className="w-20 h-24 object-cover shrink-0" />
                         <div className="flex-1 min-w-0 flex flex-col justify-between">
                           <div>
-                            <h3 className="text-xs font-bold text-stone-900 line-clamp-2">{item.name}</h3>
-                            <p className="text-[11px] text-stone-500 mt-0.5">الاختيار: {item.selectedOption}</p>
-                            <p className="text-xs font-bold text-stone-900 mt-1">{item.price} ج.م</p>
+                            <h3 className="text-xs font-bold line-clamp-2">{item.name}</h3>
+                            <p className={`text-[11px] mt-0.5 ${theme.mutedText}`}>الاختيار: {item.selectedOption}</p>
+                            <p className="text-xs font-bold mt-1">{item.price} ج.م</p>
                           </div>
                           <div className="flex items-center justify-between mt-2">
-                            <div className="inline-flex items-center border border-stone-300">
+                            <div className={`inline-flex items-center border ${theme.border}`}>
                               <button onClick={() => updateCartQty(item.cartKey, -1)} className="px-2.5 py-0.5 text-xs font-bold">-</button>
                               <span className="px-2.5 text-xs font-bold">{item.quantity}</span>
                               <button onClick={() => updateCartQty(item.cartKey, 1)} className="px-2.5 py-0.5 text-xs font-bold">+</button>
                             </div>
-                            <button onClick={() => removeFromCart(item.cartKey)} className="text-[11px] underline text-stone-500 hover:text-stone-900">
+                            <button onClick={() => removeFromCart(item.cartKey)} className="text-[11px] underline opacity-75">
                               حذف
                             </button>
                           </div>
@@ -1172,23 +1158,20 @@
                 </div>
 
                 {cart.length > 0 && (
-                  <div className="p-5 border-t border-stone-200 bg-stone-50 space-y-3">
+                  <div className={`p-5 border-t space-y-3 ${theme.border} ${theme.surfaceBg}`}>
                     <div className="flex items-center justify-between text-sm font-bold">
                       <span>المجموع الفرعي</span>
                       <span>{cartSubtotal} ج.م</span>
                     </div>
-                    <p className="text-[11px] text-stone-500">يتم احتساب مصاريف الشحن حسب المحافظة في الخطوة التالية.</p>
+                    <p className={`text-[11px] ${theme.mutedText}`}>يتم احتساب الشحن حسب المحافظة في الخطوة التالية.</p>
                     <button
                       onClick={() => { setCartDrawerOpen(false); setView('checkout'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                      className="w-full py-3 bg-stone-900 hover:bg-stone-800 text-white text-xs sm:text-sm font-bold tracking-wide transition"
+                      className={`w-full py-3 text-xs sm:text-sm font-bold transition ${theme.accentBtn}`}
                     >
                       إتمام الطلب والدفع (Check out)
                     </button>
-                    <button
-                      onClick={() => setCartDrawerOpen(false)}
-                      className="w-full py-2 text-xs font-bold text-stone-600 hover:text-stone-950 underline"
-                    >
-                      متابعة التسوق (Continue shopping)
+                    <button onClick={() => setCartDrawerOpen(false)} className="w-full py-2 text-xs font-bold underline opacity-80">
+                      متابعة التسوق
                     </button>
                   </div>
                 )}
@@ -1196,10 +1179,10 @@
             </div>
           )}
 
-          {/* نافذة المعاينة السريعة للمنتج (Quick View Modal) */}
           {quickViewProduct && (
             <QuickViewModal
               product={quickViewProduct}
+              theme={theme}
               onClose={() => setQuickViewProduct(null)}
               onAddToCart={(prod, opt) => { addToCart(prod, opt); setQuickViewProduct(null); }}
             />
@@ -1208,9 +1191,6 @@
       );
     }
 
-    // =========================================================================
-    // 1. سلايدر الإعلانات العلوي (Hero Slider)
-    // =========================================================================
     function HeroBannerSlider({ sliders, onSelectCategory }) {
       const [current, setCurrent] = useState(0);
 
@@ -1227,11 +1207,7 @@
 
       return (
         <section className="relative h-[340px] sm:h-[460px] bg-stone-900 overflow-hidden">
-          <img
-            src={slide.image}
-            alt={slide.title}
-            className="w-full h-full object-cover opacity-70 transition-all duration-700"
-          />
+          <img src={slide.image} alt={slide.title} className="w-full h-full object-cover opacity-70 transition-all duration-700" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent flex items-end">
             <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 pb-10 sm:pb-14 text-white space-y-3">
               {slide.badge && (
@@ -1271,75 +1247,55 @@
       );
     }
 
-    // =========================================================================
-    // 2. كارت المنتج بستايل PJsByElegant (صورة طولية + اختيار النوع + Sale + in stock)
-    // =========================================================================
-    function EditorialProductCard({ product, onAddToCart, onQuickView }) {
+    function EditorialProductCard({ product, theme, onAddToCart, onQuickView }) {
       const options = product.options && product.options.length > 0 ? product.options : ['قياسي'];
       const [selectedOpt, setSelectedOpt] = useState(options[0]);
       const [hovered, setHovered] = useState(false);
-
       const displayImage = hovered && product.hoverImage ? product.hoverImage : product.image;
 
       return (
         <div
-          className="group flex flex-col justify-between bg-white"
+          className="group flex flex-col justify-between"
           onMouseEnter={() => setHovered(true)}
           onMouseLeave={() => setHovered(false)}
         >
           <div>
-            {/* صورة المنتج الطولية */}
-            <div className="relative aspect-[3/4] bg-stone-100 overflow-hidden mb-3 cursor-pointer" onClick={onQuickView}>
+            <div className="relative aspect-[3/4] bg-stone-200/50 overflow-hidden mb-3 cursor-pointer" onClick={onQuickView}>
               <img
                 src={displayImage}
                 alt={product.name}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
-
-              {/* شارة Sale أو Sold out */}
               <div className="absolute top-2.5 right-2.5 flex flex-col gap-1.5">
                 {!product.inStock ? (
-                  <span className="px-2.5 py-0.5 bg-stone-900 text-white text-[11px] font-bold">
-                    Sold out
-                  </span>
+                  <span className="px-2.5 py-0.5 bg-stone-900 text-white text-[11px] font-bold">Sold out</span>
                 ) : product.oldPrice && product.oldPrice > product.price ? (
-                  <span className="px-2.5 py-0.5 bg-rose-800 text-white text-[11px] font-bold">
-                    Sale
-                  </span>
+                  <span className={`px-2.5 py-0.5 text-[11px] font-bold ${theme.badgeSale}`}>Sale</span>
                 ) : null}
               </div>
-
-              {/* حالة التوفر in stock */}
               {product.inStock && (
-                <span className="absolute bottom-2.5 left-2.5 px-2 py-0.5 bg-white/90 backdrop-blur text-emerald-800 text-[10px] font-bold">
+                <span className="absolute bottom-2.5 left-2.5 px-2 py-0.5 bg-white/90 text-emerald-800 text-[10px] font-bold">
                   in stock
                 </span>
               )}
             </div>
 
-            {/* اسم المنتج والوصف */}
             <div className="space-y-1">
-              <h3
-                onClick={onQuickView}
-                className="text-xs sm:text-sm font-bold text-stone-900 hover:underline cursor-pointer line-clamp-2 leading-snug"
-              >
+              <h3 onClick={onQuickView} className="text-xs sm:text-sm font-bold hover:underline cursor-pointer line-clamp-2 leading-snug">
                 {product.name}
               </h3>
               {product.arabicSubtitle && (
-                <p className="text-[11px] text-stone-500 line-clamp-1">{product.arabicSubtitle}</p>
+                <p className={`text-[11px] line-clamp-1 ${theme.mutedText}`}>{product.arabicSubtitle}</p>
               )}
-
-              {/* السعر قبل وبعد الخصم */}
               <div className="flex flex-wrap items-baseline gap-2 pt-0.5 text-xs sm:text-sm">
                 {product.oldPrice && product.oldPrice > product.price && (
-                  <span className="text-stone-400 line-through text-xs">{product.oldPrice.toFixed(2)} EGP</span>
+                  <span className={`line-through text-xs ${theme.mutedText}`}>{Number(product.oldPrice).toFixed(2)} EGP</span>
                 )}
-                <span className="font-bold text-stone-950">{Number(product.price).toFixed(2)} EGP</span>
+                <span className="font-bold">{Number(product.price).toFixed(2)} EGP</span>
               </div>
             </div>
           </div>
 
-          {/* اختيار النوع / اللون + زر الإضافة للسلة */}
           <div className="mt-3 space-y-2.5">
             {options.length > 1 && (
               <div className="flex flex-wrap gap-1">
@@ -1349,9 +1305,7 @@
                     type="button"
                     onClick={() => setSelectedOpt(opt)}
                     className={`px-2 py-0.5 text-[10px] font-semibold border transition ${
-                      selectedOpt === opt
-                        ? 'border-stone-900 bg-stone-900 text-white'
-                        : 'border-stone-300 text-stone-700 hover:border-stone-900'
+                      selectedOpt === opt ? theme.accentBtn + ' border-transparent' : `${theme.border} opacity-80 hover:opacity-100`
                     }`}
                   >
                     {opt}
@@ -1365,9 +1319,7 @@
               disabled={!product.inStock}
               onClick={() => onAddToCart(product, selectedOpt)}
               className={`w-full py-2.5 text-xs font-bold border transition ${
-                product.inStock
-                  ? 'border-stone-900 text-stone-900 hover:bg-stone-900 hover:text-white'
-                  : 'border-stone-200 bg-stone-100 text-stone-400 cursor-not-allowed'
+                product.inStock ? theme.outlineBtn : 'border-stone-300 opacity-50 cursor-not-allowed'
               }`}
             >
               {product.inStock ? 'أضف للسلة (Add to cart)' : 'Sold out'}
@@ -1377,59 +1329,54 @@
       );
     }
 
-    // =========================================================================
-    // 3. نافذة المعاينة السريعة (Quick View)
-    // =========================================================================
-    function QuickViewModal({ product, onClose, onAddToCart }) {
+    function QuickViewModal({ product, theme, onClose, onAddToCart }) {
       const options = product.options && product.options.length > 0 ? product.options : ['قياسي'];
       const [selectedOpt, setSelectedOpt] = useState(options[0]);
 
       return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-black/50" onClick={onClose} />
-          <div className="relative bg-white max-w-3xl w-full grid grid-cols-1 md:grid-cols-2 overflow-hidden shadow-2xl z-10 max-h-[90vh] overflow-y-auto">
-            <button onClick={onClose} className="absolute top-3 left-3 bg-white/90 w-8 h-8 flex items-center justify-center font-bold text-sm z-10">
+          <div className="fixed inset-0 bg-black/60" onClick={onClose} />
+          <div className={`relative max-w-3xl w-full grid grid-cols-1 md:grid-cols-2 overflow-hidden shadow-2xl z-10 max-h-[90vh] overflow-y-auto border ${theme.pageBg} ${theme.border}`}>
+            <button onClick={onClose} className="absolute top-3 left-3 bg-white text-stone-950 w-8 h-8 flex items-center justify-center font-bold text-sm z-10">
               ✕
             </button>
-            <div className="bg-stone-100 aspect-[3/4] md:aspect-auto">
+            <div className="bg-stone-200/40 aspect-[3/4] md:aspect-auto">
               <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
             </div>
             <div className="p-6 sm:p-8 flex flex-col justify-between space-y-5">
               <div className="space-y-3">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400">{product.category}</span>
-                <h2 className="text-xl font-bold text-stone-950">{product.name}</h2>
-                {product.arabicSubtitle && <p className="text-xs font-semibold text-stone-600">{product.arabicSubtitle}</p>}
+                <span className={`text-[11px] font-bold uppercase tracking-wider ${theme.mutedText}`}>{product.category}</span>
+                <h2 className="text-xl font-bold">{product.name}</h2>
+                {product.arabicSubtitle && <p className={`text-xs font-semibold ${theme.mutedText}`}>{product.arabicSubtitle}</p>}
                 <div className="flex items-baseline gap-2.5">
-                  <span className="text-lg font-black text-stone-950">{Number(product.price).toFixed(2)} EGP</span>
-                  {product.oldPrice && <span className="text-xs text-stone-400 line-through">{Number(product.oldPrice).toFixed(2)} EGP</span>}
+                  <span className="text-lg font-black">{Number(product.price).toFixed(2)} EGP</span>
+                  {product.oldPrice && <span className={`text-xs line-through ${theme.mutedText}`}>{Number(product.oldPrice).toFixed(2)} EGP</span>}
                 </div>
-                <p className="text-xs text-stone-600 leading-relaxed pt-2 border-t">{product.description}</p>
+                <p className={`text-xs leading-relaxed pt-2 border-t ${theme.border} ${theme.mutedText}`}>{product.description}</p>
 
-                {options.length > 0 && (
-                  <div className="pt-2 space-y-2">
-                    <label className="block text-xs font-bold text-stone-800">{product.optionsLabel || 'الاختيار'}: {selectedOpt}</label>
-                    <div className="flex flex-wrap gap-2">
-                      {options.map(opt => (
-                        <button
-                          key={opt}
-                          onClick={() => setSelectedOpt(opt)}
-                          className={`px-3 py-1.5 text-xs font-bold border ${
-                            selectedOpt === opt ? 'bg-stone-900 text-white border-stone-900' : 'border-stone-300 text-stone-700'
-                          }`}
-                        >
-                          {opt}
-                        </button>
-                      ))}
-                    </div>
+                <div className="pt-2 space-y-2">
+                  <label className="block text-xs font-bold">الاختيار: {selectedOpt}</label>
+                  <div className="flex flex-wrap gap-2">
+                    {options.map(opt => (
+                      <button
+                        key={opt}
+                        onClick={() => setSelectedOpt(opt)}
+                        className={`px-3 py-1.5 text-xs font-bold border ${
+                          selectedOpt === opt ? theme.accentBtn + ' border-transparent' : theme.border
+                        }`}
+                      >
+                        {opt}
+                      </button>
+                    ))}
                   </div>
-                )}
+                </div>
               </div>
 
               <button
                 disabled={!product.inStock}
                 onClick={() => onAddToCart(product, selectedOpt)}
                 className={`w-full py-3.5 text-xs sm:text-sm font-bold ${
-                  product.inStock ? 'bg-stone-900 hover:bg-stone-800 text-white' : 'bg-stone-200 text-stone-400 cursor-not-allowed'
+                  product.inStock ? theme.accentBtn : 'bg-stone-300 text-stone-600 cursor-not-allowed'
                 }`}
               >
                 {product.inStock ? 'إضافة إلى حقيبة التسوق' : 'غير متوفر حالياً'}
@@ -1440,10 +1387,7 @@
       );
     }
 
-    // =========================================================================
-    // 4. صفحة إتمام الطلب والدفع (27 محافظة + كل طرق الدفع)
-    // =========================================================================
-    function CheckoutPage({ cart, cartSubtotal, settings, updateCartQty, removeFromCart, onBackToStore, onSubmitOrder }) {
+    function CheckoutPage({ cart, cartSubtotal, settings, theme, updateCartQty, removeFromCart, onBackToStore, onSubmitOrder }) {
       const govs = Object.keys(settings.shippingRates);
       const [customerName, setCustomerName] = useState('');
       const [phone, setPhone] = useState('');
@@ -1454,9 +1398,9 @@
 
       if (cart.length === 0) {
         return (
-          <div className="max-w-lg mx-auto my-16 p-10 border border-stone-200 text-center space-y-4">
+          <div className={`max-w-lg mx-auto my-16 p-10 border text-center space-y-4 ${theme.border}`}>
             <h2 className="text-xl font-bold">سلة المشتريات فارغة</h2>
-            <button onClick={onBackToStore} className="px-6 py-3 bg-stone-900 text-white text-xs font-bold">
+            <button onClick={onBackToStore} className={`px-6 py-3 text-xs font-bold ${theme.accentBtn}`}>
               العودة للمتجر
             </button>
           </div>
@@ -1483,53 +1427,31 @@
 
       return (
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
-          <div className="flex items-center justify-between border-b pb-4 mb-8">
-            <h1 className="text-2xl font-bold">إتمام الطلب والدفع (Checkout)</h1>
-            <button onClick={onBackToStore} className="text-xs font-bold underline text-stone-600 hover:text-stone-950">
-              ← العودة للمتجر
-            </button>
+          <div className={`flex items-center justify-between border-b pb-4 mb-8 ${theme.border}`}>
+            <h1 className="text-2xl font-bold">إتمام الطلب والدفع</h1>
+            <button onClick={onBackToStore} className="text-xs font-bold underline">← العودة للمتجر</button>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            {/* نموذج بيانات العميل وطريقة الدفع */}
-            <form onSubmit={handleSubmit} className="lg:col-span-7 space-y-5 bg-stone-50 p-6 sm:p-8 border border-stone-200">
-              <h2 className="text-base font-bold border-b border-stone-200 pb-3">1. بيانات الشحن والتوصيل</h2>
+            <form onSubmit={handleSubmit} className={`lg:col-span-7 space-y-5 p-6 sm:p-8 border ${theme.surfaceBg} ${theme.border}`}>
+              <h2 className={`text-base font-bold border-b pb-3 ${theme.border}`}>1. بيانات الشحن والتوصيل</h2>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold mb-1.5">الاسم بالكامل *</label>
-                  <input
-                    type="text"
-                    required
-                    value={customerName}
-                    onChange={e => setCustomerName(e.target.value)}
-                    placeholder="مثال: أحمد محمد"
-                    className="w-full px-3.5 py-2.5 bg-white border border-stone-300 text-sm focus:outline-none focus:border-stone-900"
-                  />
+                  <input type="text" required value={customerName} onChange={e => setCustomerName(e.target.value)} placeholder="الاسم بالكامل" className={`w-full px-3.5 py-2.5 border text-sm ${theme.cardBg} ${theme.border}`} />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold mb-1.5">رقم الموبايل (واتساب) *</label>
-                  <input
-                    type="tel"
-                    required
-                    dir="ltr"
-                    value={phone}
-                    onChange={e => setPhone(e.target.value)}
-                    placeholder="010xxxxxxxx"
-                    className="w-full px-3.5 py-2.5 bg-white border border-stone-300 text-sm text-right focus:outline-none focus:border-stone-900"
-                  />
+                  <label className="block text-xs font-bold mb-1.5">رقم الموبايل *</label>
+                  <input type="tel" required dir="ltr" value={phone} onChange={e => setPhone(e.target.value)} placeholder="010xxxxxxxx" className={`w-full px-3.5 py-2.5 border text-sm text-right ${theme.cardBg} ${theme.border}`} />
                 </div>
               </div>
 
               <div>
                 <label className="block text-xs font-bold mb-1.5">المحافظة (جميع محافظات مصر) *</label>
-                <select
-                  value={governorate}
-                  onChange={e => setGovernorate(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-white border border-stone-300 text-sm font-semibold focus:outline-none focus:border-stone-900"
-                >
+                <select value={governorate} onChange={e => setGovernorate(e.target.value)} className={`w-full px-3.5 py-2.5 border text-sm font-semibold ${theme.cardBg} ${theme.border}`}>
                   {govs.map(g => (
-                    <option key={g} value={g}>
+                    <option key={g} value={g} className="text-stone-900 bg-white">
                       {g} — مصاريف الشحن: {settings.shippingRates[g]} ج.م
                     </option>
                   ))}
@@ -1538,79 +1460,51 @@
 
               <div>
                 <label className="block text-xs font-bold mb-1.5">العنوان بالتفصيل *</label>
-                <input
-                  type="text"
-                  required
-                  value={address}
-                  onChange={e => setAddress(e.target.value)}
-                  placeholder="الحي / المنطقة، اسم الشارع، رقم العمارة، الدور والشقة"
-                  className="w-full px-3.5 py-2.5 bg-white border border-stone-300 text-sm focus:outline-none focus:border-stone-900"
-                />
+                <input type="text" required value={address} onChange={e => setAddress(e.target.value)} placeholder="المنطقة، الشارع، رقم العمارة، الدور والشقة" className={`w-full px-3.5 py-2.5 border text-sm ${theme.cardBg} ${theme.border}`} />
               </div>
 
               <div>
                 <label className="block text-xs font-bold mb-1.5">رسالة كارت الإهداء المجاني (اختياري)</label>
-                <input
-                  type="text"
-                  value={giftNote}
-                  onChange={e => setGiftNote(e.target.value)}
-                  placeholder="اكتب الرسالة اللي تحب نطبعها جوه البوكس..."
-                  className="w-full px-3.5 py-2.5 bg-white border border-stone-300 text-sm focus:outline-none focus:border-stone-900"
-                />
+                <input type="text" value={giftNote} onChange={e => setGiftNote(e.target.value)} placeholder="اكتب رسالتك هنا..." className={`w-full px-3.5 py-2.5 border text-sm ${theme.cardBg} ${theme.border}`} />
               </div>
 
-              <h2 className="text-base font-bold border-b border-stone-200 pb-3 pt-2">2. طريقة الدفع</h2>
+              <h2 className={`text-base font-bold border-b pb-3 pt-2 ${theme.border}`}>2. طريقة الدفع</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-bold">
                 {[
-                  { id: 'الدفع عند الاستلام (COD)', desc: 'نقداً لمندوب الشحن عند الاستلام' },
-                  { id: 'إنستاباي (InstaPay)', desc: 'تحويل فوري على حساب المتجر' },
+                  { id: 'الدفع عند الاستلام (COD)', desc: 'نقداً عند استلام الأوردر' },
+                  { id: 'إنستاباي (InstaPay)', desc: 'تحويل فوري عبر إنستاباي' },
                   { id: 'محفظة إلكترونية (فودافون / أورانج / اتصالات كاش)', desc: 'تحويل محفظة إلكترونية' },
-                  { id: 'بطاقة بنكية (Visa / Mastercard)', desc: 'دفع إلكتروني بالبطاقة البنكية' }
+                  { id: 'بطاقة بنكية (Visa / Mastercard)', desc: 'دفع بالبطاقة البنكية' }
                 ].map(pm => (
-                  <label
-                    key={pm.id}
-                    className={`p-3.5 border cursor-pointer transition ${
-                      paymentMethod === pm.id ? 'border-stone-900 bg-white shadow-xs' : 'border-stone-200 bg-white/60'
-                    }`}
-                  >
+                  <label key={pm.id} className={`p-3.5 border cursor-pointer ${paymentMethod === pm.id ? 'border-current font-black' : theme.border}`}>
                     <div className="flex items-center gap-2">
-                      <input
-                        type="radio"
-                        name="pm"
-                        checked={paymentMethod === pm.id}
-                        onChange={() => setPaymentMethod(pm.id)}
-                        className="accent-stone-900"
-                      />
+                      <input type="radio" name="pm" checked={paymentMethod === pm.id} onChange={() => setPaymentMethod(pm.id)} />
                       <span>{pm.id}</span>
                     </div>
-                    <p className="text-[11px] font-normal text-stone-500 mt-1 mr-5">{pm.desc}</p>
+                    <p className={`text-[11px] font-normal mt-1 mr-5 ${theme.mutedText}`}>{pm.desc}</p>
                   </label>
                 ))}
               </div>
 
-              <button
-                type="submit"
-                className="w-full py-4 bg-stone-950 hover:bg-stone-800 text-white text-sm font-bold tracking-wide transition mt-4"
-              >
+              <button type="submit" className={`w-full py-4 text-sm font-bold transition mt-4 ${theme.accentBtn}`}>
                 تأكيد الطلب وإصدار الفاتورة ({total} ج.م)
               </button>
             </form>
 
-            {/* ملخص الطلب */}
-            <div className="lg:col-span-5 border border-stone-200 p-6 space-y-4">
-              <h2 className="text-base font-bold border-b pb-3">ملخص الطلب ({cart.reduce((s, i) => s + i.quantity, 0)} قطع)</h2>
+            <div className={`lg:col-span-5 border p-6 space-y-4 ${theme.border}`}>
+              <h2 className={`text-base font-bold border-b pb-3 ${theme.border}`}>ملخص الطلب</h2>
               <div className="space-y-3 max-h-80 overflow-y-auto">
                 {cart.map(item => (
-                  <div key={item.cartKey} className="flex items-center justify-between gap-3 border-b border-stone-100 pb-3 text-xs">
-                    <img src={item.image} alt="" className="w-14 h-16 object-cover bg-stone-100" />
+                  <div key={item.cartKey} className={`flex items-center justify-between gap-3 border-b pb-3 text-xs ${theme.border}`}>
+                    <img src={item.image} alt="" className="w-14 h-16 object-cover" />
                     <div className="flex-1 min-w-0">
                       <p className="font-bold truncate">{item.name}</p>
-                      <p className="text-stone-500">{item.selectedOption}</p>
+                      <p className={theme.mutedText}>{item.selectedOption}</p>
                       <div className="flex items-center gap-2 mt-1">
-                        <button type="button" onClick={() => updateCartQty(item.cartKey, -1)} className="px-2 border">-</button>
+                        <button type="button" onClick={() => updateCartQty(item.cartKey, -1)} className={`px-2 border ${theme.border}`}>-</button>
                         <span>{item.quantity}</span>
-                        <button type="button" onClick={() => updateCartQty(item.cartKey, 1)} className="px-2 border">+</button>
-                        <button type="button" onClick={() => removeFromCart(item.cartKey)} className="text-rose-700 underline mr-2">حذف</button>
+                        <button type="button" onClick={() => updateCartQty(item.cartKey, 1)} className={`px-2 border ${theme.border}`}>+</button>
+                        <button type="button" onClick={() => removeFromCart(item.cartKey)} className="text-rose-600 underline mr-2">حذف</button>
                       </div>
                     </div>
                     <span className="font-bold">{item.price * item.quantity} ج.م</span>
@@ -1619,18 +1513,9 @@
               </div>
 
               <div className="space-y-2 pt-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-stone-600">المجموع الفرعي:</span>
-                  <strong>{cartSubtotal} ج.م</strong>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-stone-600">الشحن ({governorate}):</span>
-                  <strong>{shipping} ج.م</strong>
-                </div>
-                <div className="flex justify-between text-base font-black border-t pt-3">
-                  <span>الإجمالي النهائي:</span>
-                  <span>{total} ج.م</span>
-                </div>
+                <div className="flex justify-between"><span>المجموع الفرعي:</span><strong>{cartSubtotal} ج.م</strong></div>
+                <div className="flex justify-between"><span>الشحن ({governorate}):</span><strong>{shipping} ج.م</strong></div>
+                <div className={`flex justify-between text-base font-black border-t pt-3 ${theme.border}`}><span>الإجمالي النهائي:</span><span>{total} ج.م</span></div>
               </div>
             </div>
           </div>
@@ -1638,12 +1523,9 @@
       );
     }
 
-    // =========================================================================
-    // 5. صفحة الفاتورة الرسمية (Printable Invoice)
-    // =========================================================================
     function InvoicePage({ settings, invoice, onContinueShopping }) {
       return (
-        <div className="min-h-screen bg-stone-100 py-10 px-4">
+        <div className="min-h-screen bg-stone-100 text-stone-900 py-10 px-4">
           <div className="max-w-2xl mx-auto bg-white border border-stone-300 p-6 sm:p-10 space-y-6 shadow-sm">
             <div className="flex items-start justify-between border-b pb-5">
               <div>
@@ -1657,15 +1539,11 @@
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-stone-50 p-4 border border-stone-200 text-xs">
-              <div><strong>اسم العميل:</strong> {invoice.customerName}</div>
+              <div><strong>العميل:</strong> {invoice.customerName}</div>
               <div dir="ltr" className="text-right"><strong>الموبايل:</strong> {invoice.phone}</div>
               <div className="sm:col-span-2"><strong>العنوان:</strong> {invoice.governorate} — {invoice.address}</div>
               <div className="sm:col-span-2"><strong>طريقة الدفع:</strong> {invoice.paymentMethod}</div>
-              {invoice.giftNote && (
-                <div className="sm:col-span-2 text-stone-800 bg-white p-2 border">
-                  <strong>رسالة كارت الإهداء:</strong> "{invoice.giftNote}"
-                </div>
-              )}
+              {invoice.giftNote && <div className="sm:col-span-2 bg-white p-2 border"><strong>كارت الإهداء:</strong> "{invoice.giftNote}"</div>}
             </div>
 
             <table className="w-full text-right text-xs border-collapse">
@@ -1693,45 +1571,37 @@
 
             <div className="space-y-1.5 text-sm border-t pt-4">
               <div className="flex justify-between"><span>المجموع الفرعي:</span><strong>{invoice.subtotal} ج.م</strong></div>
-              <div className="flex justify-between"><span>مصاريف الشحن ({invoice.governorate}):</span><strong>{invoice.shipping} ج.م</strong></div>
+              <div className="flex justify-between"><span>الشحن ({invoice.governorate}):</span><strong>{invoice.shipping} ج.م</strong></div>
               <div className="flex justify-between text-base font-black border-t pt-2"><span>الإجمالي المطلوب:</span><span>{invoice.total} ج.م</span></div>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3 pt-2 no-print">
-              <button onClick={() => window.print()} className="flex-1 py-3 bg-stone-900 text-white text-xs font-bold">
-                طباعة الفاتورة / حفظ PDF
-              </button>
-              <button onClick={onContinueShopping} className="flex-1 py-3 border border-stone-900 text-stone-900 text-xs font-bold">
-                العودة للمتجر
-              </button>
+              <button onClick={() => window.print()} className="flex-1 py-3 bg-stone-900 text-white text-xs font-bold">طباعة الفاتورة / حفظ PDF</button>
+              <button onClick={onContinueShopping} className="flex-1 py-3 border border-stone-900 text-stone-900 text-xs font-bold">العودة للمتجر</button>
             </div>
           </div>
         </div>
       );
     }
 
-    // =========================================================================
-    // 6. صفحة السياسات (Exchange & Shipping Policies)
-    // =========================================================================
-    function PolicyPage({ type, settings, onBack }) {
+    function PolicyPage({ type, settings, theme, onBack }) {
       return (
         <div className="max-w-3xl mx-auto px-4 py-12 space-y-6">
           <button onClick={onBack} className="text-xs font-bold underline">← العودة للمتجر</button>
           {type === 'exchange' ? (
-            <div className="space-y-4 border p-6 sm:p-8 bg-stone-50">
-              <h1 className="text-2xl font-bold">سياسة الاستبدال والاسترجاع (Exchange Policy)</h1>
-              <p className="text-sm text-stone-700 leading-relaxed">
-                في {settings.storeName} نحرص على وصول هديتك بأعلى جودة وتغليف مثالي. يمكنك معاينة الطلب عند الاستلام، وفي حال وجود أي عيب صناعة أو تلف أثناء الشحن يتم الاستبدال مجاناً خلال 14 يوماً من تاريخ الاستلام.
+            <div className={`space-y-4 border p-6 sm:p-8 ${theme.surfaceBg} ${theme.border}`}>
+              <h1 className="text-2xl font-bold">سياسة الاستبدال والاسترجاع</h1>
+              <p className="text-sm leading-relaxed opacity-85">
+                في {settings.storeName} نحرص على وصول هديتك بأعلى جودة وتغليف مثالي. في حال وجود أي عيب صناعة أو تلف أثناء الشحن يتم الاستبدال خلال 14 يوماً.
               </p>
-              <p className="text-xs text-stone-500">للتواصل السريع عبر واتساب: {settings.whatsapp}</p>
+              <p className={`text-xs ${theme.mutedText}`}>واتساب: {settings.whatsapp}</p>
             </div>
           ) : (
-            <div className="space-y-4 border p-6 sm:p-8 bg-stone-50">
-              <h1 className="text-2xl font-bold">أسعار الشحن لجميع محافظات مصر (Shipping Policy)</h1>
-              <p className="text-xs text-stone-600">التوصيل خلال 2 إلى 4 أيام عمل لجميع المحافظات:</p>
+            <div className={`space-y-4 border p-6 sm:p-8 ${theme.surfaceBg} ${theme.border}`}>
+              <h1 className="text-2xl font-bold">أسعار الشحن لجميع محافظات مصر</h1>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
                 {Object.entries(settings.shippingRates).map(([gov, rate]) => (
-                  <div key={gov} className="flex justify-between p-2.5 bg-white border">
+                  <div key={gov} className={`flex justify-between p-2.5 border ${theme.cardBg} ${theme.border}`}>
                     <span>{gov}</span>
                     <strong>{rate} ج.م</strong>
                   </div>
@@ -1743,40 +1613,24 @@
       );
     }
 
-    // =========================================================================
-    // 7. تسجيل الدخول ولوحة التحكم الكاملة للموبايل
-    // =========================================================================
     function AdminLogin({ storeName, onSuccess, onBack }) {
       const [pass, setPass] = useState('');
       const [err, setErr] = useState('');
-
       const submit = (e) => {
         e.preventDefault();
         if (pass === ADMIN_PASSCODE || pass === '123456') onSuccess();
         else setErr('كلمة المرور غير صحيحة');
       };
-
       return (
-        <div className="min-h-screen bg-stone-100 flex items-center justify-center p-4">
+        <div className="min-h-screen bg-stone-100 text-stone-900 flex items-center justify-center p-4">
           <div className="bg-white border border-stone-200 max-w-md w-full p-8 space-y-5 shadow-sm">
             <h1 className="text-lg font-bold text-center">لوحة تحكم {storeName}</h1>
             {err && <p className="text-xs font-bold text-rose-700 bg-rose-50 p-2.5 text-center">{err}</p>}
             <form onSubmit={submit} className="space-y-4">
-              <input
-                type="password"
-                required
-                value={pass}
-                onChange={e => setPass(e.target.value)}
-                placeholder="أدخل كلمة المرور"
-                className="w-full px-4 py-3 border border-stone-300 text-sm"
-              />
-              <button type="submit" className="w-full py-3 bg-stone-900 text-white text-xs font-bold">
-                دخول لوحة الإدارة
-              </button>
+              <input type="password" required value={pass} onChange={e => setPass(e.target.value)} placeholder="كلمة المرور" className="w-full px-4 py-3 border border-stone-300 text-sm" />
+              <button type="submit" className="w-full py-3 bg-stone-900 text-white text-xs font-bold">دخول</button>
             </form>
-            <button onClick={onBack} className="w-full text-xs text-stone-500 underline">
-              العودة للمتجر
-            </button>
+            <button onClick={onBack} className="w-full text-xs text-stone-500 underline">العودة للمتجر</button>
           </div>
         </div>
       );
@@ -1785,6 +1639,8 @@
     function AdminPanel({
       settings,
       setSettings,
+      categoriesList,
+      setCategoriesList,
       products,
       setProducts,
       sliders,
@@ -1797,15 +1653,17 @@
       onBackToStore,
       onLogout
     }) {
-      const [tab, setTab] = useState('products');
+      const [tab, setTab] = useState('dashboard');
+      const [editingId, setEditingId] = useState(null);
       const [name, setName] = useState('');
       const [arabicSubtitle, setArabicSubtitle] = useState('');
-      const [category, setCategory] = useState('بوكسات هدايا');
+      const [category, setCategory] = useState(categoriesList[0] || 'بوكسات هدايا');
       const [price, setPrice] = useState('');
       const [oldPrice, setOldPrice] = useState('');
       const [optionsText, setOptionsText] = useState('Standard, Deluxe');
       const [description, setDescription] = useState('');
       const [image, setImage] = useState('');
+      const [newCategoryName, setNewCategoryName] = useState('');
       const [cloudUrl, setCloudUrl] = useState(settings.cloudSyncUrl || '');
       const [msg, setMsg] = useState('');
 
@@ -1813,6 +1671,8 @@
         setMsg(text);
         setTimeout(() => setMsg(''), 3000);
       };
+
+      const totalSales = useMemo(() => orders.reduce((s, o) => s + (Number(o.total) || 0), 0), [orders]);
 
       const handleMobileUpload = (e) => {
         const file = e.target.files && e.target.files[0];
@@ -1824,50 +1684,100 @@
         reader.readAsDataURL(file);
       };
 
-      const handleAddProduct = (e) => {
-        e.preventDefault();
-        if (!name.trim() || !price) return;
-        const parsedOptions = optionsText
-          .split(',')
-          .map(s => s.trim())
-          .filter(Boolean);
+      const startEditProduct = (p) => {
+        setEditingId(p.id);
+        setName(p.name);
+        setArabicSubtitle(p.arabicSubtitle || '');
+        setCategory(p.category);
+        setPrice(String(p.price));
+        setOldPrice(p.oldPrice ? String(p.oldPrice) : '');
+        setOptionsText((p.options || []).join(', '));
+        setDescription(p.description || '');
+        setImage(p.image || '');
+        setTab('products');
+      };
 
-        const newProd = {
-          id: 'FRF-' + Math.floor(100 + Math.random() * 900),
-          name: name.trim(),
-          arabicSubtitle: arabicSubtitle.trim(),
-          category: (category || 'عام').trim(),
-          price: Number(price),
-          oldPrice: oldPrice ? Number(oldPrice) : null,
-          isBestSeller: true,
-          optionsLabel: 'الاختيار',
-          options: parsedOptions.length ? parsedOptions : ['قياسي'],
-          image: image || 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=900&q=80',
-          hoverImage: '',
-          description: description.trim(),
-          inStock: true
-        };
-        setProducts(prev => [newProd, ...prev]);
+      const resetProductForm = () => {
+        setEditingId(null);
         setName('');
         setArabicSubtitle('');
         setPrice('');
         setOldPrice('');
         setDescription('');
         setImage('');
-        flash('تمت إضافة المنتج ونشره في المتجر ✓');
+      };
+
+      const handleSaveProduct = (e) => {
+        e.preventDefault();
+        if (!name.trim() || !price) return;
+        const parsedOptions = optionsText.split(',').map(s => s.trim()).filter(Boolean);
+        const finalImg = image || 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=900&q=80';
+
+        if (editingId) {
+          setProducts(prev =>
+            prev.map(item =>
+              item.id === editingId
+                ? {
+                    ...item,
+                    name: name.trim(),
+                    arabicSubtitle: arabicSubtitle.trim(),
+                    category: (category || 'عام').trim(),
+                    price: Number(price),
+                    oldPrice: oldPrice ? Number(oldPrice) : null,
+                    options: parsedOptions.length ? parsedOptions : ['قياسي'],
+                    image: finalImg,
+                    description: description.trim()
+                  }
+                : item
+            )
+          );
+          resetProductForm();
+          flash('تم تحديث بيانات المنتج ✓');
+        } else {
+          const newProd = {
+            id: 'FRF-' + Math.floor(100 + Math.random() * 900),
+            name: name.trim(),
+            arabicSubtitle: arabicSubtitle.trim(),
+            category: (category || 'عام').trim(),
+            price: Number(price),
+            oldPrice: oldPrice ? Number(oldPrice) : null,
+            isBestSeller: true,
+            options: parsedOptions.length ? parsedOptions : ['قياسي'],
+            image: finalImg,
+            hoverImage: '',
+            description: description.trim(),
+            inStock: true
+          };
+          setProducts(prev => [newProd, ...prev]);
+          resetProductForm();
+          flash('تمت إضافة المنتج ونشره في المتجر ✓');
+        }
+      };
+
+      const addNewCategory = (e) => {
+        e.preventDefault();
+        const clean = newCategoryName.trim();
+        if (!clean) return;
+        if (!categoriesList.includes(clean)) {
+          setCategoriesList(prev => [...prev, clean]);
+        }
+        setNewCategoryName('');
+        flash(`تمت إضافة قسم "${clean}" ✓`);
       };
 
       return (
-        <div className="min-h-screen bg-stone-50 flex flex-col lg:flex-row">
+        <div className="min-h-screen bg-stone-50 text-stone-900 flex flex-col lg:flex-row">
           <aside className="w-full lg:w-64 bg-stone-950 text-stone-300 p-4 flex lg:flex-col justify-between gap-3">
             <div className="flex lg:flex-col gap-2 overflow-x-auto">
               {[
+                { id: 'dashboard', label: 'نظرة عامة وإحصائيات' },
                 { id: 'products', label: 'المنتجات ورفع الصور' },
+                { id: 'categories', label: 'إدارة الأقسام' },
                 { id: 'shipping', label: 'شحن المحافظات (27)' },
                 { id: 'sliders', label: 'البانر والإعلانات' },
                 { id: 'orders', label: `الطلبات (${orders.length})` },
                 { id: 'customers', label: `العملاء (${customers.length})` },
-                { id: 'settings', label: 'الإعدادات والسحابة' }
+                { id: 'settings', label: 'الأنماط والإعدادات' }
               ].map(t => (
                 <button
                   key={t.id}
@@ -1882,44 +1792,77 @@
             </div>
             <div className="flex lg:flex-col gap-2">
               <button onClick={onSyncNow} className="px-3 py-2 bg-emerald-800 text-white text-xs font-bold">مزامنة</button>
-              <button onClick={onBackToStore} className="px-3 py-2 bg-stone-800 text-white text-xs font-bold">معاينة المتجر</button>
+              <button onClick={onBackToStore} className="px-3 py-2 bg-stone-800 text-white text-xs font-bold">المتجر</button>
               <button onClick={onLogout} className="px-3 py-2 bg-rose-900 text-white text-xs font-bold">خروج</button>
             </div>
           </aside>
 
           <main className="flex-1 p-5 sm:p-8 space-y-6">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-4">
-              <h1 className="text-xl font-bold">إدارة {settings.storeName}</h1>
+              <h1 className="text-xl font-bold">لوحة تحكم {settings.storeName}</h1>
               <span className="text-xs font-bold px-3 py-1 bg-white border">{syncStatus}</span>
             </div>
 
             {msg && <div className="p-3 bg-emerald-900 text-white text-xs font-bold">{msg}</div>}
 
+            {tab === 'dashboard' && (
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="bg-white p-5 border">
+                  <p className="text-xs text-stone-500 font-bold">إجمالي المبيعات</p>
+                  <p className="text-2xl font-black mt-1">{totalSales} ج.م</p>
+                </div>
+                <div className="bg-white p-5 border">
+                  <p className="text-xs text-stone-500 font-bold">عدد الطلبات</p>
+                  <p className="text-2xl font-black mt-1">{orders.length}</p>
+                </div>
+                <div className="bg-white p-5 border">
+                  <p className="text-xs text-stone-500 font-bold">عدد المنتجات</p>
+                  <p className="text-2xl font-black mt-1">{products.length}</p>
+                </div>
+                <div className="bg-white p-5 border">
+                  <p className="text-xs text-stone-500 font-bold">العملاء</p>
+                  <p className="text-2xl font-black mt-1">{customers.length}</p>
+                </div>
+              </div>
+            )}
+
             {tab === 'products' && (
               <div className="space-y-6">
-                <form onSubmit={handleAddProduct} className="bg-white p-6 border border-stone-200 space-y-4">
-                  <h2 className="font-bold text-base">إضافة منتج جديد (من الموبايل مباشرة)</h2>
+                <form onSubmit={handleSaveProduct} className="bg-white p-6 border border-stone-200 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h2 className="font-bold text-base">
+                      {editingId ? `تعديل منتج (${editingId})` : 'إضافة منتج جديد (رفع مباشر من الموبايل)'}
+                    </h2>
+                    {editingId && (
+                      <button type="button" onClick={resetProductForm} className="text-xs font-bold underline text-rose-700">
+                        إلغاء التعديل
+                      </button>
+                    )}
+                  </div>
+
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    <input type="text" required value={name} onChange={e => setName(e.target.value)} placeholder="اسم المنتج (إنجليزي أو عربي) *" className="px-3.5 py-2.5 border text-sm" />
-                    <input type="text" value={arabicSubtitle} onChange={e => setArabicSubtitle(e.target.value)} placeholder="وصف فرعي قصير بالعربي" className="px-3.5 py-2.5 border text-sm" />
-                    <input type="text" required value={category} onChange={e => setCategory(e.target.value)} placeholder="القسم (مثال: بوكسات هدايا) *" className="px-3.5 py-2.5 border text-sm" />
+                    <input type="text" required value={name} onChange={e => setName(e.target.value)} placeholder="اسم المنتج *" className="px-3.5 py-2.5 border text-sm" />
+                    <input type="text" value={arabicSubtitle} onChange={e => setArabicSubtitle(e.target.value)} placeholder="وصف قصير بالعربي" className="px-3.5 py-2.5 border text-sm" />
+                    <select value={category} onChange={e => setCategory(e.target.value)} className="px-3.5 py-2.5 border text-sm bg-white font-semibold">
+                      {categoriesList.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
                     <input type="number" required value={price} onChange={e => setPrice(e.target.value)} placeholder="السعر الحالي (ج.م) *" className="px-3.5 py-2.5 border text-sm" />
-                    <input type="number" value={oldPrice} onChange={e => setOldPrice(e.target.value)} placeholder="السعر قبل الخصم (لإظهار شارة Sale)" className="px-3.5 py-2.5 border text-sm" />
-                    <input type="text" value={optionsText} onChange={e => setOptionsText(e.target.value)} placeholder="الألوان أو الأنواع مفصولة بفاصلة (,)" className="px-3.5 py-2.5 border text-sm" />
+                    <input type="number" value={oldPrice} onChange={e => setOldPrice(e.target.value)} placeholder="السعر قبل الخصم (لشارة Sale)" className="px-3.5 py-2.5 border text-sm" />
+                    <input type="text" value={optionsText} onChange={e => setOptionsText(e.target.value)} placeholder="الخيارات مفصولة بفاصلة (,)" className="px-3.5 py-2.5 border text-sm" />
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
                     <div>
-                      <label className="block text-xs font-bold mb-1">ارفع صورة المنتج من الموبايل:</label>
+                      <label className="block text-xs font-bold mb-1">ارفع صورة من الموبايل:</label>
                       <input type="file" accept="image/*" onChange={handleMobileUpload} className="w-full text-xs" />
                     </div>
-                    <input type="text" value={description} onChange={e => setDescription(e.target.value)} placeholder="تفاصيل ومواصفات المنتج" className="px-3.5 py-2.5 border text-sm" />
+                    <input type="text" value={description} onChange={e => setDescription(e.target.value)} placeholder="تفاصيل المنتج" className="px-3.5 py-2.5 border text-sm" />
                   </div>
 
                   {image && <img src={image} alt="Preview" className="w-24 h-28 object-cover border" />}
 
                   <button type="submit" className="px-6 py-3 bg-stone-900 text-white text-xs font-bold">
-                    حفظ ونشر المنتج
+                    {editingId ? 'حفظ التعديلات' : 'حفظ ونشر المنتج'}
                   </button>
                 </form>
 
@@ -1932,7 +1875,10 @@
                         <h3 className="text-xs font-bold line-clamp-2">{p.name}</h3>
                         <p className="text-xs font-black mt-1">{p.price} EGP</p>
                       </div>
-                      <div className="flex gap-2 pt-2">
+                      <div className="flex gap-1.5 pt-2">
+                        <button onClick={() => startEditProduct(p)} className="px-2.5 py-1.5 bg-stone-100 text-stone-900 text-[11px] font-bold">
+                          تعديل
+                        </button>
                         <button
                           onClick={() => setProducts(prev => prev.map(item => item.id === p.id ? { ...item, inStock: !item.inStock } : item))}
                           className={`flex-1 py-1.5 text-[11px] font-bold border ${p.inStock ? 'border-emerald-700 text-emerald-800' : 'border-stone-400 text-stone-500'}`}
@@ -1941,11 +1887,40 @@
                         </button>
                         <button
                           onClick={() => { setProducts(prev => prev.filter(i => i.id !== p.id)); flash('تم حذف المنتج'); }}
-                          className="px-3 py-1.5 bg-rose-50 text-rose-700 text-[11px] font-bold"
+                          className="px-2.5 py-1.5 bg-rose-50 text-rose-700 text-[11px] font-bold"
                         >
                           حذف
                         </button>
                       </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {tab === 'categories' && (
+              <div className="bg-white p-6 border space-y-5 max-w-xl">
+                <h2 className="font-bold text-base">إدارة أقسام المتجر</h2>
+                <form onSubmit={addNewCategory} className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newCategoryName}
+                    onChange={e => setNewCategoryName(e.target.value)}
+                    placeholder="اسم قسم جديد (مثال: هدايا رجالي)"
+                    className="flex-1 px-3.5 py-2.5 border text-sm"
+                  />
+                  <button type="submit" className="px-5 py-2.5 bg-stone-900 text-white text-xs font-bold">إضافة</button>
+                </form>
+                <div className="space-y-2">
+                  {categoriesList.map(cat => (
+                    <div key={cat} className="flex items-center justify-between p-3 bg-stone-50 border text-xs font-bold">
+                      <span>{cat}</span>
+                      <button
+                        onClick={() => setCategoriesList(prev => prev.filter(c => c !== cat))}
+                        className="text-rose-700 underline"
+                      >
+                        حذف
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -1964,10 +1939,7 @@
                         value={rate}
                         onChange={e => {
                           const val = Number(e.target.value);
-                          setSettings(prev => ({
-                            ...prev,
-                            shippingRates: { ...prev.shippingRates, [gov]: val }
-                          }));
+                          setSettings(prev => ({ ...prev, shippingRates: { ...prev.shippingRates, [gov]: val } }));
                         }}
                         className="w-24 px-2 py-1 border bg-white text-center text-xs font-bold"
                       />
@@ -1981,7 +1953,7 @@
               <div className="bg-white p-6 border space-y-4 max-w-2xl">
                 <h2 className="font-bold text-base">تعديل البانر الرئيسي والشريط العلوي</h2>
                 <div className="space-y-2">
-                  <label className="text-xs font-bold">إعلانات الشريط العلوي المتحرك:</label>
+                  <label className="text-xs font-bold">إعلانات الشريط العلوي:</label>
                   {settings.announcements.map((ann, idx) => (
                     <input
                       key={idx}
@@ -1997,21 +1969,11 @@
                   ))}
                 </div>
                 <div className="space-y-3 pt-3 border-t">
-                  <label className="text-xs font-bold">شرائح البانر الكبير:</label>
+                  <label className="text-xs font-bold">شرائح البانر الرئيسي:</label>
                   {sliders.map((s, idx) => (
                     <div key={s.id} className="p-3 bg-stone-50 border space-y-2">
-                      <input
-                        type="text"
-                        value={s.title}
-                        onChange={e => setSliders(prev => prev.map((it, i) => i === idx ? { ...it, title: e.target.value } : it))}
-                        className="w-full px-3 py-2 border bg-white text-xs font-bold"
-                      />
-                      <input
-                        type="text"
-                        value={s.subtitle}
-                        onChange={e => setSliders(prev => prev.map((it, i) => i === idx ? { ...it, subtitle: e.target.value } : it))}
-                        className="w-full px-3 py-2 border bg-white text-xs"
-                      />
+                      <input type="text" value={s.title} onChange={e => setSliders(prev => prev.map((it, i) => i === idx ? { ...it, title: e.target.value } : it))} className="w-full px-3 py-2 border bg-white text-xs font-bold" />
+                      <input type="text" value={s.subtitle} onChange={e => setSliders(prev => prev.map((it, i) => i === idx ? { ...it, subtitle: e.target.value } : it))} className="w-full px-3 py-2 border bg-white text-xs" />
                     </div>
                   ))}
                 </div>
@@ -2075,33 +2037,23 @@
 
             {tab === 'settings' && (
               <div className="bg-white p-6 border space-y-4 max-w-xl">
-                <h2 className="font-bold text-base">إعدادات المتجر والمزامنة السحابية</h2>
-                <input
-                  type="text"
-                  value={settings.storeName}
-                  onChange={e => setSettings(prev => ({ ...prev, storeName: e.target.value }))}
-                  placeholder="اسم المتجر"
-                  className="w-full px-3.5 py-2.5 border text-sm"
-                />
-                <input
-                  type="text"
-                  value={settings.whatsapp}
-                  onChange={e => setSettings(prev => ({ ...prev, whatsapp: e.target.value }))}
-                  placeholder="رقم الواتساب"
-                  className="w-full px-3.5 py-2.5 border text-sm"
-                />
-                <input
-                  type="url"
-                  dir="ltr"
-                  value={cloudUrl}
-                  onChange={e => setCloudUrl(e.target.value)}
-                  placeholder="رابط المزامنة السحابية (اختياري)"
-                  className="w-full px-3.5 py-2.5 border text-sm text-left"
-                />
-                <button
-                  onClick={() => { setSettings(prev => ({ ...prev, cloudSyncUrl: cloudUrl.trim() })); flash('تم حفظ الإعدادات ✓'); }}
-                  className="px-6 py-2.5 bg-stone-900 text-white text-xs font-bold"
-                >
+                <h2 className="font-bold text-base">نمط التصميم وإعدادات المتجر</h2>
+                <div>
+                  <label className="block text-xs font-bold mb-1">نمط التصميم الافتراضي:</label>
+                  <select
+                    value={settings.themeId}
+                    onChange={e => setSettings(prev => ({ ...prev, themeId: e.target.value }))}
+                    className="w-full px-3.5 py-2.5 border text-sm bg-white font-bold"
+                  >
+                    {Object.values(THEMES).map(t => (
+                      <option key={t.id} value={t.id}>{t.arabicName} ({t.name})</option>
+                    ))}
+                  </select>
+                </div>
+                <input type="text" value={settings.storeName} onChange={e => setSettings(prev => ({ ...prev, storeName: e.target.value }))} placeholder="اسم المتجر" className="w-full px-3.5 py-2.5 border text-sm" />
+                <input type="text" value={settings.whatsapp} onChange={e => setSettings(prev => prev({ ...prev, whatsapp: e.target.value }))} placeholder="رقم الواتساب" className="w-full px-3.5 py-2.5 border text-sm" />
+                <input type="url" dir="ltr" value={cloudUrl} onChange={e => setCloudUrl(e.target.value)} placeholder="رابط المزامنة السحابية (اختياري)" className="w-full px-3.5 py-2.5 border text-sm text-left" />
+                <button onClick={() => { setSettings(prev => ({ ...prev, cloudSyncUrl: cloudUrl.trim() })); flash('تم حفظ الإعدادات ✓'); }} className="px-6 py-2.5 bg-stone-900 text-white text-xs font-bold">
                   حفظ الإعدادات
                 </button>
               </div>
