@@ -130,12 +130,23 @@ body.ref .promo+.bar{background:var(--ac);color:var(--on)}
 @media(min-width:700px){.bar[style]{margin-left:auto!important;margin-right:auto!important}}
 .ckl{display:flex;gap:8px;align-items:center;font-size:13px;margin:8px 0}.cookie #ckS{margin-bottom:4px}
 .lang{display:flex;align-items:center;gap:10px;margin:16px 0;font-size:12px;color:var(--mut)}.lang select{background:var(--bg);color:var(--tx);border:1px solid var(--line);padding:8px 12px;font:inherit}
+
+.logo.lg1,.logo.lg2,.logo.lg3,.logo.lg4,.logo.lg5{width:auto;height:auto;border:0;border-radius:0}
+.logo{color:var(--ac)}
+.logo .l1{display:flex;flex-direction:column;align-items:center;gap:1px}.logo .l1 b{font-family:'Cormorant Garamond',serif;font-size:24px;line-height:1}.logo .l1 small{font-size:6px;letter-spacing:.32em;color:var(--mut)}
+.logo .l2{display:flex;flex-direction:column;align-items:center;gap:5px}.logo .l2 span{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:21px;letter-spacing:.38em;padding-inline-start:.38em}.logo .l2 i{width:46px;height:1px;background:var(--ac);position:relative}.logo .l2 i:after{content:"";position:absolute;left:50%;top:-2.5px;width:5px;height:5px;background:var(--ac);transform:translateX(-50%) rotate(45deg)}.logo .l2 small{font-size:7px;letter-spacing:.5em;color:var(--mut);padding-inline-start:.5em}
+.logo .l3{display:flex;align-items:center;gap:9px}.logo .l3 span{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:19px;letter-spacing:.28em}
+.logo .l4{display:flex;flex-direction:column;align-items:center;gap:2px}.logo .l4 b{font-family:'Cairo',sans-serif;font-weight:800;font-size:26px;line-height:1.1;color:var(--ac2)}.logo .l4 u{width:34px;height:2px;background:var(--ac);text-decoration:none}.logo .l4 small{font-size:9px;letter-spacing:.3em;color:var(--mut)}
+.logo .l5{width:40px;height:40px;transform:rotate(45deg);border:1px solid var(--ac);display:grid;place-items:center;outline:1px solid var(--line);outline-offset:3px}.logo .l5 b{transform:rotate(-45deg);font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;line-height:1}
+.logo,.logo *{text-decoration:none}
+.logo .l2 span{font-size:18px;letter-spacing:.3em;padding-inline-start:.3em}.logo .l3 span{font-size:16px;letter-spacing:.2em}
+.logo .l5{width:32px;height:32px;margin:6px 0}.logo .l5 b{font-size:21px}
 </style></head><body>
 <div id="app"></div>
 <!-- ========== املأ هنا (المكان الوحيد الذي تعدله) ========== -->
 <!-- من Supabase: Project Settings > API. ضع Project URL والمفتاح العام Publishable/anon بين علامتي التنصيص. ممنوع المفتاح السري. -->
 <script>
-window.F3_CFG = { url: "https://yoscwsjdiqprmchbmxvl.supabase.co", key: "sb_publishable_uPrm5l6Yw9U6nBiWQPWi7g_Ip634cKd" };
+window.F3_CFG = { url: "https://yoscwsjdiqprmchbmxvl.supabase.co", key: "sb_publishable_uPrm5l6Yw9U6nBiWQPWi7g_Ip634cKd", logo: 2 };
 </script>
 <!-- ========== نهاية المكان الذي تعدله ========== -->
 <script type="text/plain" id="src-backend">// Talks to Supabase (REST + Auth + Storage) with plain fetch. Exposes window.F3API(path, {method, body, raw}).
@@ -259,7 +270,18 @@ let P=[
 {id:'teddy',n:'دبدوب بني',c:['new','boxes'],p:375,o:0,img:['photo-1562040506-a9b32cb51b94'],opt:['قياسي'],out:[],d:'دبدوب ناعم للهدايا. الصورة توضيحية.'}
 ];
 </script>
-<script type="text/plain" id="src-app">const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+<script type="text/plain" id="src-app">
+const LOGO_N=(()=>{const n=Number((window.F3_CFG||{}).logo);return n>=0&&n<=5?n:0})();
+const _bow='<svg viewBox="0 0 40 22" width="30" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 15C14 15 6 13 5 8c-1-5 7-6 11-2 2 2 4 6 4 9zM20 15c6 0 14-2 15-7 1-5-7-6-11-2-2 2-4 6-4 9zM20 15l-5 6M20 15l5 6"/></svg>';
+const LOGOS=[
+'<div><b>F</b><small>FARAFERO</small></div>',
+'<div class="l1">'+_bow+'<b>F</b><small>FARAFERO</small></div>',
+'<div class="l2"><span>FARAFERO</span><i></i><small>GIFT SHOP</small></div>',
+'<div class="l3"><svg viewBox="0 0 32 32" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"><rect x="4" y="13" width="24" height="15"/><rect x="2" y="9" width="28" height="4.5"/><path d="M16 9v19M16 9C12 9 9 7 10 5c1.500-2.500 5 .5 6 4zM16 9c4 0 7-2 6-4-1.500-2.500-5 .5-6 4z"/></svg><span>FARAFERO</span></div>',
+'<div class="l4"><b>فرفيرو</b><u></u><small>للهدايا</small></div>',
+'<div class="l5"><b>F</b></div>'
+];
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const q=new URLSearchParams(location.search);if(q.get('theme')==='ref')document.body.classList.add('ref');
 let cart=[];try{cart=JSON.parse(localStorage.getItem('f3cart')||'[]')}catch(e){}
 const save=()=>{try{localStorage.setItem('f3cart',JSON.stringify(cart))}catch(e){}};
@@ -267,7 +289,7 @@ const money=n=>Number(n).toLocaleString('en',{minimumFractionDigits:2,maximumFra
 const ANN=['اكتشف تشكيلة الهدايا الجديدة','الدفع عند الاستلام','هدايا مغلّفة جاهزة للإهداء'];let ai=0,apause=false;
 const I={menu:'<svg viewBox="0 0 24 24"><path d="M3 7h18M3 12h18M3 17h18"/></svg>',search:'<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>',bag:'<svg viewBox="0 0 24 24"><path d="M6 8h12l1 12H5z"/><path d="M9 8a3 3 0 0 1 6 0"/></svg>',x:'<svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19"/></svg>',filt:'<svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>',trash:'<svg viewBox="0 0 24 24"><path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13"/></svg>',zoom:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4M11 8v6M8 11h6"/></svg>'};
 const shell=`<div class="ann"><button id="ap" aria-label="السابق">›</button><span id="am"></span><span><button id="apz" aria-label="إيقاف مؤقت">❚❚</button><button id="an" aria-label="التالي">‹</button></span></div>
-<header><div><button class="ic" id="mb" aria-label="القائمة">${I.menu}</button></div><a class="logo" href="#/" aria-label="الرئيسية"><div><b>F</b><small>FARAFERO</small></div></a>
+<header><div><button class="ic" id="mb" aria-label="القائمة">${I.menu}</button></div><a class="logo lg${LOGO_N}" href="#/" aria-label="الرئيسية">${LOGOS[LOGO_N]}</a>
 <nav class="dn"><a href="#/">الرئيسية</a>${COLLECTIONS.map(c=>`<a href="#/c/${c.h}">${c.n}</a>`).join('')}<a href="#/returns">الاستبدال والاسترجاع</a><a href="#/page/contact">تواصل معنا</a></nav><div class="hl"><button class="ic" id="lg" style="font-size:13px;font-weight:700">EN</button><button class="ic" id="sb" aria-label="بحث">${I.search}</button><a class="ic" href="#/cart" id="cb" aria-label="الحقيبة">${I.bag}<span class="badge" id="cnt">0</span></a></div></header>
 <nav class="pills" id="pills"></nav><main id="main"></main>
 <footer><div class="fg"><div class="fb"><h3>فرفيرو للهدايا</h3><p>هدايا لكل مناسبة.</p></div>
